@@ -123,6 +123,7 @@ catkin_package(
 include_directories(
  include
  include/local_planner
+ include/local_planner/types
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -140,7 +141,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(local_planner_node src/local_planner_node.cpp src/local_planner.cpp)
+add_executable(local_planner_node src/LocalPlannerNode.cpp src/LocalPlanner.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

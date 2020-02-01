@@ -1,6 +1,6 @@
 
 #include <ros/ros.h>
-#include <local_planner.hpp>
+#include <LocalPlanner.hpp>
 
 int main(int argc, char **argv)
 {

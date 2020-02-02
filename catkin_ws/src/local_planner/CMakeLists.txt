@@ -108,7 +108,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  include/local_planner
+   include/local_planner
+   include/local_planner/types
+   include/local_planner/types/config
+   include/local_planner/types/graph_search
 #  LIBRARIES local_planner
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
 #  DEPENDS system_lib
@@ -121,9 +124,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
- include/local_planner
- include/local_planner/types
+  include/local_planner
+  include/local_planner/types
+  include/local_planner/types/config
+  include/local_planner/types/graph_search
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -141,7 +145,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(local_planner_node src/LocalPlannerNode.cpp src/LocalPlanner.cpp)
+add_executable(local_planner_node 
+ src/LocalPlannerNode.cpp
+ src/LocalPlanner.cpp
+ src/types/TopicSubscriber.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

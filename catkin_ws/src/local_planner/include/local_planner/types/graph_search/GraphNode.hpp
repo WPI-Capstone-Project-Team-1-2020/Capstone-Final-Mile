@@ -1,10 +1,16 @@
+#ifndef PLANNING_GRAPH_NODE_HPP
+#define PLANNING_GRAPH_NODE_HPP
+
+// Component
+#include "Point.hpp"
+
 // Libraries
 #include <boost/cstdfloat.hpp>
 
 // Standard
 #include <cstdint>
 
-namespace planning
+namespace local_planner
 {
 
 using float64_t = boost::float64_t; ///< Alias for 64 bit float
@@ -31,6 +37,7 @@ public:
     /// @return Val
     /// @{
     std::uint64_t    getParentID()             const noexcept {return m_parent_id;}
+    const Point&     getEstimatedPointM()      const noexcept {return m_estimated_point_m;}
     float64_t        getEstimatedHeadingR()    const noexcept {return m_estimated_heading_r;}
     float64_t        getEstimatedYawRateRps()  const noexcept {return m_estimated_yaw_rate_rps;}
     float64_t        getEstimatedVelocityMps() const noexcept {return m_estimated_velocity_mps;}
@@ -44,6 +51,8 @@ public:
     /// @param Val val
     /// @{
     void setParentID(const std::uint64_t val)         noexcept {m_parent_id = val;}
+    void setEstimatedPointM(const Point& val)         noexcept {m_estimated_point_m = val;}
+    void setEstimatedPointM(Point&& val)              noexcept {m_estimated_point_m = val;}
     void setEstimatedHeadingR(const float64_t val)    noexcept {m_estimated_heading_r = val;}
     void setEstimatedYawRateRps(const float64_t val)  noexcept {m_estimated_yaw_rate_rps = val;}
     void setEstimatedVelocityMps(const float64_t val) noexcept {m_estimated_velocity_mps = val;}
@@ -54,6 +63,7 @@ public:
 private:
 
     std::uint64_t m_parent_id{0U};                ///< ID of the parent node
+    Point         m_estimated_point_m{};          ///< Estimated cartesian coordinates of node
     float64_t     m_estimated_heading_r{0.0};     ///< Estimated Heading in radians
     float64_t     m_estimated_yaw_rate_rps{0.0};  ///< Estimated Yaw rate in radians per second
     float64_t     m_estimated_velocity_mps{0.0};  ///< Estimated Velocity in meters per second
@@ -63,4 +73,6 @@ private:
     float64_t     m_cost{0.0};                    ///< Cost
 };
 
-}
+} // namespace local_planner
+
+#endif // PLANNING_GRAPH_NODE_HPP

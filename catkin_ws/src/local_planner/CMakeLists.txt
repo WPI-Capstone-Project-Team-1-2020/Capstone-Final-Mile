@@ -9,6 +9,7 @@ add_compile_options(-std=c++14)
 ## is used, also find other catkin packages
 find_package (Eigen3 3.3.7 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  autonomy_msgs
   geometry_msgs
   nav_msgs
   roscpp
@@ -72,10 +73,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
+#generate_messages(
+   #DEPENDENCIES
+   #autonomy_msgs
 #   geometry_msgs#   nav_msgs#   prius_msgs#   sensor_msgs
-# )
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -113,7 +115,7 @@ catkin_package(
    include/local_planner/types/config
    include/local_planner/types/graph_search
 #  LIBRARIES local_planner
-  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
+  CATKIN_DEPENDS autonomy_msgs geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
 #  DEPENDS system_lib
 )
 

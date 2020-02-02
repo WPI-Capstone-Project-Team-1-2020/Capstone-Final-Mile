@@ -9,6 +9,7 @@
 
 // Standard
 #include <cstdint>
+#include <string>
 
 namespace local_planner
 {
@@ -42,7 +43,10 @@ public:
     /// @}
 
 private:
-
+    std::string m_goal_topic;
+    std::string m_local_pose_topic;
+    std::string m_veh_state_topic;
+    std::string m_command_topic;    
 };
 
 } // namespace local_planner

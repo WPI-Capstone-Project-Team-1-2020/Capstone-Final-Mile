@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="Map_Object">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://Map_Model/meshes/map_object.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://Map_Model/meshes/map_object.stl</uri>
+          </mesh>
+        </geometry>
+        <material> <!-- Color for Buildings/Roads -->
+          <ambient>0.64 0.65 0.67 1</ambient>
+          <diffuse>0.64 0.65 0.67 1</diffuse>
+          <specular>0 0 0 0</specular>
+          <emissive>0 0 0 1</emissive>
+        </material> <!-- Color for Buildings/Roads -->
+      </visual>
+    </link>
+  </model>
+</sdf>

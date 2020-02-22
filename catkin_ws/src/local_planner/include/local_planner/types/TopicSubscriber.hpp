@@ -3,6 +3,7 @@
 
 // Ros
 #include <ros/ros.h>
+#include <nav_msgs/Odometry.h>
 
 // Standard
 #include <memory>
@@ -26,7 +27,14 @@ public:
     ~TopicSubscriber();
 
 private:
+    /// @brief Local pose callback
+    /// @param msg Local pose message sent through IPC
+    void onPoseReceived(const nav_msgs::Odometry::ConstPtr& msg);
+
+
     std::shared_ptr<LocalPlannerConfig> m_cfg; ///< Config of the local planner
+
+    ros::Subscriber m_pose_sub; ///< Local pose subscriber
 };    
 
 } // namespace local_planner

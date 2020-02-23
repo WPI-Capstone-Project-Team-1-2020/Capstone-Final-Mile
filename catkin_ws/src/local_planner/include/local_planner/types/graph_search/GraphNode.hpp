@@ -30,6 +30,18 @@ public:
     /// @brief Default destructor
     ~GraphNode() = default;
 
+    /// @brief Copy constructor
+    GraphNode(const GraphNode&) noexcept = default;
+
+    /// @brief Copy operator
+    GraphNode& operator=(const GraphNode&) noexcept = default;
+
+    /// @brief Move constructor
+    GraphNode(GraphNode&&) noexcept = default;
+
+    /// @brief Move operator
+    GraphNode& operator=(GraphNode&&) noexcept = default;
+
     /// @brief Less than comparator operator for sorting graph nodes
     /// @param rhs Righthand side of comparator
     /// @return `true` if lhs is < rhs

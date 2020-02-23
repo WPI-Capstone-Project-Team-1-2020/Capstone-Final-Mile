@@ -52,11 +52,19 @@ public:
     void setLocalPlannerData(const LocalPlannerData& data) noexcept {m_data = data;}
 
 private:
+    /// @brief Resets the planner
+    void resetPlanner() noexcept;
+
+    /// @brief Plans a trajectory
+    void planTrajectory();
+
+
+
     /// @brief Graph search node-related members
     /// @{
     std::priority_queue<GraphNode, std::vector<GraphNode>> m_frontier;     ///< P-q of graph nodes to use
     std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
-    std::unordered_set<GraphNode>                          m_closed_nodes; ///< Closed nodes
+    std::unordered_set<GraphNode>                          m_closed_nodes; ///< Closed nodes    
     /// @}
 
     /// @brief Inputs and outputs

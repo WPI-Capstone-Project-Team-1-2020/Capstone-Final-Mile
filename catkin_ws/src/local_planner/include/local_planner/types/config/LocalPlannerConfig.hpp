@@ -26,7 +26,7 @@ public:
     {
         pnh.getParam("goal_topic",       m_goal_topic);
         pnh.getParam("local_pose_topic", m_local_pose_topic);
-        pnh.getParam("veh_state_topic",  m_veh_state_topic);        
+        pnh.getParam("update_rate_hz",   m_update_rate_hz);
     }
 
     /// @brief Default destructor for forward declares
@@ -37,13 +37,13 @@ public:
     /// @{
     const std::string& getGoalTopic()      const noexcept {return m_goal_topic;}
     const std::string& getLocalPoseTopic() const noexcept {return m_local_pose_topic;}
-    const std::string& getVehStateTopic()  const noexcept {return m_veh_state_topic;}
+    float64_t          getUpdateRateHz()   const noexcept {return m_update_rate_hz;}
     /// @}
 
 private:
-    std::string m_goal_topic;
-    std::string m_local_pose_topic;
-    std::string m_veh_state_topic;
+    std::string m_goal_topic{""};       ///< Goal topic
+    std::string m_local_pose_topic{""}; ///< Local pose topic    
+    float64_t   m_update_rate_hz{10.0}; ///< Update rate in hz
 };
 
 } // namespace local_planner

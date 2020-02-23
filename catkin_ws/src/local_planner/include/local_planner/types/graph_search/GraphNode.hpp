@@ -2,6 +2,7 @@
 #define PLANNING_GRAPH_NODE_HPP
 
 // Component
+#include "GraphNodeToleranceConfig.hpp"
 #include "Point.hpp"
 
 // Libraries
@@ -20,22 +21,45 @@ class GraphNode
 {
 public:
     /// @brief Default constructor
-    GraphNode(){id++;}
+    GraphNode()
+    {
+        id++;
+        m_id = id;
+    }
 
     /// @brief Default destructor
     ~GraphNode() = default;
 
-    /// @brief Default operator for sorting graph nodes
-    bool operator()(const GraphNode& lhs, const GraphNode& rhs) const noexcept
+    /// @brief Less than comparator operator for sorting graph nodes
+    /// @param rhs Righthand side of comparator
+    /// @return `true` if lhs is < rhs
+    bool operator<(const GraphNode& rhs) const noexcept
     {
-        return lhs.m_cost > rhs.m_cost;
+        return ((this->m_cost > rhs.m_cost) == true);
     }
 
-    static std::uint64_t id; ///< ID of the graph node
+    /// @brief Equality operator for checking equality of two nodes (tolerance based)
+    /// @param rhs Righthand side of comparator
+    /// @return `true` if rhs is equal
+    bool operator==(const GraphNode& rhs) const noexcept
+    {
+        return ((std::fabs(this->m_estimated_point_m.getX() - rhs.m_estimated_point_m.getX()) < tolerance_cfg.getXToleranceM()) &&
+                (std::fabs(this->m_estimated_point_m.getY() - rhs.m_estimated_point_m.getY()) < tolerance_cfg.getYToleranceM()) &&
+                (std::fabs(this->m_estimated_velocity_mps   - rhs.m_estimated_velocity_mps)   < tolerance_cfg.getSpeedToleranceMps()) &&
+                (std::fabs(this->m_estimated_heading_r      - rhs.m_estimated_heading_r)      < tolerance_cfg.getHeadingToleranceRad()) &&
+                (std::fabs(this->m_estimated_yaw_rate_rps   - rhs.m_estimated_yaw_rate_rps)   < tolerance_cfg.getYawRateToleranceRps()));
+    }     
+
+    /// @brief Static member variables
+    /// @{
+    static std::uint64_t id;                       ///< ID count of the graph nodes
+    static GraphNodeToleranceConfig tolerance_cfg; ///< Tolerance configuration for equality
+    /// @}
 
     /// @brief Accessor
     /// @return Val
     /// @{
+    std::uint64_t    getID()                   const noexcept {return m_id;}
     std::uint64_t    getParentID()             const noexcept {return m_parent_id;}
     const Point&     getEstimatedPointM()      const noexcept {return m_estimated_point_m;}
     float64_t        getEstimatedHeadingR()    const noexcept {return m_estimated_heading_r;}
@@ -48,7 +72,7 @@ public:
     /// @}
 
     /// @brief Mutator
-    /// @param Val val
+    /// @param val Val
     /// @{
     void setParentID(const std::uint64_t val)         noexcept {m_parent_id = val;}
     void setEstimatedPointM(const Point& val)         noexcept {m_estimated_point_m = val;}
@@ -61,7 +85,7 @@ public:
     /// @}
 
 private:
-
+    std::uint64_t m_id{0U};                       ///< ID of the node
     std::uint64_t m_parent_id{0U};                ///< ID of the parent node
     Point         m_estimated_point_m{};          ///< Estimated cartesian coordinates of node
     float64_t     m_estimated_heading_r{0.0};     ///< Estimated Heading in radians
@@ -74,5 +98,24 @@ private:
 };
 
 } // namespace local_planner
+
+namespace std
+{
+
+/// @brief Class specialization of hash for Graph Nodes
+template <>
+class hash<local_planner::GraphNode>
+{
+public:
+    /// @brief Default operator for hashing graph nodes
+    /// @param node The node to be hashed
+    /// @return hash
+    size_t operator()(const local_planner::GraphNode& node) const noexcept
+    {
+        return hash<std::uint64_t>()(node.getID());
+    }
+};
+
+} // namespace std
 
 #endif // PLANNING_GRAPH_NODE_HPP

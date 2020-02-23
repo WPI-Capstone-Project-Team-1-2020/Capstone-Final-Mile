@@ -1,0 +1,4 @@
+goal_topic: "/local_planner/local_goal" # Local Goal Pose Topic
+local_pose_topic: "/blah"               # Local Pose Topic
+
+update_rate_hz: 10.0                    # Update rate in hz

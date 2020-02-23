@@ -76,7 +76,7 @@ find_package(catkin REQUIRED COMPONENTS
 #generate_messages(
    #DEPENDENCIES
    #autonomy_msgs
-#   geometry_msgs#   nav_msgs#   prius_msgs#   sensor_msgs
+#   geometry_msgs#   nav_msgs#   #sensor_msgs
 #)
 
 ################################################
@@ -150,6 +150,7 @@ include_directories(
 add_executable(local_planner_node 
  src/LocalPlannerNode.cpp
  src/LocalPlanner.cpp
+ src/types/graph_search/AStar.cpp
  src/types/TopicSubscriber.cpp)
 
 ## Rename C++ executable without prefix

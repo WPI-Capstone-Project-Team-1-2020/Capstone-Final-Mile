@@ -26,7 +26,7 @@ namespace local_planner
 {
 
 using float64_t = boost::float64_t;                     ///< Alias for 64 bit float
-using Spline1d = Eigen::Spline<float64_t, 2U>;           ///< Alias for 1-d spline
+using Spline1d = Eigen::Spline<float64_t, 2U>;          ///< Alias for 1-d spline
 using Spline1dFitting = Eigen::SplineFitting<Spline1d>; ///< Alias for spline fitting
 
 /// @brief Class to do graph search things
@@ -49,14 +49,32 @@ public:
 
     /// @brief Mutator for the local planner data
     /// @param val The data
+    /// @{
     void setLocalPlannerData(const LocalPlannerData& data) noexcept {m_data = data;}
+    void setLocalPlannerData(LocalPlannerData&& data)      noexcept {m_data = data;}
+    /// @}
 
 private:
     /// @brief Resets the planner
     void resetPlanner() noexcept;
 
+    /// @brief Initializes the planner
+    void initializePlanner() noexcept;
+
     /// @brief Plans a trajectory
     void planTrajectory();
+
+    /// @brief Expands the frontier
+    /// @param current_node The node to expand from
+    void expandFrontier(const GraphNode& current_node);
+
+    /// @brief Gets neighbors of the current node
+    /// @param current_node The node to find neighbors of
+    std::vector<GraphNode> calcNeighbors(const GraphNode& current_node);
+
+    /// @brief Calculates possible velocities for neighboring nodes
+    /// @param current_node The node to find possible velocities for
+    std::vector<float64_t> calcPossibleVelocitiesMps(const GraphNode& current_node);
 
 
 

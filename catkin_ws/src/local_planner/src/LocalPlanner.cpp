@@ -1,5 +1,6 @@
 // Component
 #include "AStar.hpp"
+#include "ForwardSimHelper.hpp"
 #include "LocalPlanner.hpp"
 #include "LocalPlannerConfig.hpp"
 #include "TopicSubscriber.hpp"
@@ -20,7 +21,9 @@ void LocalPlanner::update(const ros::TimerEvent& event)
     if ((m_topic_sub->getLocalPlannerData().getGoalPose() != nullptr) &&
         (m_topic_sub->getLocalPlannerData().getLocalPose() != nullptr))
     {
-        m_solver->setLocalPlannerData(m_topic_sub->getLocalPlannerData());
+        LocalPlannerData data = m_topic_sub->getLocalPlannerData();
+        data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getLocalPlannerData().getLocalPose(), event.current_real));
+        m_solver->setLocalPlannerData(std::move(data));
         if (m_solver->update() == true)
         {
 

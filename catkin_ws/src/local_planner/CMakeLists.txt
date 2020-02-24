@@ -114,6 +114,7 @@ catkin_package(
    include/local_planner/types
    include/local_planner/types/config
    include/local_planner/types/graph_search
+   include/local_planner/types/helper
 #  LIBRARIES local_planner
   CATKIN_DEPENDS autonomy_msgs geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
 #  DEPENDS system_lib
@@ -130,6 +131,7 @@ include_directories(
   include/local_planner/types
   include/local_planner/types/config
   include/local_planner/types/graph_search
+  include/local_planner/types/helper
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -151,6 +153,8 @@ add_executable(local_planner_node
  src/LocalPlannerNode.cpp
  src/LocalPlanner.cpp
  src/types/graph_search/AStar.cpp
+ src/types/helper/ForwardSimHelper.cpp
+ src/types/helper/RosConversionHelper.cpp
  src/types/TopicSubscriber.cpp)
 
 ## Rename C++ executable without prefix

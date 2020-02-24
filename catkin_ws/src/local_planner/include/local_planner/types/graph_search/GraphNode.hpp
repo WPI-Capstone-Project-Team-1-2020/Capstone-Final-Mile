@@ -21,11 +21,7 @@ class GraphNode
 {
 public:
     /// @brief Default constructor
-    GraphNode()
-    {
-        id++;
-        m_id = id;
-    }
+    GraphNode() : m_id{++id_generator}{};
 
     /// @brief Default destructor
     ~GraphNode() = default;
@@ -64,7 +60,7 @@ public:
 
     /// @brief Static member variables
     /// @{
-    static std::uint64_t id;                       ///< ID count of the graph nodes
+    static std::uint64_t            id_generator;  ///< ID generator of the graph nodes
     static GraphNodeToleranceConfig tolerance_cfg; ///< Tolerance configuration for equality
     /// @}
 
@@ -94,6 +90,8 @@ public:
     void setEstimatedVelocityMps(const float64_t val) noexcept {m_estimated_velocity_mps = val;}
     void setCommandedYawRateRps(const float64_t val)  noexcept {m_commanded_yaw_rate_rps = val;}
     void setCommandedVelocityMps(const float64_t val) noexcept {m_commanded_velocity_mps = val;}
+    void setG(const float64_t val)                    noexcept {m_g = val;}
+    void setCost(const float64_t val)                 noexcept {m_cost = val;}
     /// @}
 
 private:

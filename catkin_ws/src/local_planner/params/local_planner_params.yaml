@@ -1,4 +1,17 @@
-goal_topic: "/local_planner/local_goal" # Local Goal Pose Topic
-local_pose_topic: "/blah"               # Local Pose Topic
+# I/O Topics
+goal_topic:       "/local_planner/local_goal" # Local Goal Pose Topic
+local_pose_topic: "/ground_truth/state"       # Local Pose Topic
 
-update_rate_hz: 10.0                    # Update rate in hz
+# Performance
+update_rate_hz: 10.0 # Update rate in hz
+
+# Tuning parameters
+time_step_ms:                50.0 # Time step of the planner in ms
+velocity_discretization_mps: 0.1  # Granularity of discretization of possible velocities in mps
+yaw_rate_discretization_rps: 0.25 # Granularity of discretization of possible yaw rates in mps
+
+# Non Holonomic Constraints
+max_vel_mps:            10.0 # Max velocity in mps
+max_accel_mpss:         1.0  # Max magnitude of acceleration in mpss
+max_yaw_rate_rps:       1.5  # Max yaw rate in rps
+max_yaw_rate_rate_rpss: 0.1  # Max magnitude of change in yaw rate in rpss

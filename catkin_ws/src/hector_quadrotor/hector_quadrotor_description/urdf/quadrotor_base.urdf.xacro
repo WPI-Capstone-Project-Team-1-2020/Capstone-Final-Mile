@@ -9,7 +9,7 @@
   <xacro:macro name="quadrotor_base_macro">
     <link name="base_link">
       <inertial>
-        <mass value="1.477" />
+        <mass value="3.8" />
         <origin xyz="0 0 0" />
         <inertia ixx="0.01152" ixy="0.0" ixz="0.0" iyy="0.01152" iyz="0.0" izz="0.0218" />
       </inertial>
@@ -30,8 +30,18 @@
     </link>
 
     <!-- Sonar height sensor -->
-    <xacro:sonar_sensor name="sonar" parent="base_link" ros_topic="sonar_height" update_rate="10" min_range="0.03" max_range="3.0" field_of_view="${40*pi/180}" ray_count="3">
+    <xacro:sonar_sensor name="sonar" parent="base_link" ros_topic="sonar_height" update_rate="10" min_range="0.1" max_range="5.0" field_of_view="${60*pi/180}" ray_count="2">
       <origin xyz="-0.16 0.0 -0.012" rpy="0 ${90*pi/180} 0"/>
+    </xacro:sonar_sensor>
+
+    <!-- Infrared upward sensor -->
+    <xacro:sonar_sensor name="infrared_narrow" parent="base_link" ros_topic="upward_infrared_narrow" update_rate="10" min_range="0.01" max_range="5.0" field_of_view="${3*pi/180}" ray_count="1">
+      <origin xyz="0.07 0.0 0.04" rpy="0 ${-90*pi/180} 0"/>
+    </xacro:sonar_sensor>
+
+    <!-- Infrared upward sensor -->
+    <xacro:sonar_sensor name="infrared_wide" parent="base_link" ros_topic="upward_infrared_wide" update_rate="10" min_range="0.01" max_range="5.0" field_of_view="${10*pi/180}" ray_count="1">
+      <origin xyz="0.05 0.0 0.04" rpy="0 ${-90*pi/180} 0"/>
     </xacro:sonar_sensor>
 
   </xacro:macro>

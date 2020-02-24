@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 
 <launch>
+
+  <env name="GAZEBO_MODEL_PATH" value="$(find hector_quadrotor_demo)/world"/>
+
   <include file="$(find hector_gazebo_worlds)/launch/start.launch">
    <arg name="world" value="$(find hector_quadrotor_demo)/world/worcester_umass.world"/> 
   </include>

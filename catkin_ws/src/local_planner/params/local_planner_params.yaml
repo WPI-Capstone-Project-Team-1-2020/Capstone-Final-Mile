@@ -11,7 +11,8 @@ velocity_discretization_mps: 0.1  # Granularity of discretization of possible ve
 yaw_rate_discretization_rps: 0.25 # Granularity of discretization of possible yaw rates in mps
 
 # Non Holonomic Constraints
-max_vel_mps:            10.0 # Max velocity in mps
-max_accel_mpss:         1.0  # Max magnitude of acceleration in mpss
-max_yaw_rate_rps:       1.5  # Max yaw rate in rps
-max_yaw_rate_rate_rpss: 0.1  # Max magnitude of change in yaw rate in rpss
+max_vel_mps:                 10.0 # Max velocity in mps
+max_lateral_accel_mpss:      1.0  # Max magnitude of lateral acceleration in mpss
+max_longitudinal_accel_mpss: 1.0  # Max magnitude of longitudinal acceleration in mpss
+max_yaw_rate_rps:            1.5  # Max yaw rate in rps
+max_yaw_rate_rate_rpss:      0.1  # Max magnitude of change in yaw rate in rpss

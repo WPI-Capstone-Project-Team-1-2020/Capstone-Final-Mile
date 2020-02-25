@@ -72,11 +72,31 @@ private:
     /// @param current_node The node to find neighbors of
     std::vector<GraphNode> calcNeighbors(const GraphNode& current_node);
 
-    /// @brief Calculates possible velocities for neighboring nodes
+    /// @brief Calculates possible longitudinal velocities for neighboring nodes
     /// @param current_node The node to find possible velocities for
-    std::vector<float64_t> calcPossibleVelocitiesMps(const GraphNode& current_node);
+    /// @return vector of possible velocities
+    std::vector<float64_t> calcPossibleLongitudinalVelocitiesMps(const GraphNode& current_node) const noexcept;
 
+    /// @brief Calculates possible lateral velocities for neighboring nodes
+    /// @param current_node The node to find possible velocities for
+    /// @return vector of possible velocities
+    std::vector<float64_t> calcPossibleLateralVelocitiesMps(const GraphNode& current_node) const noexcept;
 
+    /// @brief Calculates possible yaw rates for neighboring nodes
+    /// @param current_node The node to find possible yaw rates for
+    /// @return vector of possible yaw rates
+    std::vector<float64_t> calcPossibleYawRatesRps(const GraphNode& current_node) const noexcept;
+
+    /// @brief Calculates G-score of a node
+    /// @param parent_node The parent node of the new node
+    /// @param node The node to calculate score of
+    /// @return G-score
+    float64_t calcNodeGScore(const GraphNode& parent_node, const GraphNode& node) const noexcept;
+
+    /// @brief Calculates the cost of a node
+    /// @param node The node to calculate score of
+    /// @return The cost of the node
+    float64_t calcNodeCost(const GraphNode& node) const noexcept;
 
     /// @brief Graph search node-related members
     /// @{

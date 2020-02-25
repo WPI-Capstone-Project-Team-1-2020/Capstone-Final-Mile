@@ -18,7 +18,7 @@ LocalPlanner::LocalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
 
 void LocalPlanner::update(const ros::TimerEvent& event)
 {
-    if ((m_topic_sub->getLocalPlannerData().getGoalPose() != nullptr) &&
+    if ((m_topic_sub->getLocalPlannerData().getGoalPose()  != nullptr) &&
         (m_topic_sub->getLocalPlannerData().getLocalPose() != nullptr))
     {
         LocalPlannerData data = m_topic_sub->getLocalPlannerData();
@@ -31,7 +31,6 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         else
         {
             ROS_ERROR_STREAM("Unable to plan trajectory");
-            
         }
     }
 }

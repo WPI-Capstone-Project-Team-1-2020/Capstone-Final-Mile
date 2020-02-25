@@ -210,7 +210,7 @@ float64_t AStar::calcNodeGScore(const GraphNode& parent_node, const GraphNode& n
 float64_t AStar::calcNodeCost(const GraphNode& node) const noexcept
 {
     const float64_t dist_to_goal_m = std::sqrt(std::pow(m_data.getGoalPose()->x - node.getEstimatedPointM().getX(), 2U) +
-                                     std::pow(m_data.getGoalPose()->y - node.getEstimatedPointM().getY(), 2U));
+                                               std::pow(m_data.getGoalPose()->y - node.getEstimatedPointM().getY(), 2U));
 }
 
 }// namespace local_planner

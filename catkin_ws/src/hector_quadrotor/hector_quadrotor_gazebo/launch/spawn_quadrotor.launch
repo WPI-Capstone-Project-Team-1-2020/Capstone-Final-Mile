@@ -10,9 +10,9 @@
     "/>
   <arg name="tf_prefix" default="$(optenv ROS_NAMESPACE)"/>
 
-  <arg name="x" default="0.0"/>
-  <arg name="y" default="0.0"/>
-  <arg name="z" default="0.3"/>
+  <arg name="x" default="-1231.0"/>
+  <arg name="y" default="-285.6"/>
+  <arg name="z" default="13.0"/>
 
   <arg name="use_ground_truth_for_tf" default="true" />
   <arg name="use_ground_truth_for_control" default="true" />

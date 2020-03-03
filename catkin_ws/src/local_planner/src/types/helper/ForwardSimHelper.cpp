@@ -43,4 +43,15 @@ nav_msgs::Odometry::ConstPtr ForwardSimHelper::forwardSimPose(const nav_msgs::Od
     return boost::make_shared<nav_msgs::Odometry>(new_pose);
 }
 
+void ForwardSimHelper::forwardSimGraphNode(GraphNode& node, const float64_t time_step_ms)
+{
+
+    const float_t cur_x_m       = node.getEstimatedPointM().getX();
+    const float_t cur_y_m       = node.getEstimatedPointM().getY();
+    const float_t cur_heading_r = node.getEstimatedHeadingR();
+    const float_t x_vel_mps     = node.getEstimatedLongitudinalVelocityMps() * std::cos(cur_heading_r);
+    const float_t y_vel_mps     = node.getEstimatedLateralVelocityMps()      * std::sin(cur_heading_r);
+    
+}
+
 } // namespace local_planner

@@ -3,6 +3,7 @@
 
 // Component
 #include "GraphNodeToleranceConfig.hpp"
+#include "HeuristicConfig.hpp"
 
 // Libraries
 #include <boost/cstdfloat.hpp>
@@ -25,7 +26,9 @@ class LocalPlannerConfig
 public:
     /// @brief Default constructor
     /// @param pnh Private nodehandle used to snipe params
-    LocalPlannerConfig(ros::NodeHandle& pnh)
+    LocalPlannerConfig(ros::NodeHandle& pnh) : 
+        m_heuristic_config{HeuristicConfig(pnh)},
+        m_node_cfg{GraphNodeToleranceConfig(pnh)}
     {
         pnh.getParam("goal_topic",                  m_goal_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
@@ -33,6 +36,7 @@ public:
         pnh.getParam("time_step_ms",                m_time_step_ms);
         pnh.getParam("velocity_discretization_mps", m_velocity_discretization_mps);
         pnh.getParam("yaw_rate_discretization_mps", m_yaw_rate_discretization_mps);
+        pnh.getParam("spline_order",                m_spline_order);
         pnh.getParam("max_vel_mps",                 m_max_vel_mps);
         pnh.getParam("max_lateral_accel_mpss",      m_max_lateral_accel_mpss);
         pnh.getParam("max_longitudinal_accel_mpss", m_max_longitudinal_accel_mpss);
@@ -52,11 +56,13 @@ public:
     float64_t                       getTimeStepMs()                const noexcept {return m_time_step_ms;}
     float64_t                       getVelocityDiscretizationMps() const noexcept {return m_velocity_discretization_mps;}
     float64_t                       getYawRateDiscretizationRps()  const noexcept {return m_yaw_rate_discretization_mps;}
+    float64_t                       getSplineOrder()               const noexcept {return m_spline_order;}
     float64_t                       getMaxVelMps()                 const noexcept {return m_max_vel_mps;}
     float64_t                       getMaxLateralAccelMpss()       const noexcept {return m_max_lateral_accel_mpss;}
     float64_t                       getMaxLongitudinalAccelMpss()  const noexcept {return m_max_longitudinal_accel_mpss;}
     float64_t                       getMaxYawRateRps()             const noexcept {return m_max_yaw_rate_rps;}
     float64_t                       getMaxYawRateRateRpss()        const noexcept {return m_max_yaw_rate_rate_rpss;}
+    const HeuristicConfig&          getHeuristicConfig()           const noexcept {return m_heuristic_config;}
     const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
     /// @}
 
@@ -77,6 +83,7 @@ private:
     float64_t m_time_step_ms{50};                  ///< Time step of the planner in ms
     float64_t m_velocity_discretization_mps{0.1};  ///< Step size of velocity, in mps
     float64_t m_yaw_rate_discretization_mps{0.25}; ///< Step size of yaw rate, in mps
+    float64_t m_spline_order{3.0};                 ///< Order of splines used for heuristic
     /// @}
 
     /// @brief Non Holonomic Constraints
@@ -88,6 +95,7 @@ private:
     float64_t m_max_yaw_rate_rate_rpss{0.1};        ///< Max yaw rate rate, in rpss
     /// @}
 
+    HeuristicConfig m_heuristic_config; ///< Config for the heuristic
 
     GraphNodeToleranceConfig m_node_cfg; ///< Graph node tolerance config
 };

@@ -1,6 +1,9 @@
 #ifndef PLANNING_GRAPH_NODE_TOLERANCE_CONFIG_HPP
 #define PLANNING_GRAPH_NODE_TOLERANCE_CONFIG_HPP
 
+// Ros
+#include <ros/ros.h>
+
 // Libraries
 #include <boost/cstdfloat.hpp>
 
@@ -13,6 +16,20 @@ using float64_t = boost::float64_t; ///< Alias for 64 bit float
 class GraphNodeToleranceConfig
 {
 public:
+    /// @brief Default constructor
+    GraphNodeToleranceConfig() = default;
+
+    /// @brief Constructor that actually gets the parameters
+    /// @param pnh Private nodehandle to snipe those params
+    GraphNodeToleranceConfig(ros::NodeHandle& pnh)
+    {
+        pnh.getParam("x_tolerance_m",          m_x_tol_m);
+        pnh.getParam("y_tolerance_m",          m_y_tol_m);
+        pnh.getParam("speed_tolerance_m",      m_speed_tol_mps);
+        pnh.getParam("heading_tolerance_r",    m_heading_tol_rad);
+        pnh.getParam("yaw_rate_tolerance_rps", m_yaw_rate_tol_rps);
+    }
+
     /// @brief Accesor
     /// @return Val
     /// @{
@@ -22,16 +39,6 @@ public:
     float64_t getHeadingToleranceRad() const noexcept {return m_heading_tol_rad;}
     float64_t getYawRateToleranceRps() const noexcept {return m_yaw_rate_tol_rps;}
     /// @}
-
-    /// @brief Mutator
-    /// @param val Val
-    /// @{
-    void setXToleranceM(const float64_t val)         noexcept {m_x_tol_m = val;}
-    void setYToleranceM(const float64_t val)         noexcept {m_y_tol_m = val;}
-    void setSpeedToleranceMps(const float64_t val)   noexcept {m_speed_tol_mps = val;}
-    void setHeadingToleranceRad(const float64_t val) noexcept {m_heading_tol_rad = val;}
-    void setYawRateToleranceRps(const float64_t val) noexcept {m_yaw_rate_tol_rps = val;}
-    /// @}  
 
 private:
     float64_t m_x_tol_m{0.0};          ///< Tolerance on x in meters

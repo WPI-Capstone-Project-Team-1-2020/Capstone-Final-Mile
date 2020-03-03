@@ -9,7 +9,6 @@
 
 // Libraries
 #include <boost/cstdfloat.hpp>
-#include <unsupported/Eigen/Splines>
 
 // Ros
 #include <autonomy_msgs/Trajectory.h>
@@ -25,15 +24,14 @@
 namespace local_planner
 {
 
-using float64_t = boost::float64_t;                     ///< Alias for 64 bit float
-using Spline1d = Eigen::Spline<float64_t, 2U>;          ///< Alias for 1-d spline
-using Spline1dFitting = Eigen::SplineFitting<Spline1d>; ///< Alias for spline fitting
+using float64_t = boost::float64_t; ///< Alias for 64 bit float
 
 /// @brief Class to do graph search things
 class AStar
 {
 public:
     /// @brief Default constructor
+    /// @param cfg Local planner config
     AStar(const std::shared_ptr<LocalPlannerConfig>& cfg);
 
     /// @brief Default destructor
@@ -95,14 +93,29 @@ private:
 
     /// @brief Calculates the cost of a node
     /// @param node The node to calculate score of
+    /// @param target_heading_r The target heading, in radians
     /// @return The cost of the node
-    float64_t calcNodeCost(const GraphNode& node) const noexcept;
+    float64_t calcNodeCost(const GraphNode& node, const float64_t target_heading_r) const;
+
+    /// @brief Calculates the heuristic of a node
+    /// @param node The node to get the heuristic of
+    /// @param target_heading_r The target heading, in radians
+    /// @return Heuristic of the node
+    float64_t calcHeuristic(const GraphNode& node, const float64_t target_heading_r) const;
+
+    /// @brief Determines if the vehicle needs to start slowing down to meet its goal
+    /// @param current_node The current node of the graph search: this is not the new one being evaluated
+    /// @param heading_r Heading of the new node in radians
+    /// @param velocity_mps Current velocity of the node
+    /// @return `true` if vehicle needs to start slowing down
+    bool nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps) const;
 
     /// @brief Graph search node-related members
     /// @{
     std::priority_queue<GraphNode, std::vector<GraphNode>> m_frontier;     ///< P-q of graph nodes to use
     std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
     std::unordered_set<GraphNode>                          m_closed_nodes; ///< Closed nodes    
+    GraphNode                                              m_goal_node;    ///< Goal node
     /// @}
 
     /// @brief Inputs and outputs

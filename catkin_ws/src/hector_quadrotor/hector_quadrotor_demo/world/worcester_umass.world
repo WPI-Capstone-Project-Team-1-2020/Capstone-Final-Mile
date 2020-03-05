@@ -56,9 +56,55 @@
       </link>
       <static>true</static>
     </model>
+    <model name="landing_pad_start">
+      <link name="landing_pad_start">
+        <pose>-1231.0 -285.6 13.0 0 0 -1.565001</pose>
+        <collision name="landing_pad_start_collision">
+          <geometry>
+            <mesh>
+              <uri>model://box_target_green/meshes/mesh.dae</uri>
+              <scale>0.7 0.7 0.1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="landing_pad_start_vis">
+          <geometry>
+            <mesh>
+              <uri>model://box_target_green/meshes/mesh.dae</uri>
+              <scale>0.7 0.7 0.1</scale>
+            </mesh>
+          </geometry>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+      <static>true</static>
+    </model>
+    <model name="landing_pad_end">
+      <link name="landing_pad_end">
+        <pose>1292 205.5 8 0 0 -1.565001</pose>
+        <collision name="landing_pad_end_collision">
+          <geometry>
+            <mesh>
+              <uri>model://box_target_green/meshes/mesh.dae</uri>
+              <scale>0.7 0.7 0.1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="landing_pad_end_vis">
+          <geometry>
+            <mesh>
+              <uri>model://box_target_green/meshes/mesh.dae</uri>
+              <scale>0.7 0.7 0.1</scale>
+            </mesh>
+          </geometry>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+      <static>true</static>
+    </model>
     <gui>
         <camera name="user_camera">
-            <pose>-1254.8 -298.7 18 0 0.165 0.156</pose>
+            <pose>-1254.8 -298.7 20 0 0.165 0.156</pose>
         </camera>
     </gui>
   </world>

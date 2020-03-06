@@ -17,10 +17,10 @@
     </xacro:generic_camera>
 
     <!-- Forward facing camera -->
-    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="front_cam" parent="base_link" ros_topic="camera/image_f" cam_info_topic="camera/camera_info_f" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="60">
-      <origin xyz="0.05 0.0 -0.06" rpy="0 0 0"/>
-    </xacro:generic_camera>
+    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_stereo_camera.urdf.xacro" />
+    <xacro:generic_stereo_camera name="front_cam" parent="base_link" ros_topic="camera/image_f" cam_info_topic="camera/camera_info_f" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="60" baseline="0.166">
+      <origin xyz="0.05 0.083 -0.06" rpy="0 0 0"/>
+    </xacro:generic_stereo_camera>
 
 </robot>
   

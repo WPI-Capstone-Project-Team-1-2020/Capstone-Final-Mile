@@ -12,7 +12,7 @@ float64_t SplineHelper::calcTargetHeadingR(const GraphNode& current_node, const 
     const float64_t dy_m = current_node.getEstimatedPointM().getY() + current_node.getEstimatedLateralVelocityMps()      * time_step_ms / 1000.0;
     const float64_t dist_m = std::sqrt(std::pow(dx_m, 2U) + std::pow(dy_m, 2U));
 
-    constexpr float64_t spline_res = 0.01;
+    constexpr float64_t spline_res = 0.05;
     float64_t spline_value{0.0};
     float64_t spline_dist_m{0.0};
     float64_t x_m;
@@ -40,8 +40,6 @@ Spline1d SplineHelper::calcTargetSpline(const GraphNode& current_node, const Gra
     const float64_t heading_r  = current_node.getEstimatedHeadingR();
     const float64_t start_x_m  = current_node.getEstimatedPointM().getX();
     const float64_t start_y_m  = current_node.getEstimatedPointM().getY();
-    const float64_t start_x_m_ = start_x_m + 0.001 * std::cos(heading_r);
-    const float64_t start_y_m_ = start_y_m + 0.001 * std::sin(heading_r);
 
     const float64_t end_heading_r = goal_node.getEstimatedHeadingR();
     const float64_t end_x_m       = goal_node.getEstimatedPointM().getX();
@@ -49,9 +47,9 @@ Spline1d SplineHelper::calcTargetSpline(const GraphNode& current_node, const Gra
     const float64_t end_x_m_      = end_x_m - 0.001 * std::cos(end_heading_r);
     const float64_t end_y_m_      = end_y_m - 0.001 * std::sin(end_heading_r);
 
-    Eigen::MatrixXd points(2U, 4U);
-    points << start_x_m, start_x_m_, end_x_m_, end_x_m,
-              start_y_m, start_y_m_, end_y_m_, end_y_m;
+    Eigen::MatrixXd points(2U, 3U);
+    points << start_x_m, end_x_m_, end_x_m,
+              start_y_m, end_y_m_, end_y_m;
     const Spline1d spline = Spline1dFitting::Interpolate(points, spline_order);
 
     return spline;

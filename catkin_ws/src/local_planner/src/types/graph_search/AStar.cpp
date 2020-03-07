@@ -1,5 +1,6 @@
 // Component
 #include "AStar.hpp"
+#include "ForwardSimHelper.hpp"
 #include "LocalPlannerConfig.hpp"
 #include "RosConversionHelper.hpp"
 #include "SplineHelper.hpp"
@@ -122,28 +123,7 @@ std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
                                 
                                 node.setParentID(current_node.getID());
 
-                                node.setCommandedLongitudinalVelocityMps(x_vel_mps);
-                                node.setCommandedLateralVelocityMps(y_vel_mps);
-                                node.setCommandedYawRateRps(yaw_rate_rps);
-
-                                /// @TODO Add controller transient response estimation
-                                node.setEstimatedLongitudinalVelocityMps(x_vel_mps);
-                                node.setEstimatedLateralVelocityMps(y_vel_mps);
-                                node.setEstimatedYawRateRps(yaw_rate_rps);
-
-                                const float64_t time_step_s = m_cfg->getTimeStepMs()/1000.0;
-                                const float64_t x_m         = current_node.getEstimatedPointM().getX() + 
-                                                              x_vel_mps*time_step_s + 
-                                                              m_cfg->getMaxLongitudinalAccelMpss()*std::pow(time_step_s, 2U)/2.0;
-                                const float64_t y_m         = current_node.getEstimatedPointM().getY() + 
-                                                              y_vel_mps*time_step_s + 
-                                                              m_cfg->getMaxLateralAccelMpss()*std::pow(time_step_s, 2U)/2.0;
-                                const float64_t heading_r   = current_node.getEstimatedHeadingR() + 
-                                                              yaw_rate_rps*time_step_s + 
-                                                              m_cfg->getMaxYawRateRateRpss()*std::pow(time_step_s, 2U)/2.0;  
-
-                                node.setEstimatedPointM(Point(x_m, y_m));
-                                node.setEstimatedHeadingR(heading_r);
+                                ForwardSimHelper::forwardSimGraphNode(node, current_node, m_cfg->getTimeStepMs());
 
                                 node.setG(calcNodeGScore(current_node, node));
                                 node.setCost(calcNodeCost(node, target_heading_r));
@@ -235,15 +215,17 @@ float64_t AStar::calcHeuristic(const GraphNode& node, const float64_t target_hea
     const float64_t heading_diff      = std::fabs(target_heading_r - node.getEstimatedHeadingR());
     const float64_t heading_heuristic = heading_diff/M_PI*m_cfg->getHeuristicConfig().getHeadingWeight();
 
+
     const float64_t cur_velocity_mps  = std::sqrt(std::pow(node.getEstimatedLateralVelocityMps(), 2U) +
                                                   std::pow(node.getEstimatedLongitudinalVelocityMps(), 2U));
+    const float64_t max_velocity_mps = m_cfg->getMaxVelMps();                                                  
     const float64_t goal_velocity_mps = std::sqrt(std::pow(m_goal_node.getEstimatedLateralVelocityMps(), 2U) + 
                                                   std::pow(m_goal_node.getEstimatedLongitudinalVelocityMps(), 2U));
 
-    float64_t speed_heuristic = 1.0 - cur_velocity_mps / goal_velocity_mps;
-    if(nodeNeedsToSlow(node, node.getEstimatedHeadingR(), cur_velocity_mps) == true)
+    float64_t speed_heuristic = 1.0 - cur_velocity_mps / max_velocity_mps;
+    if(nodeNeedsToSlow(node, node.getEstimatedHeadingR(), cur_velocity_mps, goal_velocity_mps) == true)
     {
-        speed_heuristic = std::fabs(cur_velocity_mps - goal_velocity_mps) / (goal_velocity_mps - m_data.getGoalPose()->max_speed_mps);
+        speed_heuristic = std::fabs(cur_velocity_mps - goal_velocity_mps) / (goal_velocity_mps - max_velocity_mps);
     }
 
     speed_heuristic *= m_cfg->getHeuristicConfig().getSpeedWeight();
@@ -251,25 +233,25 @@ float64_t AStar::calcHeuristic(const GraphNode& node, const float64_t target_hea
     return std::fabs(dist_heuristic + heading_heuristic + speed_heuristic);
 }
 
-bool AStar::nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps) const
+bool AStar::nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps, const float64_t goal_velocity_mps) const
 {
-    float64_t next_vel_mps = velocity_mps + m_data.getGoalPose()->max_accel_mpss*m_cfg->getTimeStepMs()/1000.0;
-    if (next_vel_mps > m_data.getGoalPose()->max_speed_mps)
+    float64_t max_accel_mpss = std::sqrt(std::pow(m_cfg->getMaxLongitudinalAccelMpss(), 2U) + std::pow(m_cfg->getMaxLateralAccelMpss(), 2U));
+    float64_t next_vel_mps = velocity_mps + max_accel_mpss*m_cfg->getTimeStepMs()/1000.0;
+    if (next_vel_mps > m_cfg->getMaxVelMps())
     {
-        next_vel_mps = m_data.getGoalPose()->max_speed_mps;
+        next_vel_mps = m_cfg->getMaxVelMps();
     }
 
-    // const float64_t average_vel_mps = (next_vel_mps + velocity_mps)/2.0;
-    // //const float64_t x_m = current_node.getEstimatedPointM().getX() + average_vel_mps* * cos(heading);
-    // //const float64_t y_m = current_node.getEstimatedPointM().getY() + average_vel_mps* * sin(heading);
-    // const float64_t dx = x - m_goal_pose.x;
-    // const float64_t dy = y - m_goal_pose.y;
-    // const float64_t dist_to_goal = sqrt(pow(dx, 2) + pow(dy, 2));
-    // const float64_t speed = speed;
-    // const float64_t max_accel = m_goal_pose.max_accel;
-    // const float64_t time_to_decel = (speed - m_goal_pose.speed) / max_accel;
-    // const float64_t dist_to_decel = speed * time_to_decel - m_goal_pose.max_accel * pow(time_to_decel, 2) / 2;
-    // return (dist_to_goal <= dist_to_decel);
+     const float64_t average_vel_mps = (next_vel_mps + velocity_mps)/2.0;
+     const float64_t x_m = current_node.getEstimatedPointM().getX() + average_vel_mps*std::cos(heading_r);
+     const float64_t y_m = current_node.getEstimatedPointM().getY() + average_vel_mps*std::sin(heading_r);
+     const float64_t dx_m = x_m - m_goal_node.getEstimatedPointM().getX();
+     const float64_t dy_m = y_m - m_goal_node.getEstimatedPointM().getY();
+     const float64_t dist_to_goal_m = std::sqrt(std::pow(dx_m, 2U) + std::pow(dy_m, 2U));
+     const float64_t time_to_decel_s = (velocity_mps - goal_velocity_mps) / max_accel_mpss;
+     const float64_t dist_to_decel_m = velocity_mps * time_to_decel_s - max_accel_mpss*std::pow(time_to_decel_s, 2U)/2.0;
+
+     return (dist_to_goal_m <= dist_to_decel_m);
 }
 
 }// namespace local_planner

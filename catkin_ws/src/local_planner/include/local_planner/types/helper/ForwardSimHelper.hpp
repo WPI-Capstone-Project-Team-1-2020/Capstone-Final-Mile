@@ -22,8 +22,9 @@ public:
 
     /// @brief Forward simulates a graph node over a horizon of a time step
     /// @param node The node to forward sim
+    /// @param parent_node The parent node, used to calc accels
     /// @param time_step_ms The horizon in ms
-    static void forwardSimGraphNode(GraphNode& node, const float64_t time_step_ms);
+    static void forwardSimGraphNode(GraphNode& node, const GraphNode& parent_node, const float64_t time_step_ms);
 };    
 
 } // namespace local_planner

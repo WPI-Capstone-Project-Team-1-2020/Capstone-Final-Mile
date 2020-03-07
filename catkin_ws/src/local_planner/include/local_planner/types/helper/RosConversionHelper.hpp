@@ -1,5 +1,5 @@
-#ifndef PLANNING_FORWARD_SIM_HELPER_HPP
-#define PLANNING_FORWARD_SIM_HELPER_HPP
+#ifndef PLANNING_ROS_CONVERSION_HELPER_HPP
+#define PLANNING_ROS_CONVERSION_HELPER_HPP
 
 // Ros
 #include <geometry_msgs/Quaternion.h>
@@ -24,4 +24,4 @@ public:
 
 } // namespace local_planner
 
-#endif // PLANNING_FORWARD_SIM_HELPER_HPP
+#endif // PLANNING_ROS_CONVERSION_HELPER_HPP

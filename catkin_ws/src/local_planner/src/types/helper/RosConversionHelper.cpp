@@ -1,6 +1,5 @@
 // Component
 #include "RosConversionHelper.hpp"
-#include "RosConversionHelper.hpp"
 
 // Ros
 #include <tf/tf.h>

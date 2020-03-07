@@ -107,8 +107,9 @@ private:
     /// @param current_node The current node of the graph search: this is not the new one being evaluated
     /// @param heading_r Heading of the new node in radians
     /// @param velocity_mps Current velocity of the node
+    /// @param goal_velocity_mps Target velocity
     /// @return `true` if vehicle needs to start slowing down
-    bool nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps) const;
+    bool nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps, const float64_t goal_velocity_mps) const;
 
     /// @brief Graph search node-related members
     /// @{

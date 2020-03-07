@@ -36,7 +36,7 @@ public:
     float64_t getXToleranceM()         const noexcept {return m_x_tol_m;}
     float64_t getYToleranceM()         const noexcept {return m_y_tol_m;}
     float64_t getSpeedToleranceMps()   const noexcept {return m_speed_tol_mps;}
-    float64_t getHeadingToleranceRad() const noexcept {return m_heading_tol_rad;}
+    float64_t getHeadingToleranceR()   const noexcept {return m_heading_tol_rad;}
     float64_t getYawRateToleranceRps() const noexcept {return m_yaw_rate_tol_rps;}
     /// @}
 

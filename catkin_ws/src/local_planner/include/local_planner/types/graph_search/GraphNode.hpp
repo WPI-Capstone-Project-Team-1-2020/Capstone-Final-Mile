@@ -7,6 +7,7 @@
 
 // Libraries
 #include <boost/cstdfloat.hpp>
+#include <boost/functional/hash.hpp>
 
 // Standard
 #include <cstdint>
@@ -55,7 +56,7 @@ public:
                 (std::fabs(this->m_estimated_point_m.getY()   - rhs.m_estimated_point_m.getY()) < tolerance_cfg.getYToleranceM()) &&
                 (std::fabs(this->m_estimated_lon_velocity_mps - rhs.m_estimated_lon_velocity_mps)   < tolerance_cfg.getSpeedToleranceMps()) &&
                 (std::fabs(this->m_estimated_lat_velocity_mps - rhs.m_estimated_lat_velocity_mps)   < tolerance_cfg.getSpeedToleranceMps()) &&
-                (std::fabs(this->m_estimated_heading_r        - rhs.m_estimated_heading_r)      < tolerance_cfg.getHeadingToleranceRad()) &&
+                (std::fabs(this->m_estimated_heading_r        - rhs.m_estimated_heading_r)      < tolerance_cfg.getHeadingToleranceR()) &&
                 (std::fabs(this->m_estimated_yaw_rate_rps     - rhs.m_estimated_yaw_rate_rps)   < tolerance_cfg.getYawRateToleranceRps()));
     }     
 
@@ -129,7 +130,28 @@ public:
     /// @return hash
     size_t operator()(const local_planner::GraphNode& node) const noexcept
     {
-        return hash<std::uint64_t>()(node.getID());
+        const std::size_t x_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedPointM().getX() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getXToleranceM())));
+        const std::size_t y_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedPointM().getY() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getYToleranceM())));
+        const std::size_t lon_vel_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedLongitudinalVelocityMps() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getSpeedToleranceMps())));                                                                                                
+        const std::size_t lat_vel_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedLateralVelocityMps() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getSpeedToleranceMps())));                                                                                                                                                                                            
+        const std::size_t heading_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedHeadingR() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getHeadingToleranceR())));
+        const std::size_t yaw_rate_hash = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedYawRateRps() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getYawRateToleranceRps())));
+
+        std::size_t seed = 0U;
+        boost::hash_combine(seed, x_hash);
+        boost::hash_combine(seed, y_hash);
+        boost::hash_combine(seed, lon_vel_hash);
+        boost::hash_combine(seed, lat_vel_hash);
+        boost::hash_combine(seed, heading_hash);
+        boost::hash_combine(seed, yaw_rate_hash);
+
+        return seed;
     }
 };
 

@@ -10,17 +10,23 @@
     <!-- Instantiate quadrotor_base_macro once (has no parameters atm) -->
     <xacro:quadrotor_base_macro />
     
-    <!-- Downward facing camera -->
-    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="downward_cam" parent="base_link" ros_topic="camera/image_d" cam_info_topic="camera/camera_info_d" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="50">
-      <origin xyz="0.4 0.0 -0.0" rpy="0 ${M_PI/2} 0"/>
+    <!-- Downward facing Camera -->
+    <xacro:include filename="$(find hector_quadrotor_description)/urdf/generic_camera.urdf.xacro" />
+    <xacro:generic_camera name="down_cam" parent="base_link" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="50">
+      <origin xyz="0.0 0.0 -0.08" rpy="0 ${M_PI/2} 0"/>
     </xacro:generic_camera>
 
-    <!-- Forward facing camera -->
+    <!-- Forward facing camera 
     <xacro:include filename="$(find hector_sensors_description)/urdf/generic_stereo_camera.urdf.xacro" />
-    <xacro:generic_stereo_camera name="front_cam" parent="base_link" ros_topic="camera/image_f" cam_info_topic="camera/camera_info_f" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="60" baseline="0.166">
+    <xacro:generic_stereo_camera name="front_cam" parent="base_link" ros_topic="camera/image_f" cam_info_topic="camera/camera_info_f" update_rate="20" res_x="640" res_y="480" image_format="BAYER_RGGB8" hfov="60" baseline="0.166">
       <origin xyz="0.05 0.083 -0.06" rpy="0 0 0"/>
-    </xacro:generic_stereo_camera>
+    </xacro:generic_stereo_camera> -->
+    
+    <!-- Forward Facing Camera -->
+    <xacro:include filename="$(find hector_quadrotor_description)/urdf/kinect_camera.urdf.xacro" />
+    <xacro:kinect_camera name="camera" parent="base_link">
+      <origin xyz="0.05 0.0 -0.06" rpy="0 0 0"/>
+    </xacro:kinect_camera>
 
 </robot>
   

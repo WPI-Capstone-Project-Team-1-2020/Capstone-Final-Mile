@@ -146,9 +146,7 @@ std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
                 possible_lat_velocities_mps.cend(),
                 [&neighbors, x_vel_mps, &possible_yaw_rates_rps, &current_node, target_heading_r, this](const float64_t y_vel_mps) -> void
                 {                    
-                    if ((std::sqrt(std::pow(x_vel_mps, 2U) + std::pow(y_vel_mps, 2U)) <= m_cfg->getMaxVelMps()) &&
-                        (x_vel_mps <= m_goal_node.getEstimatedLongitudinalVelocityMps()) &&
-                        (y_vel_mps <= m_goal_node.getEstimatedLateralVelocityMps()))
+                    if (std::sqrt(std::pow(x_vel_mps, 2U) + std::pow(y_vel_mps, 2U)) <= m_cfg->getMaxVelMps())
                     {
                         std::for_each(possible_yaw_rates_rps.cbegin(),
                             possible_yaw_rates_rps.cend(),

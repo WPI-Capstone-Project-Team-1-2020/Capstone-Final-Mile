@@ -91,6 +91,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         down_cam_optical_frame:
           Alpha: 1
           Show Axes: false

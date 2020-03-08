@@ -20,7 +20,7 @@ TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<LocalPlann
     }
 }
 
-TopicSubscriber::~TopicSubscriber(){}
+TopicSubscriber::~TopicSubscriber() = default;
 
 void TopicSubscriber::onGoalPoseReceived(const autonomy_msgs::GoalPose::ConstPtr& msg)
 {

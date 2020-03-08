@@ -10,8 +10,11 @@ int main(int argc, char **argv)
 
     ros::NodeHandle pnh("~");
 
+    local_planner::LocalPlanner planner(nh, pnh);
+
     while(ros::ok)
     {
+
         ros::spin();
     }
 

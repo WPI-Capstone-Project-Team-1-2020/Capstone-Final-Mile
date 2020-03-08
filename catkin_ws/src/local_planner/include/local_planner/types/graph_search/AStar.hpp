@@ -60,7 +60,8 @@ private:
     void initializePlanner() noexcept;
 
     /// @brief Plans a trajectory
-    void planTrajectory();
+    /// @return `true` if successful
+    bool planTrajectory();
 
     /// @brief Expands the frontier
     /// @param current_node The node to expand from

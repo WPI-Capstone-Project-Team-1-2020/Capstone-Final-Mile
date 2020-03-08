@@ -31,25 +31,28 @@ float64_t SplineHelper::calcTargetHeadingR(const GraphNode& current_node, const 
         spline_dist_m += dp_m;
         spline_value  += spline_res;
     }
-
+    
     return std::atan2(y_m - current_node.getEstimatedPointM().getY(), x_m - current_node.getEstimatedPointM().getY());
 }
 
 Spline1d SplineHelper::calcTargetSpline(const GraphNode& current_node, const GraphNode& goal_node, const float64_t spline_order)
 {
-    const float64_t heading_r  = current_node.getEstimatedHeadingR();
     const float64_t start_x_m  = current_node.getEstimatedPointM().getX();
     const float64_t start_y_m  = current_node.getEstimatedPointM().getY();
 
     const float64_t end_heading_r = goal_node.getEstimatedHeadingR();
     const float64_t end_x_m       = goal_node.getEstimatedPointM().getX();
     const float64_t end_y_m       = goal_node.getEstimatedPointM().getY();
-    const float64_t end_x_m_      = end_x_m - 0.001 * std::cos(end_heading_r);
-    const float64_t end_y_m_      = end_y_m - 0.001 * std::sin(end_heading_r);
+    constexpr float64_t dp_m      = 0.001;
+    const float64_t dx_m          = std::copysign(dp_m, end_x_m);
+    const float64_t end_x_m_      = end_x_m - dx_m * std::cos(end_heading_r);
+    const float64_t dy_m          = std::copysign(dp_m, end_y_m);
+    const float64_t end_y_m_      = end_y_m - dy_m * std::sin(end_heading_r);
 
     Eigen::MatrixXd points(2U, 3U);
     points << start_x_m, end_x_m_, end_x_m,
               start_y_m, end_y_m_, end_y_m;
+
     const Spline1d spline = Spline1dFitting::Interpolate(points, spline_order);
 
     return spline;

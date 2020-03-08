@@ -28,7 +28,7 @@ public:
     LocalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh);
 
     /// @brief Default destructor    
-    ~LocalPlanner() = default;
+    ~LocalPlanner();
 
 private:
     /// @brief Main driving function of the local planner

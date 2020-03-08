@@ -22,7 +22,11 @@ class GraphNode
 {
 public:
     /// @brief Default constructor
-    GraphNode() : m_id{++id_generator}{};
+    GraphNode()
+    {
+        m_id = id_generator;    
+        id_generator++;
+    };
 
     /// @brief Default destructor
     ~GraphNode() = default;
@@ -150,8 +154,8 @@ public:
         boost::hash_combine(seed, lat_vel_hash);
         boost::hash_combine(seed, heading_hash);
         boost::hash_combine(seed, yaw_rate_hash);
-
-        return seed;
+        
+        return hash<std::size_t>()(seed);
     }
 };
 

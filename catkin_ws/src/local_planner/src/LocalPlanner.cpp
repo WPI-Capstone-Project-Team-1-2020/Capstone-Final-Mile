@@ -16,6 +16,8 @@ LocalPlanner::LocalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
     m_timer = nh.createTimer(ros::Rate(m_cfg->getUpdateRateHz()), &LocalPlanner::update, this);
 }
 
+LocalPlanner::~LocalPlanner() = default;
+
 void LocalPlanner::update(const ros::TimerEvent& event)
 {
     if ((m_topic_sub->getLocalPlannerData().getGoalPose()  != nullptr) &&
@@ -35,4 +37,4 @@ void LocalPlanner::update(const ros::TimerEvent& event)
     }
 }
 
-}
+} // namespace local_planner

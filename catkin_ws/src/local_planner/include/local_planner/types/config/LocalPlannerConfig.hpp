@@ -35,7 +35,7 @@ public:
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
         pnh.getParam("time_step_ms",                m_time_step_ms);
         pnh.getParam("velocity_discretization_mps", m_velocity_discretization_mps);
-        pnh.getParam("yaw_rate_discretization_mps", m_yaw_rate_discretization_mps);
+        pnh.getParam("yaw_rate_discretization_mps", m_yaw_rate_discretization_rps);
         pnh.getParam("spline_order",                m_spline_order);
         pnh.getParam("max_vel_mps",                 m_max_vel_mps);
         pnh.getParam("max_lateral_accel_mpss",      m_max_lateral_accel_mpss);
@@ -55,7 +55,7 @@ public:
     float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
     float64_t                       getTimeStepMs()                const noexcept {return m_time_step_ms;}
     float64_t                       getVelocityDiscretizationMps() const noexcept {return m_velocity_discretization_mps;}
-    float64_t                       getYawRateDiscretizationRps()  const noexcept {return m_yaw_rate_discretization_mps;}
+    float64_t                       getYawRateDiscretizationRps()  const noexcept {return m_yaw_rate_discretization_rps;}
     float64_t                       getSplineOrder()               const noexcept {return m_spline_order;}
     float64_t                       getMaxVelMps()                 const noexcept {return m_max_vel_mps;}
     float64_t                       getMaxLateralAccelMpss()       const noexcept {return m_max_lateral_accel_mpss;}
@@ -82,7 +82,7 @@ private:
     /// @{
     float64_t m_time_step_ms{50};                  ///< Time step of the planner in ms
     float64_t m_velocity_discretization_mps{0.1};  ///< Step size of velocity, in mps
-    float64_t m_yaw_rate_discretization_mps{0.25}; ///< Step size of yaw rate, in mps
+    float64_t m_yaw_rate_discretization_rps{0.25}; ///< Step size of yaw rate, in mps
     float64_t m_spline_order{3.0};                 ///< Order of splines used for heuristic
     /// @}
 

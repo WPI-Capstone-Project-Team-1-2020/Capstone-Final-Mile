@@ -30,7 +30,7 @@ bool AStar::update()
 {
     resetPlanner();
     initializePlanner();
-    planTrajectory();
+    return planTrajectory();
 }
 
 void AStar::resetPlanner() noexcept
@@ -62,20 +62,27 @@ void AStar::initializePlanner() noexcept
     m_goal_node.setEstimatedYawRateRps(m_data.getGoalPose()->yaw_rate_rps);
 }
 
-void AStar::planTrajectory()
+bool AStar::planTrajectory()
 {  
     while (true)
     {
         if (m_frontier.empty() == false)
         {
             GraphNode current_node = m_frontier.top();
+
+            if (current_node == m_goal_node)
+            {
+                ROS_INFO_STREAM("Path found!");
+                return true;
+            }
+
             m_frontier.pop();
             expandFrontier(current_node);
         }
         else
         {
             ROS_ERROR_STREAM("Frontier empty, all possible nodes explored");
-            return;
+            return false;
         }
     }
 }
@@ -83,18 +90,46 @@ void AStar::planTrajectory()
 void AStar::expandFrontier(const GraphNode& current_node)
 {
     std::vector<GraphNode> neighbors = calcNeighbors(current_node);
-    std::for_each(std::make_move_iterator(neighbors.begin()),
-        std::make_move_iterator(neighbors.end()),
-        [&frontier = this->m_frontier, &open_nodes = this->m_open_nodes](GraphNode&& node) -> void
-        {            
-            frontier.emplace(node);
-            open_nodes.emplace(std::move(node));
+    
+    std::for_each(neighbors.cbegin(),
+        neighbors.cend(),
+        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes, &closed_nodes = this->m_closed_nodes](const GraphNode& node) -> void
+        {
+            std::unordered_set<GraphNode>::const_iterator open_it = open_nodes.find(node);
+            std::unordered_set<GraphNode>::const_iterator closed_it = closed_nodes.find(node);
+
+            if (open_it != open_nodes.cend())
+            {
+                if(node.getCost() >= open_it->getCost())
+                {
+                    return;
+                }
+            }                        
+            else if (closed_it != closed_nodes.cend())
+            {
+                if (node.getCost() >= closed_it->getCost())
+                {
+                    return;
+                }
+
+                GraphNode tmp_node = *closed_it;
+                tmp_node.setParentID(current_node.getID());
+                open_nodes.emplace(std::move(tmp_node));
+                closed_nodes.erase(closed_it);
+            }
+            else
+            {
+                frontier.emplace(node);
+                open_nodes.emplace(node);
+            }
         });
+    
+    m_closed_nodes.emplace(current_node);
 }
 
 std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
 {
-    const float64_t target_heading_r = SplineHelper::calcTargetHeadingR(current_node, m_goal_node, m_cfg->getSplineOrder(), m_cfg->getTimeStepMs());
+    const float64_t target_heading_r = 0;//SplineHelper::calcTargetHeadingR(current_node, m_goal_node, m_cfg->getSplineOrder(), m_cfg->getTimeStepMs());
 
     std::vector<float64_t> possible_lon_velocities_mps = calcPossibleLongitudinalVelocitiesMps(current_node);
     std::vector<float64_t> possible_lat_velocities_mps = calcPossibleLateralVelocitiesMps(current_node);
@@ -119,9 +154,11 @@ std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
                             possible_yaw_rates_rps.cend(),
                             [&neighbors, x_vel_mps, y_vel_mps, &current_node, target_heading_r, this](const float64_t yaw_rate_rps) -> void
                             {
-                                GraphNode node;
-                                
+                                GraphNode node = current_node;
                                 node.setParentID(current_node.getID());
+                                node.setEstimatedLongitudinalVelocityMps(x_vel_mps);
+                                node.setEstimatedLateralVelocityMps(y_vel_mps);
+                                node.setEstimatedYawRateRps(yaw_rate_rps);                          
 
                                 ForwardSimHelper::forwardSimGraphNode(node, current_node, m_cfg->getTimeStepMs());
 
@@ -133,7 +170,8 @@ std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
                     }
                 });
         });
-
+    
+    return neighbors;
 }
 
 std::vector<float64_t> AStar::calcPossibleLongitudinalVelocitiesMps(const GraphNode& current_node) const noexcept
@@ -143,7 +181,7 @@ std::vector<float64_t> AStar::calcPossibleLongitudinalVelocitiesMps(const GraphN
     const float64_t   max_vel_mps   = std::min<float64_t>(start_vel_mps + m_cfg->getMaxLongitudinalAccelMpss()*time_step_s,  m_cfg->getMaxVelMps());
     const float64_t   min_vel_mps   = std::max<float64_t>(start_vel_mps - m_cfg->getMaxLongitudinalAccelMpss()*time_step_s, -m_cfg->getMaxVelMps());
     const float64_t   vel_diff_mps  = std::fabs(max_vel_mps - min_vel_mps);
-    const std::size_t num_pos_vels  = static_cast<std::size_t>(std::floor(vel_diff_mps/m_cfg->getMaxLongitudinalAccelMpss()));
+    const std::size_t num_pos_vels  = static_cast<std::size_t>(std::floor(vel_diff_mps/m_cfg->getVelocityDiscretizationMps()));
 
     std::vector<float64_t> possible_vels_mps;
     possible_vels_mps.reserve(num_pos_vels);
@@ -157,12 +195,12 @@ std::vector<float64_t> AStar::calcPossibleLongitudinalVelocitiesMps(const GraphN
 
 std::vector<float64_t> AStar::calcPossibleLateralVelocitiesMps(const GraphNode& current_node) const noexcept
 {
-    const float64_t   time_step_ms  = m_cfg->getTimeStepMs();
+    const float64_t   time_step_s  = m_cfg->getTimeStepMs()/1000.0;
     const float64_t   start_vel_mps = current_node.getEstimatedLateralVelocityMps();    
-    const float64_t   max_vel_mps   = std::min<float64_t>(start_vel_mps + m_cfg->getMaxLateralAccelMpss()*time_step_ms,  m_cfg->getMaxVelMps());
-    const float64_t   min_vel_mps   = std::min<float64_t>(start_vel_mps - m_cfg->getMaxLateralAccelMpss()*time_step_ms, -m_cfg->getMaxVelMps());
+    const float64_t   max_vel_mps   = std::min<float64_t>(start_vel_mps + m_cfg->getMaxLateralAccelMpss()*time_step_s,  m_cfg->getMaxVelMps());
+    const float64_t   min_vel_mps   = std::max<float64_t>(start_vel_mps - m_cfg->getMaxLateralAccelMpss()*time_step_s, -m_cfg->getMaxVelMps());
     const float64_t   vel_diff_mps  = std::fabs(max_vel_mps - min_vel_mps);
-    const std::size_t num_pos_vels  = static_cast<std::size_t>(std::floor(vel_diff_mps/m_cfg->getMaxLateralAccelMpss()));
+    const std::size_t num_pos_vels  = static_cast<std::size_t>(std::floor(vel_diff_mps/m_cfg->getVelocityDiscretizationMps()));
 
     std::vector<float64_t> possible_vels_mps;
     possible_vels_mps.reserve(num_pos_vels);
@@ -176,12 +214,12 @@ std::vector<float64_t> AStar::calcPossibleLateralVelocitiesMps(const GraphNode& 
 
 std::vector<float64_t> AStar::calcPossibleYawRatesRps(const GraphNode& current_node) const noexcept
 {
-    const float64_t   time_step_ms       = m_cfg->getTimeStepMs();
+    const float64_t   time_step_s        = m_cfg->getTimeStepMs()/1000.0;
     const float64_t   start_yaw_rate_rps = current_node.getEstimatedHeadingR();    
-    const float64_t   max_yaw_rate_rps   = std::min<float64_t>(start_yaw_rate_rps + m_cfg->getMaxYawRateRateRpss()*time_step_ms,  m_cfg->getMaxYawRateRps());
-    const float64_t   min_yaw_rate_rps   = std::min<float64_t>(start_yaw_rate_rps - m_cfg->getMaxYawRateRateRpss()*time_step_ms, -m_cfg->getMaxYawRateRps());
+    const float64_t   max_yaw_rate_rps   = std::min<float64_t>(start_yaw_rate_rps + m_cfg->getMaxYawRateRateRpss()*time_step_s,  m_cfg->getMaxYawRateRps());
+    const float64_t   min_yaw_rate_rps   = std::min<float64_t>(start_yaw_rate_rps - m_cfg->getMaxYawRateRateRpss()*time_step_s, -m_cfg->getMaxYawRateRps());
     const float64_t   yaw_rate_diff_rps  = std::fabs(max_yaw_rate_rps - min_yaw_rate_rps);
-    const std::size_t num_pos_yaw_rates  = static_cast<std::size_t>(std::floor(yaw_rate_diff_rps/m_cfg->getMaxYawRateRateRpss()));
+    const std::size_t num_pos_yaw_rates  = static_cast<std::size_t>(std::floor(yaw_rate_diff_rps/m_cfg->getYawRateDiscretizationRps()));
 
     std::vector<float64_t> possible_yaw_rates_rps;
     possible_yaw_rates_rps.reserve(num_pos_yaw_rates);

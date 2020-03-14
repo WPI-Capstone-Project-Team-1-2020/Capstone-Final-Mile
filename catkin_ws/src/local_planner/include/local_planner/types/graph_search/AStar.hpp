@@ -71,21 +71,6 @@ private:
     /// @param current_node The node to find neighbors of
     std::vector<GraphNode> calcNeighbors(const GraphNode& current_node);
 
-    /// @brief Calculates possible longitudinal velocities for neighboring nodes
-    /// @param current_node The node to find possible velocities for
-    /// @return vector of possible velocities
-    std::vector<float64_t> calcPossibleLongitudinalVelocitiesMps(const GraphNode& current_node) const noexcept;
-
-    /// @brief Calculates possible lateral velocities for neighboring nodes
-    /// @param current_node The node to find possible velocities for
-    /// @return vector of possible velocities
-    std::vector<float64_t> calcPossibleLateralVelocitiesMps(const GraphNode& current_node) const noexcept;
-
-    /// @brief Calculates possible yaw rates for neighboring nodes
-    /// @param current_node The node to find possible yaw rates for
-    /// @return vector of possible yaw rates
-    std::vector<float64_t> calcPossibleYawRatesRps(const GraphNode& current_node) const noexcept;
-
     /// @brief Calculates G-score of a node
     /// @param parent_node The parent node of the new node
     /// @param node The node to calculate score of
@@ -93,30 +78,14 @@ private:
     float64_t calcNodeGScore(const GraphNode& parent_node, const GraphNode& node) const noexcept;
 
     /// @brief Calculates the cost of a node
-    /// @param node The node to calculate score of
-    /// @param target_heading_r The target heading, in radians
+    /// @param node The node to calculate score of    
     /// @return The cost of the node
-    float64_t calcNodeCost(const GraphNode& node, const float64_t target_heading_r) const;
-
-    /// @brief Calculates the heuristic of a node
-    /// @param node The node to get the heuristic of
-    /// @param target_heading_r The target heading, in radians
-    /// @return Heuristic of the node
-    float64_t calcHeuristic(const GraphNode& node, const float64_t target_heading_r) const;
-
-    /// @brief Determines if the vehicle needs to start slowing down to meet its goal
-    /// @param current_node The current node of the graph search: this is not the new one being evaluated
-    /// @param heading_r Heading of the new node in radians
-    /// @param velocity_mps Current velocity of the node
-    /// @param goal_velocity_mps Target velocity
-    /// @return `true` if vehicle needs to start slowing down
-    bool nodeNeedsToSlow(const GraphNode& current_node, const float64_t heading_r, const float64_t velocity_mps, const float64_t goal_velocity_mps) const;
+    float64_t calcNodeCost(const GraphNode& node) const;
 
     /// @brief Graph search node-related members
     /// @{
     std::priority_queue<GraphNode, std::vector<GraphNode>> m_frontier;     ///< P-q of graph nodes to use
     std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
-    std::unordered_set<GraphNode>                          m_closed_nodes; ///< Closed nodes    
     GraphNode                                              m_goal_node;    ///< Goal node
     /// @}
 

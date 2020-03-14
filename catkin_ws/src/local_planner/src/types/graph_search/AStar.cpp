@@ -81,9 +81,9 @@ void AStar::expandFrontier(const GraphNode& current_node)
 {
     std::vector<GraphNode> neighbors = calcNeighbors(current_node);
     
-    std::for_each(neighbors.cbegin(),
-        neighbors.cend(),
-        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes](const GraphNode& node) -> void
+    std::for_each(std::make_move_iterator(neighbors.begin()),
+        std::make_move_iterator(neighbors.end()),
+        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes](GraphNode&& node) -> void
         {
             std::unordered_set<GraphNode>::const_iterator open_it = open_nodes.find(node);
 
@@ -97,14 +97,13 @@ void AStar::expandFrontier(const GraphNode& current_node)
             else
             {
                 frontier.emplace(node);
-                open_nodes.emplace(node);
+                open_nodes.emplace(std::move(node));
             }
         });
 }
 
 std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
-{
-    
+{    
     std::vector<GraphNode> neighbors;
     neighbors.reserve(8U);
 

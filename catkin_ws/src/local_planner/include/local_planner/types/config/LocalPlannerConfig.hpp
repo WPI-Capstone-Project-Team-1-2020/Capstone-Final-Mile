@@ -4,6 +4,7 @@
 // Component
 #include "GraphNodeToleranceConfig.hpp"
 #include "HeuristicConfig.hpp"
+#include "NodeDensityConfig.hpp"
 
 // Libraries
 #include <boost/cstdfloat.hpp>
@@ -28,7 +29,8 @@ public:
     /// @param pnh Private nodehandle used to snipe params
     LocalPlannerConfig(ros::NodeHandle& pnh) : 
         m_heuristic_config{HeuristicConfig(pnh)},
-        m_node_cfg{GraphNodeToleranceConfig(pnh)}
+        m_node_tol_cfg{GraphNodeToleranceConfig(pnh)},
+        m_node_dens_cfg{NodeDensityConfig(pnh)}
     {
         pnh.getParam("goal_topic",                  m_goal_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
@@ -63,7 +65,8 @@ public:
     float64_t                       getMaxYawRateRps()             const noexcept {return m_max_yaw_rate_rps;}
     float64_t                       getMaxYawRateRateRpss()        const noexcept {return m_max_yaw_rate_rate_rpss;}
     const HeuristicConfig&          getHeuristicConfig()           const noexcept {return m_heuristic_config;}
-    const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
+    const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_tol_cfg;}
+    const NodeDensityConfig&        getNodeDensityConfig()         const noexcept {return m_node_dens_cfg;}
     /// @}
 
 private:
@@ -80,7 +83,7 @@ private:
 
     /// @brief Tuning Parameters
     /// @{
-    float64_t m_time_step_ms{50};                  ///< Time step of the planner in ms
+    float64_t m_time_step_ms{500};                 ///< Time step of the planner in ms
     float64_t m_velocity_discretization_mps{0.1};  ///< Step size of velocity, in mps
     float64_t m_yaw_rate_discretization_rps{0.25}; ///< Step size of yaw rate, in mps
     float64_t m_spline_order{3.0};                 ///< Order of splines used for heuristic
@@ -95,9 +98,9 @@ private:
     float64_t m_max_yaw_rate_rate_rpss{0.1};        ///< Max yaw rate rate, in rpss
     /// @}
 
-    HeuristicConfig m_heuristic_config; ///< Config for the heuristic
-
-    GraphNodeToleranceConfig m_node_cfg; ///< Graph node tolerance config
+    HeuristicConfig          m_heuristic_config; ///< Config for the heuristic
+    GraphNodeToleranceConfig m_node_tol_cfg;     ///< Graph node tolerance config
+    NodeDensityConfig        m_node_dens_cfg;    ///< Node density config
 };
 
 } // namespace local_planner

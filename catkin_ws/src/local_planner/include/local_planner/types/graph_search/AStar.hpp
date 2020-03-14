@@ -5,6 +5,7 @@
 #include "GraphNode.hpp"
 #include "LocalPlannerConfig.hpp"
 #include "LocalPlannerData.hpp"
+#include "NodeDensityGrid.hpp"
 #include "Point.hpp"
 
 // Libraries
@@ -115,8 +116,7 @@ private:
     /// @brief Graph search node-related members
     /// @{
     std::priority_queue<GraphNode, std::vector<GraphNode>> m_frontier;     ///< P-q of graph nodes to use
-    std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
-    std::unordered_set<GraphNode>                          m_closed_nodes; ///< Closed nodes    
+    NodeDensityGrid                                        m_open_nodes;   ///< Grid containing bins of open nodes
     GraphNode                                              m_goal_node;    ///< Goal node
     /// @}
 
@@ -124,7 +124,7 @@ private:
     /// @{
     autonomy_msgs::Trajectory            m_trajectory; ///< Trajectory to send out to controller
     std::shared_ptr<LocalPlannerConfig>  m_cfg;        ///< Config for the local planner
-    LocalPlannerData                     m_data;       ///< Inbound data over IPC
+    LocalPlannerData                     m_data;       ///< Inbound data over IPC       
     /// @}
     
 };

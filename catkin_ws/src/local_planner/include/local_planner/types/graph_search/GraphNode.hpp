@@ -51,6 +51,14 @@ public:
         return ((this->m_cost > rhs.m_cost) == true);
     }
 
+    /// @brief Greater than comparator operator for sorting graph nodes
+    /// @param rhs Righthand side of comparator
+    /// @return `true` if lhs is > rhs
+    bool operator>(const GraphNode& rhs) const noexcept
+    {
+        return ((this->m_cost < rhs.m_cost) == true);
+    }
+
     /// @brief Equality operator for checking equality of two nodes (tolerance based)
     /// @param rhs Righthand side of comparator
     /// @return `true` if rhs is equal

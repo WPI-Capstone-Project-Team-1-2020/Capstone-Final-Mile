@@ -48,4 +48,31 @@ private:
 
 } // namespace local_planner
 
+namespace std
+{
+/// @brief Template specialization of hash for Point
+template <>
+class hash<local_planner::Point>
+{
+public:
+    /// @brief Default operator for hashing points
+    /// @param point The point to be hashed
+    /// @return hash
+    size_t operator()(const local_planner::Point& point) const noexcept
+    {
+        const std::int64_t x_m    = static_cast<std::int64_t>(std::floor(point.getX()));
+        const std::int64_t y_m    = static_cast<std::int64_t>(std::floor(point.getY()));
+        const std::size_t  x_hash = hash<std::int64_t>()(x_m);
+        const std::size_t  y_hash = hash<std::int64_t>()(y_m);
+        
+        std::size_t seed = 0U;
+        boost::hash_combine(seed, x_hash);
+        boost::hash_combine(seed, y_hash);
+        
+        return hash<std::size_t>()(seed);
+    }
+};
+
+} // namespace std
+
 #endif // PLANNING_POINT_HPP

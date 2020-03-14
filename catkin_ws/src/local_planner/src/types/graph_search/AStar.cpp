@@ -19,9 +19,10 @@ std::uint64_t GraphNode::id_generator{0U};
 GraphNodeToleranceConfig GraphNode::tolerance_cfg{};
 
 AStar::AStar(const std::shared_ptr<LocalPlannerConfig>& cfg) :
-    m_cfg{cfg}
-{
-    GraphNode::tolerance_cfg = m_cfg->getGraphNodeToleranceConfig();
+    m_cfg{cfg},
+    m_open_nodes{cfg->getNodeDensityConfig()}
+{    
+    GraphNode::tolerance_cfg = m_cfg->getGraphNodeToleranceConfig();    
 }
 
 AStar::~AStar(){}
@@ -35,10 +36,9 @@ bool AStar::update()
 
 void AStar::resetPlanner() noexcept
 {
-   m_frontier = std::priority_queue<GraphNode, std::vector<GraphNode>>();
-   m_open_nodes.clear(); 
-   m_closed_nodes.clear();
-   m_goal_node = GraphNode();
+   m_frontier   = std::priority_queue<GraphNode, std::vector<GraphNode>>();
+   m_open_nodes = NodeDensityGrid(m_cfg->getNodeDensityConfig());    
+   m_goal_node  = GraphNode();
    GraphNode::id_generator = 0U;
 }
 
@@ -46,14 +46,15 @@ void AStar::initializePlanner() noexcept
 {
     GraphNode start_node;    
     start_node.setEstimatedPointM(Point(m_data.getLocalPose()->pose.pose.position.x, m_data.getLocalPose()->pose.pose.position.y));
-    start_node.setEstimatedLongitudinalVelocityMps(m_data.getLocalPose()->twist.twist.linear.x);
+    start_node.setEstimatedLongitudinalVelocityMps(3.0);//m_data.getLocalPose()->twist.twist.linear.x);
     start_node.setEstimatedLateralVelocityMps(m_data.getLocalPose()->twist.twist.linear.y);
     start_node.setEstimatedHeadingR(RosConversionHelper::quaternionMsgToYawR(m_data.getLocalPose()->pose.pose.orientation));
     start_node.setEstimatedYawRateRps(m_data.getLocalPose()->twist.twist.angular.z);    
     start_node.setCost(std::numeric_limits<float64_t>::max());
 
     m_frontier.emplace(start_node);
-    m_open_nodes.emplace(std::move(start_node));
+    m_open_nodes.setGridOrigin(start_node.getEstimatedPointM());
+    static_cast<void>(m_open_nodes.addNodeToOpenSet(start_node));
 
     m_goal_node.setEstimatedPointM(Point(m_data.getGoalPose()->x_m, m_data.getGoalPose()->y_m));
     m_goal_node.setEstimatedLongitudinalVelocityMps(m_data.getGoalPose()->longitudinal_velocity_mps);
@@ -69,6 +70,13 @@ bool AStar::planTrajectory()
         if (m_frontier.empty() == false)
         {
             GraphNode current_node = m_frontier.top();
+
+            // std::cout << "X: " << current_node.getEstimatedPointM().getX() 
+            // << " Y: " << current_node.getEstimatedPointM().getY() 
+            // << " Lateral: " << current_node.getEstimatedLateralVelocityMps()
+            // << " Lon: "<< current_node.getEstimatedLongitudinalVelocityMps()
+            // << " Head: " << current_node.getEstimatedHeadingR()
+            // << " Yaw Rate: " << current_node.getEstimatedYawRateRps() << std::endl;
 
             if (current_node == m_goal_node)
             {
@@ -93,38 +101,15 @@ void AStar::expandFrontier(const GraphNode& current_node)
     
     std::for_each(neighbors.cbegin(),
         neighbors.cend(),
-        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes, &closed_nodes = this->m_closed_nodes](const GraphNode& node) -> void
+        [&frontier = this->m_frontier, &open_nodes = this->m_open_nodes](const GraphNode& node) -> void
         {
-            std::unordered_set<GraphNode>::const_iterator open_it = open_nodes.find(node);
-            std::unordered_set<GraphNode>::const_iterator closed_it = closed_nodes.find(node);
-
-            if (open_it != open_nodes.cend())
-            {
-                if(node.getCost() >= open_it->getCost())
-                {
-                    return;
-                }
-            }                        
-            else if (closed_it != closed_nodes.cend())
-            {
-                if (node.getCost() >= closed_it->getCost())
-                {
-                    return;
-                }
-
-                GraphNode tmp_node = *closed_it;
-                tmp_node.setParentID(current_node.getID());
-                open_nodes.emplace(std::move(tmp_node));
-                closed_nodes.erase(closed_it);
-            }
-            else
-            {
+            if (open_nodes.addNodeToOpenSet(node) == true)
+            {             
                 frontier.emplace(node);
-                open_nodes.emplace(node);
             }
         });
     
-    m_closed_nodes.emplace(current_node);
+    m_open_nodes.closeNode(current_node);
 }
 
 std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)

@@ -6,26 +6,4 @@ local_pose_topic: "/ground_truth/state"       # Local Pose Topic
 update_rate_hz: 10.0 # Update rate in hz
 
 # Tuning parameters
-time_step_ms:                500.0 # Time step of the planner in ms
-velocity_discretization_mps: 0.125   # Granularity of discretization of possible velocities in mps
-yaw_rate_discretization_rps: 0.125   # Granularity of discretization of possible yaw rates in mps
-spline_order:                3.0   # Spline order of heuristic heading calculation
-
-# Non Holonomic Constraints
-max_vel_mps:                 3.0  # Max velocity in mps
-max_lateral_accel_mpss:      2.5  # Max magnitude of lateral acceleration in mpss
-max_longitudinal_accel_mpss: 2.5  # Max magnitude of longitudinal acceleration in mpss
-max_yaw_rate_rps:            1.5  # Max yaw rate in rps
-max_yaw_rate_rate_rpss:      0.5  # Max magnitude of change in yaw rate in rpss
-
-# Heuristic Config
-dist_weight:                 500.0 # Weight of the distance in the heuristic
-heading_weight:              100.0 # Weight of the heading in the heuristic
-speed_weight:                100.0 # Weight of the speed in the heuristic
-
-# Graph Node Tolerance Config
-x_tolerance_m:               0.25  # Tolerance on X in meters to be considered equal
-y_tolerance_m:               0.25  # Tolerance on Y in meters to be considered equal (should be same as X in most cases)
-speed_tolerance_m:           0.5  # Tolerance on speed to be considered equal
-heading_tolerance_r:         0.5  # Tolerance on heading in radians to be considered equal
-yaw_rate_tolerance_rps:      0.5  # Tolerance on yaw rate in rps to be considered equal
+graph_discretization_m: 0.1

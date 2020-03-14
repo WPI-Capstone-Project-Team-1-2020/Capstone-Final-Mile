@@ -56,12 +56,8 @@ public:
     /// @return `true` if rhs is equal
     bool operator==(const GraphNode& rhs) const noexcept
     {
-        return ((std::fabs(this->m_estimated_point_m.getX()   - rhs.m_estimated_point_m.getX()) < tolerance_cfg.getXToleranceM()) &&
-                (std::fabs(this->m_estimated_point_m.getY()   - rhs.m_estimated_point_m.getY()) < tolerance_cfg.getYToleranceM()) &&
-                (std::fabs(this->m_estimated_lon_velocity_mps - rhs.m_estimated_lon_velocity_mps)   < tolerance_cfg.getSpeedToleranceMps()) &&
-                (std::fabs(this->m_estimated_lat_velocity_mps - rhs.m_estimated_lat_velocity_mps)   < tolerance_cfg.getSpeedToleranceMps()) &&
-                (std::fabs(this->m_estimated_heading_r        - rhs.m_estimated_heading_r)      < tolerance_cfg.getHeadingToleranceR()) &&
-                (std::fabs(this->m_estimated_yaw_rate_rps     - rhs.m_estimated_yaw_rate_rps)   < tolerance_cfg.getYawRateToleranceRps()));
+        return ((std::fabs(this->m_point_m.getX() - rhs.m_point_m.getX()) < tolerance_cfg.getToleranceM()) &&
+                (std::fabs(this->m_point_m.getY() - rhs.m_point_m.getY()) < tolerance_cfg.getToleranceM()));                
     }     
 
     /// @brief Static member variables
@@ -75,14 +71,7 @@ public:
     /// @{
     std::uint64_t    getID()                               const noexcept {return m_id;}
     std::uint64_t    getParentID()                         const noexcept {return m_parent_id;}
-    const Point&     getEstimatedPointM()                  const noexcept {return m_estimated_point_m;}
-    float64_t        getEstimatedHeadingR()                const noexcept {return m_estimated_heading_r;}
-    float64_t        getEstimatedYawRateRps()              const noexcept {return m_estimated_yaw_rate_rps;}
-    float64_t        getEstimatedLongitudinalVelocityMps() const noexcept {return m_estimated_lon_velocity_mps;}
-    float64_t        getEstimatedLateralVelocityMps()      const noexcept {return m_estimated_lat_velocity_mps;}
-    float64_t        getCommandedYawRateRps()              const noexcept {return m_commanded_yaw_rate_rps;}
-    float64_t        getCommandedLongitudinalVelocityMps() const noexcept {return m_commanded_lon_velocity_mps;}
-    float64_t        getCommandedLateralVelocityMps()      const noexcept {return m_commanded_lat_velocity_mps;}
+    const Point&     getPointM()                           const noexcept {return m_point_m;}
     float64_t        getG()                                const noexcept {return m_g;}
     float64_t        getCost()                             const noexcept {return m_cost;}
     /// @}
@@ -91,15 +80,8 @@ public:
     /// @param val Val
     /// @{
     void setParentID(const std::uint64_t val)                     noexcept {m_parent_id = val;}
-    void setEstimatedPointM(const Point& val)                     noexcept {m_estimated_point_m = val;}
-    void setEstimatedPointM(Point&& val)                          noexcept {m_estimated_point_m = val;}
-    void setEstimatedHeadingR(const float64_t val)                noexcept {m_estimated_heading_r = val;}
-    void setEstimatedYawRateRps(const float64_t val)              noexcept {m_estimated_yaw_rate_rps = val;}
-    void setEstimatedLongitudinalVelocityMps(const float64_t val) noexcept {m_estimated_lon_velocity_mps = val;}
-    void setEstimatedLateralVelocityMps(const float64_t val)      noexcept {m_estimated_lat_velocity_mps = val;}
-    void setCommandedYawRateRps(const float64_t val)              noexcept {m_commanded_yaw_rate_rps = val;}
-    void setCommandedLongitudinalVelocityMps(const float64_t val) noexcept {m_commanded_lon_velocity_mps = val;}
-    void setCommandedLateralVelocityMps(const float64_t val)      noexcept {m_commanded_lat_velocity_mps = val;}
+    void setEstimatedPointM(const Point& val)                     noexcept {m_point_m = val;}
+    void setEstimatedPointM(Point&& val)                          noexcept {m_point_m = val;}
     void setG(const float64_t val)                                noexcept {m_g = val;}
     void setCost(const float64_t val)                             noexcept {m_cost = val;}
     /// @}
@@ -107,14 +89,7 @@ public:
 private:
     std::uint64_t m_id{0U};                           ///< ID of the node
     std::uint64_t m_parent_id{0U};                    ///< ID of the parent node
-    Point         m_estimated_point_m{};              ///< Estimated cartesian coordinates of node
-    float64_t     m_estimated_heading_r{0.0};         ///< Estimated Heading in radians
-    float64_t     m_estimated_yaw_rate_rps{0.0};      ///< Estimated Yaw rate in radians per second
-    float64_t     m_estimated_lon_velocity_mps{0.0};  ///< Estimated Velocity in meters per second
-    float64_t     m_estimated_lat_velocity_mps{0.0};  ///< Estimated Velocity in meters per second
-    float64_t     m_commanded_yaw_rate_rps{0.0};      ///< Commanded Yaw rate in radians per second
-    float64_t     m_commanded_lon_velocity_mps{0.0};  ///< Commanded longitudinal velocity in mps
-    float64_t     m_commanded_lat_velocity_mps{0.0};  ///< Commanded lateral velocity in mps
+    Point         m_point_m{};              ///< Estimated cartesian coordinates of node
     float64_t     m_g{0.0};                           ///< G of the node
     float64_t     m_cost{0.0};                        ///< Cost
 };
@@ -134,26 +109,15 @@ public:
     /// @return hash
     size_t operator()(const local_planner::GraphNode& node) const noexcept
     {
-        const std::size_t x_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedPointM().getX() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getXToleranceM())));
-        const std::size_t y_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedPointM().getY() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getYToleranceM())));
-        const std::size_t lon_vel_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedLongitudinalVelocityMps() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getSpeedToleranceMps())));                                                                                                
-        const std::size_t lat_vel_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedLateralVelocityMps() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getSpeedToleranceMps())));                                                                                                                                                                                            
-        const std::size_t heading_hash  = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedHeadingR() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getHeadingToleranceR())));
-        const std::size_t yaw_rate_hash = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getEstimatedYawRateRps() /
-                                                                                                  local_planner::GraphNode::tolerance_cfg.getYawRateToleranceRps())));
+        const std::size_t x_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getPointM().getX() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getToleranceM())));
+        const std::size_t y_hash        = hash<std::size_t>()(static_cast<std::size_t>(std::round(node.getPointM().getY() /
+                                                                                                  local_planner::GraphNode::tolerance_cfg.getToleranceM())));
+                
 
         std::size_t seed = 0U;
         boost::hash_combine(seed, x_hash);
         boost::hash_combine(seed, y_hash);
-        boost::hash_combine(seed, lon_vel_hash);
-        boost::hash_combine(seed, lat_vel_hash);
-        boost::hash_combine(seed, heading_hash);
-        boost::hash_combine(seed, yaw_rate_hash);
         
         return hash<std::size_t>()(seed);
     }

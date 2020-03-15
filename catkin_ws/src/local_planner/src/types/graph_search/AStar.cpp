@@ -4,10 +4,6 @@
 #include "LocalPlannerConfig.hpp"
 #include "RosConversionHelper.hpp"
 
-// Ros
-#include <tf/tf.h>
-#include <tf/transform_datatypes.h>
-
 // Standard
 #include <utility>
 
@@ -36,6 +32,7 @@ void AStar::resetPlanner() noexcept
 {
    m_frontier = std::priority_queue<GraphNode, std::vector<GraphNode>>();
    m_open_nodes.clear(); 
+   m_nodes.clear();
    m_goal_node = GraphNode();
    GraphNode::id_generator = 0U;
 }
@@ -47,7 +44,8 @@ void AStar::initializePlanner() noexcept
     start_node.setCost(std::numeric_limits<float64_t>::max());
 
     m_frontier.emplace(start_node);
-    m_open_nodes.emplace(std::move(start_node));
+    m_open_nodes.emplace(start_node);
+    m_nodes.emplace(start_node.getID(), std::move(start_node));
 
     m_goal_node.setEstimatedPointM(Point(m_data.getGoalPose()->x_m, m_data.getGoalPose()->y_m));
 }
@@ -62,8 +60,14 @@ bool AStar::planTrajectory()
 
             if (current_node == m_goal_node)
             {
-                ROS_INFO_STREAM("Path found!");
-                return true;
+                if (reconstructPath() == true)
+                {
+                    return true;
+                }
+
+                ROS_ERROR_STREAM("Unable to reconstruct path");
+
+                return false;
             }
 
             m_frontier.pop();
@@ -83,8 +87,10 @@ void AStar::expandFrontier(const GraphNode& current_node)
     
     std::for_each(std::make_move_iterator(neighbors.begin()),
         std::make_move_iterator(neighbors.end()),
-        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes](GraphNode&& node) -> void
+        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes, &nodes = this->m_nodes](GraphNode&& node) -> void
         {
+            nodes.emplace(node.getID(), node);
+
             std::unordered_set<GraphNode>::const_iterator open_it = open_nodes.find(node);
 
             if (open_it != open_nodes.cend())
@@ -163,6 +169,34 @@ float64_t AStar::calcNodeCost(const GraphNode& node) const
 {
     return (node.getG() + std::sqrt(std::pow(node.getPointM().getX() - m_goal_node.getPointM().getX(), 2U) +
                                     std::pow(node.getPointM().getY() - m_goal_node.getPointM().getY(), 2U)));
+}
+
+bool AStar::reconstructPath()
+{
+    m_path.clear();
+    GraphNode cur_node = m_goal_node;
+    m_path.emplace_back(cur_node.getPointM());
+    constexpr std::uint64_t start_id{0U};     
+
+    while (cur_node.getID() != start_id)
+    {         
+        std::unordered_map<std::uint64_t, GraphNode>::const_iterator parent_it = m_nodes.find(cur_node.getParentID());
+        
+        if (parent_it != m_nodes.cend())
+        {
+            cur_node = parent_it->second;
+        }
+        else
+        {
+            return false;
+        }
+
+        m_path.emplace_back(cur_node.getPointM());
+    }
+
+    std::reverse(m_path.begin(), m_path.end());
+
+    return true;
 }
 
 }// namespace local_planner

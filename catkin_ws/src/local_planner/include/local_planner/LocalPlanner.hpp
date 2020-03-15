@@ -17,6 +17,7 @@ namespace local_planner
 class AStar;
 class LocalPlannerConfig;
 class TopicSubscriber;
+class TrajectorySolver;
 
 /// @brief Class for planning local trajectories
 class LocalPlanner
@@ -35,11 +36,12 @@ private:
     /// @param event Timer event
     void update(const ros::TimerEvent& event);
 
-    std::shared_ptr<LocalPlannerConfig> m_cfg;       ///< Configuration of local planner
-    std::unique_ptr<TopicSubscriber>    m_topic_sub; ///< Topic Subscriber
-    ros::Timer                          m_timer;     ///< Timer to drive update cycles
+    std::shared_ptr<LocalPlannerConfig> m_cfg;         ///< Configuration of local planner
+    std::unique_ptr<TopicSubscriber>    m_topic_sub;   ///< Topic Subscriber
+    ros::Timer                          m_timer;       ///< Timer to drive update cycles
 
-    std::unique_ptr<AStar>              m_solver;    ///< A* Solver to plan paths
+    std::unique_ptr<AStar>              m_solver;      ///< A* Solver to plan paths
+    std::unique_ptr<TrajectorySolver>   m_traj_solver; ///< Solves trajectories based off paths
 
 };
 } // namespace local_planner

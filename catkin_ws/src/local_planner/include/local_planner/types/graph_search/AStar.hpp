@@ -10,9 +10,6 @@
 // Libraries
 #include <boost/cstdfloat.hpp>
 
-// Ros
-#include <autonomy_msgs/Trajectory.h>
-
 // Standard
 #include <cstdint>
 #include <memory>
@@ -41,9 +38,9 @@ public:
     /// @return `true` if udpate was successful and trajectory was found
     bool update();
 
-    /// @brief Accessor for planned trajectory
-    /// @return Planned trajectory
-    const autonomy_msgs::Trajectory& getTrajectory() const noexcept {return m_trajectory;}
+    /// @brief Accessor for planned path
+    /// @return Planned path
+    const std::vector<Point>& getPath() const noexcept {return m_path;}
 
     /// @brief Mutator for the local planner data
     /// @param val The data
@@ -82,16 +79,21 @@ private:
     /// @return The cost of the node
     float64_t calcNodeCost(const GraphNode& node) const;
 
+    /// @brief Reconstructs path from the nodes after the goal is found
+    /// @return `true` if successful
+    bool reconstructPath();
+
     /// @brief Graph search node-related members
     /// @{
     std::priority_queue<GraphNode, std::vector<GraphNode>> m_frontier;     ///< P-q of graph nodes to use
     std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
+    std::unordered_map<std::uint64_t, GraphNode>           m_nodes;        ///< All nodes by ID, used for reconstruction
     GraphNode                                              m_goal_node;    ///< Goal node
     /// @}
 
     /// @brief Inputs and outputs
     /// @{
-    autonomy_msgs::Trajectory            m_trajectory; ///< Trajectory to send out to controller
+    std::vector<Point>                   m_path;       /// Holonomic path found
     std::shared_ptr<LocalPlannerConfig>  m_cfg;        ///< Config for the local planner
     LocalPlannerData                     m_data;       ///< Inbound data over IPC
     /// @}

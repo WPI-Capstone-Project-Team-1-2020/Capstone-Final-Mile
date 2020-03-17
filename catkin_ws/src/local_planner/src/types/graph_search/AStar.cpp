@@ -60,6 +60,8 @@ bool AStar::planTrajectory()
 
             if (current_node == m_goal_node)
             {
+                m_goal_node.setParentID(current_node.getParentID());
+                
                 if (reconstructPath() == true)
                 {
                     return true;
@@ -152,6 +154,7 @@ std::vector<GraphNode> AStar::calcNeighbors(const GraphNode& current_node)
         neighbors.end(),
         [&current_node, this](GraphNode& node) -> void
         {
+            node.setParentID(current_node.getID());
             node.setG(calcNodeGScore(current_node, node));
             node.setCost(calcNodeCost(node));
         });                                        
@@ -176,10 +179,10 @@ bool AStar::reconstructPath()
     m_path.clear();
     GraphNode cur_node = m_goal_node;
     m_path.emplace_back(cur_node.getPointM());
-    constexpr std::uint64_t start_id{0U};     
+    constexpr std::uint64_t start_id{0U};
 
     while (cur_node.getID() != start_id)
-    {         
+    {                 
         std::unordered_map<std::uint64_t, GraphNode>::const_iterator parent_it = m_nodes.find(cur_node.getParentID());
         
         if (parent_it != m_nodes.cend())

@@ -24,7 +24,7 @@ public:
     /// @brief Default constructor
     GraphNode()
     {
-        m_id = id_generator;    
+        m_id = id_generator; 
         id_generator++;
     };
 

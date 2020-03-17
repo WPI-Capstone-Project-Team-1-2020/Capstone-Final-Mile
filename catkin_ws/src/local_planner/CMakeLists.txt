@@ -156,6 +156,7 @@ add_executable(local_planner_node
  src/types/helper/ForwardSimHelper.cpp
  src/types/helper/RosConversionHelper.cpp
  src/types/helper/TrajectorySolver.cpp
+ src/types/TopicPublisher.cpp
  src/types/TopicSubscriber.cpp)
 
 ## Rename C++ executable without prefix

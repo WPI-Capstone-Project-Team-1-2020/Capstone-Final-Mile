@@ -2,18 +2,15 @@
 #define PLANNING_TRAJECTORY_SOLVER_HELPER_HPP
 
 // Component
-#include "LocalPlannerConfig.hpp"
 #include "LocalPlannerData.hpp"
 #include "Point.hpp"
+#include "TrajectoryConfig.hpp"
 
 // Ros
 #include <autonomy_msgs/Trajectory.h>
 
 // Libraries
 #include <boost/cstdfloat.hpp>
-
-// Standard
-#include <memory>
 
 namespace local_planner
 {
@@ -25,7 +22,8 @@ class TrajectorySolver
 {
 public:
     /// @brief Default constructor
-    TrajectorySolver(const std::shared_ptr<LocalPlannerConfig>& cfg);
+    /// @param cfg Trajectory config
+    TrajectorySolver(const TrajectoryConfig& cfg);
 
     /// @brief Default destructor
     ~TrajectorySolver();
@@ -36,12 +34,29 @@ public:
 
     /// @brief Calculates a trajectory from a path
     /// @param path The holonomic path
+    /// @param now_s Current time
     /// @return Trajectory
-    autonomy_msgs::Trajectory::ConstPtr calculateTrajectory(const std::vector<Point>& path);
+    autonomy_msgs::Trajectory::ConstPtr calculateTrajectory(const std::vector<Point>& path, const ros::Time& now_s);
 
 private:
-    std::shared_ptr<LocalPlannerConfig> m_cfg;  ///< Planning config
-    LocalPlannerData                    m_data; ///< The data to work with over IPC
+    /// @brief Calculates distance based trajectory
+    /// @param path The holonomic path    
+    void calculateDistanceBasedTrajectory(const std::vector<Point>& path);
+
+    /// @brief Calculates distance based trajectory
+    /// @param now_s Current time
+    void calculateTimeBasedTrajectory(const ros::Time& now_s);
+
+    /// @brief Ensures an angle is between 0 and 2 pi
+    /// @param angle The angle to correct
+    void correctAngle(float64_t& angle);
+
+
+    autonomy_msgs::Trajectory m_dist_based_traj; ///< Distance based trajectory
+    autonomy_msgs::Trajectory m_time_based_traj; ///< Time based trajectory
+
+    TrajectoryConfig m_cfg;  ///< Planning config
+    LocalPlannerData m_data; ///< The data to work with over IPC
 
 };    
 

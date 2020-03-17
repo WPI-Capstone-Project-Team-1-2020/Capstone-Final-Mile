@@ -16,6 +16,7 @@ namespace local_planner
 // Forward Declarations
 class AStar;
 class LocalPlannerConfig;
+class TopicPublisher;
 class TopicSubscriber;
 class TrajectorySolver;
 
@@ -38,6 +39,7 @@ private:
 
     std::shared_ptr<LocalPlannerConfig> m_cfg;         ///< Configuration of local planner
     std::unique_ptr<TopicSubscriber>    m_topic_sub;   ///< Topic Subscriber
+    std::unique_ptr<TopicPublisher>     m_topic_pub;   ///< Topic Publisher
     ros::Timer                          m_timer;       ///< Timer to drive update cycles
 
     std::unique_ptr<AStar>              m_solver;      ///< A* Solver to plan paths

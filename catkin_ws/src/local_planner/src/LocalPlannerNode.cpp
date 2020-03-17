@@ -12,11 +12,7 @@ int main(int argc, char **argv)
 
     local_planner::LocalPlanner planner(nh, pnh);
 
-    while(ros::ok)
-    {
-
-        ros::spin();
-    }
+    ros::spin();
 
     return 0;
 

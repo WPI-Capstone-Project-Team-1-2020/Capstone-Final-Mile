@@ -3,8 +3,12 @@
 #include "ForwardSimHelper.hpp"
 #include "LocalPlanner.hpp"
 #include "LocalPlannerConfig.hpp"
+#include "TopicPublisher.hpp"
 #include "TopicSubscriber.hpp"
 #include "TrajectorySolver.hpp"
+
+// Ros
+#include <autonomy_msgs/Trajectory.h>
 
 namespace local_planner
 {
@@ -12,8 +16,9 @@ namespace local_planner
 LocalPlanner::LocalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh) :    
     m_cfg{std::make_shared<LocalPlannerConfig>(pnh)},
     m_topic_sub{std::make_unique<TopicSubscriber>(nh, m_cfg)},
+    m_topic_pub{std::make_unique<TopicPublisher>(nh, m_cfg)},
     m_solver{std::make_unique<AStar>(m_cfg)},
-    m_traj_solver{std::make_unique<TrajectorySolver>(m_cfg)}
+    m_traj_solver{std::make_unique<TrajectorySolver>(m_cfg->getTrajectoryConfig())}
 {
     m_timer = nh.createTimer(ros::Rate(m_cfg->getUpdateRateHz()), &LocalPlanner::update, this);
 }
@@ -34,6 +39,8 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         if (m_solver->update() == true)
         {
             m_traj_solver->setLocalPlannerData(std::move(data));
+            const autonomy_msgs::Trajectory::ConstPtr& traj = m_traj_solver->calculateTrajectory(m_solver->getPath(), event.current_real);
+            m_topic_pub->publishTrajectory(traj);
         }
         else
         {

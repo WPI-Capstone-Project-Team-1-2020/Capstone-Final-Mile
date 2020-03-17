@@ -3,6 +3,8 @@
 
 // Component
 #include "GraphNodeToleranceConfig.hpp"
+#include "TrajectoryConfig.hpp"
+
 // Libraries
 #include <boost/cstdfloat.hpp>
 
@@ -25,10 +27,12 @@ public:
     /// @brief Default constructor
     /// @param pnh Private nodehandle used to snipe params
     LocalPlannerConfig(ros::NodeHandle& pnh) : 
-        m_node_cfg{GraphNodeToleranceConfig(pnh)}
+        m_node_cfg{GraphNodeToleranceConfig(pnh)},
+        m_traj_cfg{TrajectoryConfig(pnh)}
     {
         pnh.getParam("goal_topic",                  m_goal_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
+        pnh.getParam("local_traj_topic",            m_traj_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
     }
 
@@ -40,15 +44,18 @@ public:
     /// @{
     const std::string&              getGoalTopic()                 const noexcept {return m_goal_topic;}
     const std::string&              getLocalPoseTopic()            const noexcept {return m_local_pose_topic;}
+    const std::string&              getTrajectoryTopic()           const noexcept {return m_traj_topic;}
     float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
     const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
+    const TrajectoryConfig&         getTrajectoryConfig()          const noexcept {return m_traj_cfg;}
 
 
 private:
     /// @brief I/O Topics
     /// @{
     std::string m_goal_topic{""};       ///< Goal topic
-    std::string m_local_pose_topic{""}; ///< Local pose topic    
+    std::string m_local_pose_topic{""}; ///< Local pose topic  
+    std::string m_traj_topic{""};       ///< Trajectory publish topic
     /// @}
 
     /// @brief Performance
@@ -59,6 +66,7 @@ private:
     /// @brief Tuning Parameters
     /// @{
     GraphNodeToleranceConfig m_node_cfg; ///< Graph node tolerance config
+    TrajectoryConfig         m_traj_cfg; ///< Trajectory config
     /// @}
 };
 

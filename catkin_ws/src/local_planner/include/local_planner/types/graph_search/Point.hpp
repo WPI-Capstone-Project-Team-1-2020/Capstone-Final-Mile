@@ -27,6 +27,14 @@ public:
     /// @brief Default destructor
     ~Point() = default;
 
+    /// @brief equality operator
+    /// @param rhs right hand side of equator
+    /// @return `true` if equal
+    inline bool operator==(const Point& rhs) const noexcept
+    {
+        return ((std::fabs(this->m_x - rhs.m_x) < 0.001) && std::fabs(this->m_y - rhs.m_y) < 0.001);
+    }
+
     /// @brief Accessor
     /// @return Val
     /// @{

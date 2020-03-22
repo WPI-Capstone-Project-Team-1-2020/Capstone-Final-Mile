@@ -40,7 +40,9 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         {
             m_traj_solver->setLocalPlannerData(std::move(data));
             const autonomy_msgs::Trajectory::ConstPtr& traj = m_traj_solver->calculateTrajectory(m_solver->getPath(), event.current_real);
+            const nav_msgs::Path::ConstPtr ros_path = m_solver->getRosPath();
             m_topic_pub->publishTrajectory(traj);
+            m_topic_pub->publishPath(ros_path);
         }
         else
         {

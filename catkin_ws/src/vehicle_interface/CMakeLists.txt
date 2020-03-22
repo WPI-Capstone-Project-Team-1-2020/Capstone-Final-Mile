@@ -110,6 +110,7 @@ catkin_package(
    include/vehicle_interface
    include/vehicle_interface/types
    include/vehicle_interface/types/config
+   include/vehicle_interface/types/core
    include/vehicle_interface/types/helper
 #  LIBRARIES vehicle_interface
   CATKIN_DEPENDS autonomy_msgs geometry_msgs nav_msgs roscpp
@@ -124,8 +125,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include/vehicle_interface
-  include/vehicle_interface/types
+  include/vehicle_interface/types  
   include/vehicle_interface/types/config
+  include/vehicle_interface/types/core
   include/vehicle_interface/types/helper
   ${catkin_INCLUDE_DIRS}
 )
@@ -145,12 +147,13 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(vehicle_interface_node 
- src/VehicleInterfaceNode.cpp
- src/VehicleInterface.cpp
+ src/types/core/TrajectoryUnspooler.cpp
  src/types/helper/ForwardSimHelper.cpp
  src/types/helper/RosConversionHelper.cpp
  src/types/TopicPublisher.cpp
- src/types/TopicSubscriber.cpp)
+ src/types/TopicSubscriber.cpp
+ src/VehicleInterfaceNode.cpp
+ src/VehicleInterface.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

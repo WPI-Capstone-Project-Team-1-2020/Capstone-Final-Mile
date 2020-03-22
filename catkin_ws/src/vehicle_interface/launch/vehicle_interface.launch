@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <node name="vehicle_interface_node" pkg="vehicle_interface" type="vehicle_interface_node" output="screen">
+        <rosparam command="load" file="$(find vehicle_interface)/params/vehicle_interface_params.yaml"/>
+    </node>
+</launch>

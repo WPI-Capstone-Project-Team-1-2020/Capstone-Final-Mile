@@ -13,7 +13,7 @@ TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<VehicleInt
     {
         m_traj_sub = nh.subscribe<autonomy_msgs::Trajectory>(m_cfg->getTrajectoryTopic(), 1, &TopicSubscriber::onTrajectoryReceived, this, ros::TransportHints().tcpNoDelay(true));
     }
-
+    
     if (m_cfg->getLocalPoseTopic().empty() == false)
     {
         m_pose_sub = nh.subscribe<nav_msgs::Odometry>(m_cfg->getLocalPoseTopic(), 1, &TopicSubscriber::onPoseReceived, this, ros::TransportHints().tcpNoDelay(true));
@@ -23,7 +23,7 @@ TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<VehicleInt
 TopicSubscriber::~TopicSubscriber() = default;
 
 void TopicSubscriber::onTrajectoryReceived(const autonomy_msgs::Trajectory::ConstPtr& msg)
-{
+{    
     m_data.setTrajectory(msg);
 }
 

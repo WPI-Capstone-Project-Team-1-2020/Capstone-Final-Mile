@@ -2,9 +2,10 @@
 goal_topic:       "/local_planner/local_goal" # Local Goal Pose Topic
 local_pose_topic: "/ground_truth/state"       # Local Pose Topic
 local_traj_topic: "/local_planner/trajectory" # Trajectory publish topic
+path_topic:       "/local_planner/path"       # Path topic
 
 # Performance
-update_rate_hz: 50.0 # Update rate in hz
+update_rate_hz: 10.0 # Update rate in hz
 
 # Tuning parameters
 graph_discretization_m: 0.1 # Discretization of graph, in meters
@@ -12,5 +13,5 @@ graph_discretization_m: 0.1 # Discretization of graph, in meters
 # Trajectory generation
 time_step_ms:     100.0 # Time step between profile points in trajectory
 max_speed_mps:    10.0  # Max speed of the vehicle
-max_accel_mps2:   1.0   # Max acceleration, mps2
+max_accel_mps2:   5.0   # Max acceleration, mps2
 max_yaw_rate_rps: 1.0   # Max yaw rate, rps

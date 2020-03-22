@@ -24,7 +24,7 @@ public:
     /// @param pnh Private nodehandle used to snipe params
     VehicleInterfaceConfig(ros::NodeHandle& pnh)
     {
-        pnh.getParam("local_traj_topic",            m_traj_topic);
+        pnh.getParam("trajectory_topic",            m_traj_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);        
         pnh.getParam("command_topic",               m_cmd_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);

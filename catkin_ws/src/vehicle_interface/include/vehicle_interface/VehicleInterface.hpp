@@ -14,6 +14,7 @@ namespace vi
 class VehicleInterfaceConfig;
 class TopicPublisher;
 class TopicSubscriber;
+class TrajectoryUnspooler;
 
 /// @brief Class for vehicle interface to publish commands to vehicle
 class VehicleInterface
@@ -31,10 +32,11 @@ private:
     /// @brief Main driving function of the vehicle interface
     /// @param event Timer event
     void update(const ros::TimerEvent& event);
-
+    
     std::shared_ptr<VehicleInterfaceConfig> m_cfg;         ///< Configuration of vehicle interface
     std::unique_ptr<TopicSubscriber>        m_topic_sub;   ///< Topic Subscriber
     std::unique_ptr<TopicPublisher>         m_topic_pub;   ///< Topic Publisher
+    std::unique_ptr<TrajectoryUnspooler>    m_unspooler;   ///< Trajectory Unspooler
     ros::Timer                              m_timer;       ///< Timer to drive update cycles
 };
 

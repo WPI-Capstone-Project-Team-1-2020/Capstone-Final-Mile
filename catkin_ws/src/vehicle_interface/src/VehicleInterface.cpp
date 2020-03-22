@@ -2,6 +2,7 @@
 #include "ForwardSimHelper.hpp"
 #include "TopicPublisher.hpp"
 #include "TopicSubscriber.hpp"
+#include "TrajectoryUnspooler.hpp"
 #include "VehicleInterface.hpp"
 #include "VehicleInterfaceData.hpp"
 #include "VehicleInterfaceConfig.hpp"
@@ -15,7 +16,8 @@ namespace vi
 VehicleInterface::VehicleInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh) :    
     m_cfg{std::make_shared<VehicleInterfaceConfig>(pnh)},
     m_topic_sub{std::make_unique<TopicSubscriber>(nh, m_cfg)},
-    m_topic_pub{std::make_unique<TopicPublisher>(nh, m_cfg)}
+    m_topic_pub{std::make_unique<TopicPublisher>(nh, m_cfg)},
+    m_unspooler{std::make_unique<TrajectoryUnspooler>()}
 {
     m_timer = nh.createTimer(ros::Rate(m_cfg->getUpdateRateHz()), &VehicleInterface::update, this);
 }
@@ -32,6 +34,9 @@ void VehicleInterface::update(const ros::TimerEvent& event)
     {
         VehicleInterfaceData data = m_topic_sub->getVehicleInterfaceData();
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getVehicleInterfaceData().getLocalPose(), event.current_real));
+        m_unspooler->setVehicleInterfaceData(std::move(data));
+        m_unspooler->update(event.current_real);
+        m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(m_unspooler->getCommand()));        
     }
 }
 

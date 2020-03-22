@@ -33,6 +33,7 @@ public:
         pnh.getParam("goal_topic",                  m_goal_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
         pnh.getParam("local_traj_topic",            m_traj_topic);
+        pnh.getParam("path_topic",                  m_path_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
     }
 
@@ -45,6 +46,7 @@ public:
     const std::string&              getGoalTopic()                 const noexcept {return m_goal_topic;}
     const std::string&              getLocalPoseTopic()            const noexcept {return m_local_pose_topic;}
     const std::string&              getTrajectoryTopic()           const noexcept {return m_traj_topic;}
+    const std::string&              getPathTopic()                 const noexcept {return m_path_topic;}
     float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
     const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
     const TrajectoryConfig&         getTrajectoryConfig()          const noexcept {return m_traj_cfg;}
@@ -56,6 +58,7 @@ private:
     std::string m_goal_topic{""};       ///< Goal topic
     std::string m_local_pose_topic{""}; ///< Local pose topic  
     std::string m_traj_topic{""};       ///< Trajectory publish topic
+    std::string m_path_topic{""};       ///< Path publish topic
     /// @}
 
     /// @brief Performance

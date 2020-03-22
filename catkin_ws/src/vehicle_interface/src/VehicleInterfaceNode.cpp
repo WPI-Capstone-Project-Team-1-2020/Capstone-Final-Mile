@@ -1,6 +1,9 @@
-
-#include <ros/ros.h>
+// Component
 #include <VehicleInterface.hpp>
+
+// Ros
+#include <ros/ros.h>
+
 
 int main(int argc, char **argv)
 {
@@ -10,7 +13,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle pnh("~");
 
-    //vi::VehicleInterface vi(nh, pnh);
+    vi::VehicleInterface vi(nh, pnh);
 
     ros::spin();
 

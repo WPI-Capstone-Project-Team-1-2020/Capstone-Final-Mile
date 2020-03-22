@@ -7,8 +7,12 @@
 #include "LocalPlannerData.hpp"
 #include "Point.hpp"
 
+// Ros
+#include <nav_msgs/Path.h>
+
 // Libraries
 #include <boost/cstdfloat.hpp>
+#include <boost/shared_ptr.hpp>
 
 // Standard
 #include <cstdint>
@@ -40,7 +44,10 @@ public:
 
     /// @brief Accessor for planned path
     /// @return Planned path
-    const std::vector<Point>& getPath() const noexcept {return m_path;}
+    /// @{
+    const std::vector<Point>& getPath()    const noexcept {return m_path;}
+    nav_msgs::Path::ConstPtr  getRosPath() const noexcept {return boost::make_shared<nav_msgs::Path>(m_ros_path);}
+    /// @}
 
     /// @brief Mutator for the local planner data
     /// @param val The data
@@ -93,7 +100,8 @@ private:
 
     /// @brief Inputs and outputs
     /// @{
-    std::vector<Point>                   m_path;       /// Holonomic path found
+    std::vector<Point>                   m_path;       ///< Holonomic path found
+    nav_msgs::Path                       m_ros_path;   ///< Ros Path
     std::shared_ptr<LocalPlannerConfig>  m_cfg;        ///< Config for the local planner
     LocalPlannerData                     m_data;       ///< Inbound data over IPC
     /// @}

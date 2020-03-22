@@ -11,7 +11,7 @@ TopicPublisher::TopicPublisher(ros::NodeHandle& nh, std::shared_ptr<VehicleInter
 {
     if (m_cfg->getCommandTopic().empty() == false)
     {
-        m_traj_pub = nh.advertise<geometry_msgs::Twist>(m_cfg->getTrajectoryTopic(), 1);
+        m_traj_pub = nh.advertise<geometry_msgs::Twist>(m_cfg->getCommandTopic(), 1);
     }
 }
 

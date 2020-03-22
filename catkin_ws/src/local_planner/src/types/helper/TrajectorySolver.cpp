@@ -161,10 +161,10 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
         current_state.angular.z = yaw_rate_rps;
 
         m_dist_based_traj.cmds.emplace_back(current_state);
-
-        total_time_s += dt_s;
         
         m_dist_based_traj.execution_times.emplace_back(ros::Time(total_time_s));
+
+        total_time_s += dt_s;
     }
 }
 

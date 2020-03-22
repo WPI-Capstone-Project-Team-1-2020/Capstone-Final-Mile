@@ -3,6 +3,7 @@
 
 // Ros
 #include <autonomy_msgs/Trajectory.h>
+#include <nav_msgs/Path.h>
 #include <ros/ros.h>
 
 // Standard
@@ -26,14 +27,19 @@ public:
     /// @brief Default destructor for forward declares
     ~TopicPublisher();
 
-    /// @brief Accessor for local planner data
+    /// @brief Publish the trajectory
     /// @param traj Trajectory to publish
     void publishTrajectory(const autonomy_msgs::Trajectory::ConstPtr& traj);
+
+    /// @brief Publish the path for visualizing
+    /// @param path The path to publish
+    void publishPath(const nav_msgs::Path::ConstPtr& path);
 
 private:
 
     std::shared_ptr<LocalPlannerConfig> m_cfg;      ///< Config of the local planner
     ros::Publisher                      m_traj_pub; ///< Trajectory publisher
+    ros::Publisher                      m_path_pub; ///< Path publisher
 };    
 
 } // namespace local_planner

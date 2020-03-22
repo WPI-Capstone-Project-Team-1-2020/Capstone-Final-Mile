@@ -33,6 +33,8 @@ void AStar::resetPlanner() noexcept
    m_frontier = std::priority_queue<GraphNode, std::vector<GraphNode>>();
    m_open_nodes.clear(); 
    m_nodes.clear();
+   m_path.clear();
+   m_ros_path = nav_msgs::Path();
    m_goal_node = GraphNode();
    GraphNode::id_generator = 0U;
 }
@@ -198,6 +200,24 @@ bool AStar::reconstructPath()
     }
 
     std::reverse(m_path.begin(), m_path.end());
+
+    m_ros_path.poses.reserve(m_path.size());
+    std::for_each(m_path.cbegin(),
+        m_path.cend(),
+        [&ros_path = this->m_ros_path, height_m = m_data.getLocalPose()->pose.pose.position.z](const Point& pt)
+        {
+            geometry_msgs::PoseStamped pose;
+            pose.header.frame_id = "world";
+            pose.header.stamp    = ros::Time::now();
+            pose.pose.position.x = pt.getX();
+            pose.pose.position.y = pt.getY();
+            pose.pose.position.z = height_m;
+
+            ros_path.poses.emplace_back(pose);
+        });
+
+        m_ros_path.header.frame_id = "world";
+        m_ros_path.header.stamp    = ros::Time::now();
 
     return true;
 }

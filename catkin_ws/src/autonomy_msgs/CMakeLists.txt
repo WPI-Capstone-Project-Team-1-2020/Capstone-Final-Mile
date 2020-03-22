@@ -12,6 +12,7 @@ add_message_files(
   Trajectory.msg
   Takeoff.msg
   Landing.msg
+  GoalReached.msg
 )
 
 generate_messages(

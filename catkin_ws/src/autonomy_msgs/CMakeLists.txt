@@ -10,6 +10,8 @@ add_message_files(
   FILES
   GoalPose.msg
   Trajectory.msg
+  Takeoff.msg
+  Landing.msg
 )
 
 generate_messages(

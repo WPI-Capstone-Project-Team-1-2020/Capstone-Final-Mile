@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+     <node pkg="user_interface" type="user_interface_node.py" name="user_interface_node" output="screen"/>
+</launch>

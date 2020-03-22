@@ -8,8 +8,9 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import NavSatFix
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
+from autonomy_msgs.msg import Takeoff
 
-class TakeOff:
+class Take_Off:
     # Call Back Functions
     def callbackAltimeter(self, msg):
         global barro_alt
@@ -33,6 +34,13 @@ class TakeOff:
             cardinal_heading = 360 - cardinal_heading_temp
         else:
             cardinal_heading = cardinal_heading_temp
+
+    def callbackTakeoff(self, msg):
+        global trigger, goal_alt
+        trigger = msg.goalReached
+        goal_alt = msg.height
+        if not trigger:
+            print("Commence Takeoff")
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -67,9 +75,14 @@ class TakeOff:
 
     # Main Function
     def __init__(self):
-        
+        print("Setting up Takeoff Node")
+
         # Variable Initialization
-        trigger = False
+        print("Initializing Variables")
+
+        alt_threshold = 0.5     # meters
+        horizontal_threshold = 2# meters, summed in x and y axis
+
         PID_alt = [1, 1, 5]     # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]     # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]     # PID Controller Tuning Values (longitude) TODO Tune Controller
@@ -79,49 +92,65 @@ class TakeOff:
         goal_y = -285.600030
         # goal_lat = 42.2644910473    # Corresponds to Lat of Takeoff Pad
         # goal_lon = -71.7737136467   # Corresponds to Lon of Takeoff Pad
-        goal_alt = 50           # Desired Alititude in Meters TODO Change from Hardcoded
-        trigger = True          # Boolean telling node to activate TODO Change from Hardcoded
 
         self.Hertz = 20  # frequency of while loop
       
         # Subscribers
+        print("Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1)                 # GPS Subscriber
         rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1)     # Altimeter Subscriber
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
         rospy.Subscriber("/ground_truth/state", Odometry, self.callbacktruth, queue_size=1) # Ground truth Subscriber
+        rospy.Subscriber("/takeoff", Takeoff, self.callbackTakeoff, queue_size=1)           # Global Planner Subscriber
+        
         # Publishers
+        print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        global_pub = rospy.Publisher('/takeoff', Takeoff, queue_size=1)
 
         # Messages
+        print("Defining Messages")
         vel_msg = Twist()
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
 
+        global_msg = Takeoff()
+
         # Loop Timing
         rate = rospy.Rate(self.Hertz)
         time.sleep(2)  # allows the callback functions to populate variables
 
+        print("Commencing Takeoff Node Execution")
         while not rospy.is_shutdown():
-            if trigger:
-                # Vertical control based on altimeter (barometer)
-                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
-                vel_msg.linear.z = alt_pid(barro_alt)
-                
-                # Lateral control based on ground truth
-                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
-                x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                vel_msg.linear.x = x_pid(0)
-                vel_msg.linear.y = y_pid(0)
+            if 'trigger' in globals():
+                if not trigger:
+                    # Vertical control based on altimeter (barometer)
+                    alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
+                    vel_msg.linear.z = alt_pid(barro_alt)
+                    
+                    # Lateral control based on ground truth
+                    goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                    x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                    y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                    vel_msg.linear.x = x_pid(0)
+                    vel_msg.linear.y = y_pid(0)
 
-                vel_pub.publish(vel_msg)
-                # TODO Add trigger from higher level algorithm to execute or not.
-            rate.sleep()
+                    vel_pub.publish(vel_msg)
+
+                    # Determine when the goal is met and tell the global planner
+                    delta_alt = abs(goal_alt - barro_alt)
+                    horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
+                    if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
+                        print("Takeoff Complete")
+                        global_msg.goalReached = True
+                        global_pub.publish(global_msg)
+                rate.sleep()
+
 
 if __name__ == '__main__':
     
     rospy.init_node('takeoff')
     try:
-        ln = TakeOff()
+        ln = Take_Off()
     except rospy.ROSInterruptException: pass

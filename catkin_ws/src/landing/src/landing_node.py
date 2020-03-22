@@ -9,8 +9,9 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Range
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
+from autonomy_msgs.msg import Landing
 
-class Landing:
+class Landing_Node:
     # Call Back Functions
 
     def callbackSonic(self, msg):
@@ -40,6 +41,12 @@ class Landing:
             cardinal_heading = 360 - cardinal_heading_temp
         else:
             cardinal_heading = cardinal_heading_temp
+   
+    def callbackLanding(self, msg):
+        global trigger
+        trigger = msg.goalReached
+        if not trigger:
+            print("Commence Landing")
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -74,9 +81,14 @@ class Landing:
 
     # Main Function
     def __init__(self):
-        
+        print("Setting up Takeoff Node")
+
         # Variable Initialization
-        trigger = False
+        print("Initializing Variables")
+
+        alt_threshold = 0.25    # meters, based on sonar return
+        horizontal_threshold = 2# meters, summed in x and y axis
+
         PID_alt = [2, 1, 5]     # PID Controller Tuning Values TODO Tune/Limit Controller
         PID_x = [0.5, 1, 1]     # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]     # PID Controller Tuning Values (longitude) TODO Tune Controller
@@ -86,57 +98,70 @@ class Landing:
         goal_y = 205.5
         # goal_lat = 42.277712    # Corresponds to Lat of Landing Pad
         # goal_lon = -71.761568   # Corresponds to Lon of Landing Pad
-        goal_alt = 8            # Desired Alititude in Meters TODO Change from Hardcoded
-        trigger = True          # Boolean telling node to activate TODO Change from Hardcoded
+        goal_alt = 8            # Desired Alititude in Meters (staying hardcoded since building height won't change)
 
         self.Hertz = 20  # frequency of while loop
       
         # Subscribers
+        print("Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
         rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1) # Altimeter Data
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
         rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1) # Altimeter Data
         rospy.Subscriber("/ground_truth/state", Odometry, self.callbacktruth, queue_size=1) # Ground truth Subscriber
+        rospy.Subscriber("/landing", Landing, self.callbackLanding, queue_size=1)           # Global Planner Subscriber
 
         # Publishers
+        print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        global_pub = rospy.Publisher('/landing', Landing, queue_size=1)
 
         # Messages
+        print("Defining Messages")
         vel_msg = Twist()
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
 
+        global_msg = Landing()
+
         # Loop Timing
         rate = rospy.Rate(self.Hertz)
         time.sleep(2)  # allows the callback functions to populate variables
 
+        print("Commencing Landing Node Execution")
         while not rospy.is_shutdown():
-            if trigger:
-                # Vertical control based on altimeter (barometer)
-                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits=(-sonic_dist/2, 5)) # PID Controller
-                if sonic_dist == sonic_max:  # If outside range of the sonic sensor, use the barometer.
-                    vel_msg.linear.z = alt_pid(barro_alt) 
-                else:                        # In range of the sonic sensor
-                    vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
-                
-                # Lateral control based on ground truth
-                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
-                print("Goal in veh frame", goal_veh[0], goal_veh[1])
-                x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                vel_msg.linear.x = x_pid(0)
-                vel_msg.linear.y = y_pid(0)
+            if 'trigger' in globals():
+                if not trigger:
+                    # Vertical control based on altimeter (barometer)
+                    alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits=(-sonic_dist/2, 5)) # PID Controller
+                    if sonic_dist == sonic_max:  # If outside range of the sonic sensor, use the barometer.
+                        vel_msg.linear.z = alt_pid(barro_alt) 
+                    else:                        # In range of the sonic sensor
+                        vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
+                    
+                    # Lateral control based on ground truth
+                    goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                    x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                    y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                    vel_msg.linear.x = x_pid(0)
+                    vel_msg.linear.y = y_pid(0)
 
-                vel_pub.publish(vel_msg)
-                # TODO Add trigger from higher level algorithm to execute or not.
+                    vel_pub.publish(vel_msg)
 
-            rate.sleep()
+                    # Determine when the goal is met and tell the global planner
+                    horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
+                    if (sonic_dist < alt_threshold) and (horizontal_error < horizontal_threshold):
+                        print("Landing Complete")
+                        global_msg.goalReached = True
+                        global_pub.publish(global_msg)
+
+                rate.sleep()
 
 
 if __name__ == '__main__':
     
     rospy.init_node('landing')
     try:
-        ln = Landing()
+        ln = Landing_Node()
     except rospy.ROSInterruptException: pass

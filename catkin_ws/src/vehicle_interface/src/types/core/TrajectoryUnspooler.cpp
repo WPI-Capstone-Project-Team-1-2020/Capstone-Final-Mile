@@ -33,8 +33,6 @@ void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
     {
         if (traj_it >= num_cmds - 1U)
         {
-            ROS_ERROR_STREAM("Trajectory does not contain a command near the current time, stopping");
-
             m_cmd.linear.x  = 0.0;
             m_cmd.linear.y  = 0.0;
             m_cmd.linear.z  = 0.0;

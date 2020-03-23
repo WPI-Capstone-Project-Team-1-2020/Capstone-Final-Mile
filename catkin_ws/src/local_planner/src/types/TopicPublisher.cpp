@@ -9,6 +9,11 @@ namespace local_planner
 TopicPublisher::TopicPublisher(ros::NodeHandle& nh, std::shared_ptr<LocalPlannerConfig> cfg) :
     m_cfg{cfg}
 {
+    if (m_cfg->getGoalReachedTopic().empty() == false)
+    {
+        m_goal_reached_pub = nh.advertise<std_msgs::Bool>(m_cfg->getGoalReachedTopic(), 1);
+    }
+
     if (m_cfg->getTrajectoryTopic().empty() == false)
     {
         m_traj_pub = nh.advertise<autonomy_msgs::Trajectory>(m_cfg->getTrajectoryTopic(), 1);
@@ -21,6 +26,14 @@ TopicPublisher::TopicPublisher(ros::NodeHandle& nh, std::shared_ptr<LocalPlanner
 }
 
 TopicPublisher::~TopicPublisher() = default;
+
+void TopicPublisher::publishGoalReached(const bool goal_reached)
+{
+    std_msgs::Bool goal_reached_msg;
+    goal_reached_msg.data = goal_reached;
+
+    m_goal_reached_pub.publish(goal_reached_msg);
+}
 
 void TopicPublisher::publishTrajectory(const autonomy_msgs::Trajectory::ConstPtr& traj)
 {

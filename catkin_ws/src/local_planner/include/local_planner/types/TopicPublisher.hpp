@@ -5,6 +5,7 @@
 #include <autonomy_msgs/Trajectory.h>
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 
 // Standard
 #include <memory>
@@ -27,6 +28,10 @@ public:
     /// @brief Default destructor for forward declares
     ~TopicPublisher();
 
+    /// @brief Publishes status of goal reached
+    /// @param goal_reached `true` if goal reached
+    void publishGoalReached(const bool goal_reached);
+
     /// @brief Publish the trajectory
     /// @param traj Trajectory to publish
     void publishTrajectory(const autonomy_msgs::Trajectory::ConstPtr& traj);
@@ -37,9 +42,10 @@ public:
 
 private:
 
-    std::shared_ptr<LocalPlannerConfig> m_cfg;      ///< Config of the local planner
-    ros::Publisher                      m_traj_pub; ///< Trajectory publisher
-    ros::Publisher                      m_path_pub; ///< Path publisher
+    std::shared_ptr<LocalPlannerConfig> m_cfg;              ///< Config of the local planner
+    ros::Publisher                      m_goal_reached_pub; ///< Goal reached publisher
+    ros::Publisher                      m_traj_pub;         ///< Trajectory publisher
+    ros::Publisher                      m_path_pub;         ///< Path publisher
 };    
 
 } // namespace local_planner

@@ -18,7 +18,7 @@ void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
 {
     if (m_data.getTrajectory()->execution_times.empty() == true)
     {
-        ROS_ERROR_STREAM("Empty trajectory");
+        ROS_ERROR_STREAM("Empty trajectory, falling out of the sky, you deserve this");
 
         return;
     }
@@ -45,7 +45,6 @@ void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
             return;
         }
         
-
         traj_time = traj->execution_times[traj_it];        
 
         traj_it++;        

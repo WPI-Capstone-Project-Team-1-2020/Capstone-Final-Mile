@@ -21,7 +21,7 @@ nav_msgs::Odometry::ConstPtr ForwardSimHelper::forwardSimPose(const nav_msgs::Od
 {
     const ros::Duration dt_s = pose->header.stamp - now_s;
 
-    nav_msgs::Odometry new_pose;
+    nav_msgs::Odometry new_pose = *pose;
 
     new_pose.pose.pose.position.x = pose->pose.pose.position.x + pose->twist.twist.linear.x*dt_s.toSec();
     new_pose.pose.pose.position.y = pose->pose.pose.position.y + pose->twist.twist.linear.y*dt_s.toSec();

@@ -65,8 +65,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
 
     const float64_t end_speed_mps = m_data.getGoalPose()->speed_mps;
     geometry_msgs::Twist current_state = m_data.getLocalPose()->twist.twist;
-    float64_t current_heading_r = RosConversionHelper::quaternionMsgToYawR(m_data.getLocalPose()->pose.pose.orientation);        
-    
+    float64_t current_heading_r = RosConversionHelper::quaternionMsgToYawR(m_data.getLocalPose()->pose.pose.orientation);            
     correctAngle(current_heading_r);
     float64_t dist_traveled_m{0.0};   
     float64_t total_time_s{0.0}; 

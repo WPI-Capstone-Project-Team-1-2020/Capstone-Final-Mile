@@ -33,6 +33,12 @@ void VehicleInterface::update(const ros::TimerEvent& event)
         (m_topic_sub->getVehicleInterfaceData().getLocalPose()  != nullptr))
     {
         VehicleInterfaceData data = m_topic_sub->getVehicleInterfaceData();
+
+        if (data.getGoalReached() == true)
+        {
+            return;
+        }
+
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getVehicleInterfaceData().getLocalPose(), event.current_real));
         m_unspooler->setVehicleInterfaceData(std::move(data));
         m_unspooler->update(event.current_real);

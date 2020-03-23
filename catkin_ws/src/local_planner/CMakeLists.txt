@@ -154,6 +154,7 @@ add_executable(local_planner_node
  src/LocalPlanner.cpp
  src/types/graph_search/AStar.cpp
  src/types/helper/ForwardSimHelper.cpp
+ src/types/helper/GoalChecker.cpp
  src/types/helper/RosConversionHelper.cpp
  src/types/helper/TrajectorySolver.cpp
  src/types/TopicPublisher.cpp

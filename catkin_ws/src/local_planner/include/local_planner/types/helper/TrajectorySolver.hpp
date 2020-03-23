@@ -57,7 +57,6 @@ private:
 
     TrajectoryConfig m_cfg;  ///< Planning config
     LocalPlannerData m_data; ///< The data to work with over IPC
-
 };    
 
 } // namespace local_planner

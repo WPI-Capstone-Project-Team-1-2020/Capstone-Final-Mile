@@ -1,8 +1,9 @@
 # I/O Topics
-goal_topic:       "/local_planner/local_goal" # Local Goal Pose Topic
-local_pose_topic: "/ground_truth/state"       # Local Pose Topic
-local_traj_topic: "/local_planner/trajectory" # Trajectory publish topic
-path_topic:       "/local_planner/path"       # Path topic
+goal_topic:         "/local_planner/local_goal"   # Local Goal Pose Topic
+goal_reached_topic: "/local_planner/goal_reached" # Goal reached topic
+local_pose_topic:   "/ground_truth/state"         # Local Pose Topic
+local_traj_topic:   "/local_planner/trajectory"   # Trajectory publish topic
+path_topic:         "/local_planner/path"         # Path topic
 
 # Performance
 update_rate_hz: 10.0 # Update rate in hz

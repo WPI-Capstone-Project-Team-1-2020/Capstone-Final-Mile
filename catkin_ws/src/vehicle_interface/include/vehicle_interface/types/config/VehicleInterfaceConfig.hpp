@@ -24,6 +24,7 @@ public:
     /// @param pnh Private nodehandle used to snipe params
     VehicleInterfaceConfig(ros::NodeHandle& pnh)
     {
+        pnh.getParam("goal_reached_topic",          m_goal_reached_topic);
         pnh.getParam("trajectory_topic",            m_traj_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);        
         pnh.getParam("command_topic",               m_cmd_topic);
@@ -36,17 +37,19 @@ public:
     /// @brief Accessor
     /// @return Val
     /// @{
-    const std::string&              getTrajectoryTopic()           const noexcept {return m_traj_topic;}
-    const std::string&              getLocalPoseTopic()            const noexcept {return m_local_pose_topic;}    
-    const std::string&              getCommandTopic()              const noexcept {return m_cmd_topic;}
-    float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
+    const std::string& getGoalReachedTopic() const noexcept {return m_goal_reached_topic;}
+    const std::string& getTrajectoryTopic()  const noexcept {return m_traj_topic;}
+    const std::string& getLocalPoseTopic()   const noexcept {return m_local_pose_topic;}    
+    const std::string& getCommandTopic()     const noexcept {return m_cmd_topic;}
+    float64_t          getUpdateRateHz()     const noexcept {return m_update_rate_hz;}
 
 private:
     /// @brief I/O Topics
     /// @{
-    std::string m_traj_topic{""};       ///< Trajectory publish topic
-    std::string m_local_pose_topic{""}; ///< Local pose topic      
-    std::string m_cmd_topic{""};        ///< Command topic
+    std::string m_goal_reached_topic{""}; ///< Goal reached topic
+    std::string m_traj_topic{""};         ///< Trajectory publish topic
+    std::string m_local_pose_topic{""};   ///< Local pose topic      
+    std::string m_cmd_topic{""};          ///< Command topic
     /// @}
 
     /// @brief Performance

@@ -34,7 +34,8 @@ autonomy_msgs::Trajectory::ConstPtr TrajectorySolver::calculateTrajectory(const 
     m_time_based_traj.execution_times.clear();
 
     calculateDistanceBasedTrajectory(path);
-    calculateTimeBasedTrajectory(now_s);
+
+    calculateTimeBasedTrajectory(now_s);    
 
     return boost::make_shared<autonomy_msgs::Trajectory>(m_time_based_traj);
 }

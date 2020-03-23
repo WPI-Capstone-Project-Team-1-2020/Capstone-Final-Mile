@@ -9,6 +9,11 @@ namespace vi
 TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<VehicleInterfaceConfig> cfg) :
     m_cfg{cfg}
 {
+    if (m_cfg->getGoalReachedTopic().empty() == false)
+    {
+        m_goal_reached_sub = nh.subscribe<std_msgs::Bool>(m_cfg->getGoalReachedTopic(), 1, &TopicSubscriber::onGoalReachedReceived, this, ros::TransportHints().tcpNoDelay(true));
+    }
+
     if (m_cfg->getTrajectoryTopic().empty() == false)
     {
         m_traj_sub = nh.subscribe<autonomy_msgs::Trajectory>(m_cfg->getTrajectoryTopic(), 1, &TopicSubscriber::onTrajectoryReceived, this, ros::TransportHints().tcpNoDelay(true));
@@ -21,6 +26,11 @@ TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<VehicleInt
 }
 
 TopicSubscriber::~TopicSubscriber() = default;
+
+void TopicSubscriber::onGoalReachedReceived(const std_msgs::Bool::ConstPtr& msg)
+{
+    m_data.setGoalReached(msg->data);
+}
 
 void TopicSubscriber::onTrajectoryReceived(const autonomy_msgs::Trajectory::ConstPtr& msg)
 {    

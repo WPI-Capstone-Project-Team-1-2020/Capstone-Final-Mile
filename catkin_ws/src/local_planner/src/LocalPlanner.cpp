@@ -37,7 +37,7 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         LocalPlannerData data = m_topic_sub->getLocalPlannerData();
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getLocalPlannerData().getLocalPose(), event.current_real));
 
-        if (GoalChecker::checkGoalReached(data, 0.5) == true)
+        if (GoalChecker::checkGoalReached(data, m_cfg->getGoalReachedTolerance()) == true)
         {
             m_topic_pub->publishGoalReached(true); 
 

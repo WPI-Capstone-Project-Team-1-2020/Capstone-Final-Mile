@@ -36,6 +36,7 @@ public:
         pnh.getParam("local_traj_topic",            m_traj_topic);
         pnh.getParam("path_topic",                  m_path_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
+        pnh.getParam("goal_reached_tol_m",          m_goal_tol_m);
     }
 
     /// @brief Default destructor for forward declares
@@ -50,6 +51,7 @@ public:
     const std::string&              getTrajectoryTopic()           const noexcept {return m_traj_topic;}
     const std::string&              getPathTopic()                 const noexcept {return m_path_topic;}
     float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
+    float64_t                       getGoalReachedTolerance()      const noexcept {return m_goal_tol_m;}
     const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
     const TrajectoryConfig&         getTrajectoryConfig()          const noexcept {return m_traj_cfg;}
 
@@ -67,6 +69,7 @@ private:
     /// @brief Performance
     /// @{
     float64_t m_update_rate_hz{10.0}; ///< Update rate in hz
+    float64_t m_goal_tol_m{0.5};      ///< Tolerance when checking for goal (outside of solvers)
     /// @}
 
     /// @brief Tuning Parameters

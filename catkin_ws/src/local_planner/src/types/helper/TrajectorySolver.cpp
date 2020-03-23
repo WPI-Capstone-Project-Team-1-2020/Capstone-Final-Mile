@@ -54,8 +54,6 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
     {
         if (pt == previous_point)
         {
-            previous_point = pt;
-
             continue;
         }
 
@@ -68,6 +66,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
     const float64_t end_speed_mps = m_data.getGoalPose()->speed_mps;
     geometry_msgs::Twist current_state = m_data.getLocalPose()->twist.twist;
     float64_t current_heading_r = RosConversionHelper::quaternionMsgToYawR(m_data.getLocalPose()->pose.pose.orientation);        
+    
     correctAngle(current_heading_r);
     float64_t dist_traveled_m{0.0};   
     float64_t total_time_s{0.0}; 
@@ -101,7 +100,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
             return;
         }
         
-        const float64_t dist_to_stop   = cur_speed_mps*time_to_stop_s - m_cfg.getMaxAccelMps2()*std::pow(time_to_stop_s, 2U);
+        const float64_t dist_to_stop = cur_speed_mps*time_to_stop_s - m_cfg.getMaxAccelMps2()*std::pow(time_to_stop_s, 2U)/2.0;
 
         bool needs_to_slow = dist_to_stop >= dist_left_m;
 
@@ -117,7 +116,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
             return;
         }
 
-        const float64_t next_speed_mps = needs_to_slow ? std::max(cur_speed_mps - m_cfg.getMaxAccelMps2()*dt_s, 0.0) : cur_speed_mps + m_cfg.getMaxAccelMps2()*dt_s;
+        const float64_t next_speed_mps = needs_to_slow ? std::max(cur_speed_mps - m_cfg.getMaxAccelMps2()*dt_s, end_speed_mps) : cur_speed_mps + m_cfg.getMaxAccelMps2()*dt_s;
 
         if (next_speed_mps > m_cfg.getMaxSpeedMps())
         {
@@ -129,17 +128,14 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
         }
 
         const float64_t commanded_speed_mps = std::min(next_speed_mps, m_cfg.getMaxSpeedMps());
-        float64_t velocity_heading_r  = std::atan2(dy_m, dy_m);
+
+        float64_t velocity_heading_r  = std::atan2(dy_m, dx_m);
         correctAngle(velocity_heading_r);
         float64_t actual_vs_velocity_heading_diff_r = current_heading_r - velocity_heading_r;
         correctAngle(actual_vs_velocity_heading_diff_r);
-        if (actual_vs_velocity_heading_diff_r > M_PI)
-        {
-            actual_vs_velocity_heading_diff_r -= 2.0*M_PI;
-        }
 
         const float64_t lon_vel_mps = commanded_speed_mps*std::cos(actual_vs_velocity_heading_diff_r);
-        const float64_t lat_vel_mps = commanded_speed_mps*std::sin(actual_vs_velocity_heading_diff_r);
+        const float64_t lat_vel_mps = commanded_speed_mps*std::sin(actual_vs_velocity_heading_diff_r);        
                 
         current_state.linear.x = lon_vel_mps;
         current_state.linear.y = lat_vel_mps;
@@ -157,6 +153,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
         yaw_rate_rps = yaw_rate_rps >  m_cfg.getMaxYawRateRps() ?  m_cfg.getMaxYawRateRps() : yaw_rate_rps;
 
         current_heading_r += yaw_rate_rps*dt_s;
+        
         correctAngle(current_heading_r);
 
         current_state.angular.z = yaw_rate_rps;
@@ -235,7 +232,7 @@ void TrajectorySolver::correctAngle(float64_t& angle)
     {
         angle -= 2.0*M_PI;
     }
-    if (angle < 0)
+    if (angle < 0.0)
     {
         angle += 2*M_PI;
     }

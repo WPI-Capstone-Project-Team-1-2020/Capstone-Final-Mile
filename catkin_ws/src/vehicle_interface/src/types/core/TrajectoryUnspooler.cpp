@@ -69,7 +69,7 @@ void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
 
     const ros::Time closest_time_s = traj->execution_times[traj_it];
     const geometry_msgs::Twist closest_cmd = traj->cmds[traj_it];
-    const geometry_msgs::Twist next_cmd = traj->cmds[traj_it +1U];
+    const geometry_msgs::Twist next_cmd = traj->cmds[traj_it + 1U];
     const ros::Duration cmd_dt_s = traj->execution_times[traj_it + 1U] - closest_time_s;   
 
 
@@ -79,7 +79,7 @@ void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
 
     if (std::isnan(x_acc_mps2) == true)
     {
-        y_acc_mps2 = 0.0;
+        x_acc_mps2 = 0.0;
     }
 
     if (std::isnan(y_acc_mps2) == true)

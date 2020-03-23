@@ -5,4 +5,4 @@ local_pose_topic:   "/ground_truth/state"         # Local Pose Topic
 command_topic:      "/cmd_vel"                    # Command topic
 
 # Performance
-update_rate_hz: 100.0 # Update rate in hz
+update_rate_hz: 1000.0 # Update rate in hz

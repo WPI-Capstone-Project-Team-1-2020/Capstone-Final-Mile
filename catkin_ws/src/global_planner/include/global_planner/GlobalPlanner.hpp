@@ -18,7 +18,7 @@ using namespace ros;
 class GlobalPlanner
 {
  public:
-  GlobalPlanner(); 
+  GlobalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh); 
   ~GlobalPlanner(); 
   bool init();
   bool controlLoop(bool takeoff_reached, bool land_reached, bool local_reached);

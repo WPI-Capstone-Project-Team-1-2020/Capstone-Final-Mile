@@ -8,12 +8,13 @@
 
 using namespace ros;
 
-GlobalPlanner::GlobalPlanner() 
-  : nh_priv_("~")
+GlobalPlanner::GlobalPlanner(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
+  nh_{nh},
+  nh_priv_{pnh}
 {
   //Init gazebo ros global planner node
   ROS_INFO("Global Planner Simulation Node Init");
-  ROS_ASSERT(init());
+  init();
 }
 
 GlobalPlanner::~GlobalPlanner() 
@@ -115,7 +116,7 @@ void GlobalPlanner::updateTakeoff(double altitude, bool reached)
 // Receive takeoff messages
 void GlobalPlanner::takeoffMsgCallBack(const autonomy_msgs::Takeoff::ConstPtr &msg)
 {
-    bool takeoff_reached = msg->goalReached;
+    takeoff_reached = msg->goalReached;
 }
 
 // Send landing messages
@@ -131,7 +132,7 @@ void GlobalPlanner::updateLanding(bool reached)
 // Receive landing messages
 void GlobalPlanner::landingMsgCallBack(const autonomy_msgs::Landing::ConstPtr &msg)
 {
-    bool land_reached = msg->goalReached;
+    land_reached = msg->goalReached;
 }
 
 
@@ -150,7 +151,7 @@ void GlobalPlanner::updateLocalPlanner(double linear_x, double linear_y)
 // Receive Local Planner messages
 void GlobalPlanner::localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg)
 {
-    bool local_reached = msg->goalReached;
+    local_reached = msg->goalReached;
 }
 
 /*******************************************************************************
@@ -209,7 +210,9 @@ int main(int argc, char* argv[])
   bool local_reached = false;
 
   ros::init(argc, argv, "GlobalPlanner"); 
-  GlobalPlanner GlobalPlanner;  
+  ros::NodeHandle nh;
+  ros::NodeHandle pnh("~");
+  GlobalPlanner GlobalPlanner(nh, pnh);  
 
   ros::Rate loop_rate(125);
 

@@ -1,0 +1,17 @@
+<launch>
+  <arg name="odom" default ="/ground_truth/state"/>  <!-- "/nav_msgs/Odometry" -->
+  <arg name="takeoff" default ="/takeoff"/>  <!-- "/autonomy_msgs/Takeoff" -->
+  <arg name="landing" default ="/landing"/>  <!-- "/autonomy_msgs/Landing" -->
+  <arg name="goal_pose" default ="/local_planner/local_planner"/>  <!-- "/autonomy_msgs/GoalPose" -->
+  <arg name="local_status" default ="/local_planner/goal_status"/>  <!-- "/autonomy_msgs/GoalReached" -->
+
+  <arg name="name" default="global_planner"/> 
+
+  <param name="odom_topic_name" value="$(arg odom)"/> 
+  <param name="takeoff_topic_name" value="$(arg takeoff)"/>  
+  <param name="landing_topic_name" value="$(arg landing)"/>  
+  <param name="goal_pose_topic_name" value="$(arg goal_pose)"/>  
+  <param name="local_status_topic_name" value="$(arg local_status)"/>  
+
+  <node name="$(arg name)_node" pkg="global_planner" type="global_planner" required="true" output="screen"/>
+</launch>

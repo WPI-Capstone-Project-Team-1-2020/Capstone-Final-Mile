@@ -8,7 +8,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import NavSatFix
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
-from autonomy_msgs.msg import Takeoff
+from autonomy_msgs.msg import Takeoff, Status
 
 class Take_Off:
     # Call Back Functions
@@ -36,11 +36,13 @@ class Take_Off:
             cardinal_heading = cardinal_heading_temp
 
     def callbackTakeoff(self, msg):
-        global trigger, goal_alt
-        trigger = msg.goalReached
-        goal_alt = msg.height
-        if not trigger:
+        self.goal_reached = msg.goalReached
+        self.goal_alt = msg.height
+        if not self.goal_reached:
             print("Commence Takeoff")
+            # Inform the Global Planner that the Goal is NOT reached
+            self.status_msg.status = self.goal_reached
+            self.status_pub.publish(self.status_msg)
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -80,12 +82,14 @@ class Take_Off:
         # Variable Initialization
         print("Initializing Variables")
 
-        alt_threshold = 0.5     # meters
-        horizontal_threshold = 2# meters, summed in x and y axis
+        alt_threshold = 0.5      # meters
+        horizontal_threshold = 2 # meters, summed in x and y axis
+        self.goal_reached = True # Assume goal is reached (no action required) until told otherwise.
+        self.goal_alt = 0        # Initial Goal Altitude
 
-        PID_alt = [1, 1, 5]     # PID Controller Tuning Values (altitude) TODO Tune Controller
-        PID_x = [0.5, 1, 1]     # PID Controller Tuning Values (latitude) TODO Tune Controller
-        PID_y = [0.5, 1, 1]     # PID Controller Tuning Values (longitude) TODO Tune Controller
+        PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
+        PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
+        PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
         goal_x = -1230.999713
@@ -106,7 +110,7 @@ class Take_Off:
         # Publishers
         print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        global_pub = rospy.Publisher('/takeoff', Takeoff, queue_size=1)
+        self.status_pub = rospy.Publisher('/takeoff_status', Status, queue_size=1)
 
         # Messages
         print("Defining Messages")
@@ -115,7 +119,7 @@ class Take_Off:
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
 
-        global_msg = Takeoff()
+        self.status_msg = Status()
 
         # Loop Timing
         rate = rospy.Rate(self.Hertz)
@@ -123,29 +127,30 @@ class Take_Off:
 
         print("Commencing Takeoff Node Execution")
         while not rospy.is_shutdown():
-            if 'trigger' in globals():
-                if not trigger:
-                    # Vertical control based on altimeter (barometer)
-                    alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
-                    vel_msg.linear.z = alt_pid(barro_alt)
-                    
-                    # Lateral control based on ground truth
-                    goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
-                    x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    vel_msg.linear.x = x_pid(0)
-                    vel_msg.linear.y = y_pid(0)
+            if not self.goal_reached:
+                
+                # Vertical control based on altimeter (barometer)
+                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
+                vel_msg.linear.z = alt_pid(barro_alt)
+                
+                # Lateral control based on ground truth
+                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                vel_msg.linear.x = x_pid(0)
+                vel_msg.linear.y = y_pid(0)
 
-                    vel_pub.publish(vel_msg)
+                vel_pub.publish(vel_msg)
 
-                    # Determine when the goal is met and tell the global planner
-                    delta_alt = abs(goal_alt - barro_alt)
-                    horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
-                    if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
-                        print("Takeoff Complete")
-                        global_msg.goalReached = True
-                        global_pub.publish(global_msg)
-                rate.sleep()
+                # Determine when the goal is met and tell the global planner
+                delta_alt = abs(self.goal_alt - barro_alt)
+                horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
+                if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
+                    print("Takeoff Complete")
+                    self.goal_reached = True
+                    self.status_msg.status = self.goal_reached
+                    self.status_pub.publish(self.status_msg)
+            rate.sleep()
 
 
 if __name__ == '__main__':

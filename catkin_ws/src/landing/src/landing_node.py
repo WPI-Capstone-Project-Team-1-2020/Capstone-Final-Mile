@@ -9,7 +9,7 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Range
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
-from autonomy_msgs.msg import Landing
+from autonomy_msgs.msg import Landing, Status
 
 class Landing_Node:
     # Call Back Functions
@@ -43,10 +43,12 @@ class Landing_Node:
             cardinal_heading = cardinal_heading_temp
    
     def callbackLanding(self, msg):
-        global trigger
-        trigger = msg.goalReached
-        if not trigger:
+        self.goal_reached = msg.goalReached
+        if not self.goal_reached:
             print("Commence Landing")
+            # Inform the Global Planner that the Goal is NOT reached
+            self.status_msg.status = self.goal_reached
+            self.status_pub.publish(self.status_msg)
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -86,12 +88,15 @@ class Landing_Node:
         # Variable Initialization
         print("Initializing Variables")
 
-        alt_threshold = 0.25    # meters, based on sonar return
-        horizontal_threshold = 2# meters, summed in x and y axis
+        alt_threshold = 0.25                # meters, based on sonar return
+        horizontal_threshold = 2            # meters, summed in x and y axis
+        self.goal_reached = True            # Assume goal reached (no action required) upon startup.
+        self.landing_check = 0              # Track number of sequential returns less than threshold
+        self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
 
-        PID_alt = [2, 1, 5]     # PID Controller Tuning Values TODO Tune/Limit Controller
-        PID_x = [0.5, 1, 1]     # PID Controller Tuning Values (latitude) TODO Tune Controller
-        PID_y = [0.5, 1, 1]     # PID Controller Tuning Values (longitude) TODO Tune Controller
+        PID_alt = [0.5, 0, 0]      # PID Controller Tuning Values TODO Tune/Limit Controller
+        PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
+        PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
         goal_x = 1292
@@ -114,7 +119,7 @@ class Landing_Node:
         # Publishers
         print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        global_pub = rospy.Publisher('/landing', Landing, queue_size=1)
+        self.status_pub = rospy.Publisher('/landing_status', Status, queue_size=1)
 
         # Messages
         print("Defining Messages")
@@ -123,7 +128,7 @@ class Landing_Node:
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
 
-        global_msg = Landing()
+        self.status_msg = Status()
 
         # Loop Timing
         rate = rospy.Rate(self.Hertz)
@@ -131,32 +136,37 @@ class Landing_Node:
 
         print("Commencing Landing Node Execution")
         while not rospy.is_shutdown():
-            if 'trigger' in globals():
-                if not trigger:
-                    # Vertical control based on altimeter (barometer)
-                    alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits=(-sonic_dist/2, 5)) # PID Controller
-                    if sonic_dist == sonic_max:  # If outside range of the sonic sensor, use the barometer.
-                        vel_msg.linear.z = alt_pid(barro_alt) 
-                    else:                        # In range of the sonic sensor
-                        vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
-                    
-                    # Lateral control based on ground truth
-                    goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
-                    x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    vel_msg.linear.x = x_pid(0)
-                    vel_msg.linear.y = y_pid(0)
+            if not self.goal_reached:
+                # Vertical control based on altimeter (barometer)
+                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
+                if (sonic_dist == sonic_max) and (barro_alt > sonic_max):  # If outside range of the sonic sensor, use the barometer.
+                    vel_msg.linear.z = alt_pid(barro_alt) 
+                else:                        # In range of the sonic sensor
+                    vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
+                
+                # Lateral control based on ground truth
+                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                vel_msg.linear.x = x_pid(0)
+                vel_msg.linear.y = y_pid(0)
 
-                    vel_pub.publish(vel_msg)
+                vel_pub.publish(vel_msg)
 
-                    # Determine when the goal is met and tell the global planner
-                    horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
-                    if (sonic_dist < alt_threshold) and (horizontal_error < horizontal_threshold):
-                        print("Landing Complete")
-                        global_msg.goalReached = True
-                        global_pub.publish(global_msg)
+                # Determine when the goal is met and tell the global planner
+                horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
+                if sonic_dist < alt_threshold:
+                    self.landing_check = self.landing_check + 1
+                else:
+                    self.landing_check = 0
 
-                rate.sleep()
+                if (self.landing_check > self.landing_check_threshold) and (horizontal_error < horizontal_threshold):
+                    print("Landing Complete")
+                    self.goal_reached = True
+                    self.status_msg.status = self.goal_reached
+                    self.status_pub.publish(self.status_msg)
+
+            rate.sleep()
 
 
 if __name__ == '__main__':

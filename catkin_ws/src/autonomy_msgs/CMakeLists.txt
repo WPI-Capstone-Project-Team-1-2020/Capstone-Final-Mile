@@ -14,8 +14,7 @@ add_message_files(
   Takeoff.msg
   Landing.msg
   GoalReached.msg
-  Takeoff_Status.msg
-  Landing_Status.msg
+  Status.msg
 )
 
 generate_messages(

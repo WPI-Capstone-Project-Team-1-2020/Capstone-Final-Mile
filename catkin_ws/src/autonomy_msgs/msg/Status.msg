@@ -1,2 +1,2 @@
 Header  header
-bool    landStatus
+bool    status

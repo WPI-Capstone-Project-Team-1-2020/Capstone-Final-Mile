@@ -173,15 +173,16 @@ bool GlobalPlanner::controlLoop(bool takeoff_reached, bool land_reached, bool lo
 
 
   // Listen for takeoff goal reached
-  if(takeoff_reached = true) 
+  if(takeoff_reached == true) 
   {
-    if(local_reached = false)
+    std::cout << "Takeoff Complete" << std::endl;
+    if(local_reached == false)
     {
       line(start_x, start_y, end_x, end_y); //linear trajectory
     }
     else
     {
-      if(land_reached = false)
+      if(land_reached == false)
       {
         // Send landing command
         GlobalPlanner::updateLanding(land_reached);  //send landing 
@@ -204,7 +205,7 @@ bool GlobalPlanner::controlLoop(bool takeoff_reached, bool land_reached, bool lo
 int main(int argc, char* argv[])
 {
   //Initialize parameters
-  double altitude = 18.5;
+  double altitude = 48.5;
   bool takeoff_reached = false;
   bool land_reached = false;
   bool local_reached = false;
@@ -218,7 +219,7 @@ int main(int argc, char* argv[])
 
   // Send takeoff command
   GlobalPlanner.updateTakeoff(altitude, takeoff_reached);  //send takeoff 
-
+  std::cout << "Takeoff Command Sent" << std::endl;
   while (ros::ok())
   {
     GlobalPlanner.controlLoop(takeoff_reached, land_reached, local_reached);  

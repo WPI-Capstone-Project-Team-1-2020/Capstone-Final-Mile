@@ -1,0 +1,46 @@
+<launch>
+  <!-- 
+  NOTE: You'll need to bring up something that publishes sensor data (see
+  rosstage), something that publishes a map (see map_server), and something to
+  visualize a costmap (see nav_view), to see things work.
+
+  Also, on a real robot, you'd want to set the "use_sim_time" parameter to false, or just not set it.
+  -->
+  <param name="/use_sim_time" value="true"/>
+
+  <!-- Node to convert PointCloud2 to LaserScan to allow clearing of obstacles -->
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+    <!-- See all params at http://wiki.ros.org/pointcloud_to_laserscan -->
+      
+    <!-- Min and max height to sample from depth data - these values worked for my drone -->
+    <param name="min_height" value="-5"/>
+    <param name="max_height" value="5"/>
+      
+    <!-- Min and max range range of generated laser scan - set this to match your depth sensor -->
+    <param name="range_min" value="0.7"/>
+    <param name="range_max" value="80"/>
+    
+    <!-- Frame of your depth sensor -->
+    <param name="target_frame" value="camera_link "/>
+
+    <!-- Other Parameters -->
+    <param name="scan_time" value="1.0/20.0"/>
+
+    <!-- Topic from which to read PointCloud2 -->
+    <remap from="cloud_in" to="/camera/depth/points"/>
+    
+    <!-- Topic to which LaserScan will be published -->
+    <remap from="scan" to="/laser_scan_clear"/>
+  </node>
+  
+  <!-- Publishes the voxel grid to rviz for display -->
+  <node pkg="costmap_2d" type="costmap_2d_markers" name="voxel_visualizer">
+    <remap from="voxel_grid" to="costmap/voxel_grid"/>
+  </node>
+
+  <!-- Run the costmap node -->
+  <node name="costmap_node" pkg="costmap_2d" type="costmap_2d_node" >
+    <rosparam file="$(find costmap_2d)/launch/costmap_params.yaml" command="load" ns="costmap" />
+  </node>
+
+</launch>

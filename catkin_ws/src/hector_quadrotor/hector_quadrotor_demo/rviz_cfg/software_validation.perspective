@@ -238,7 +238,7 @@
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[-33.900999999999996, 16.099]"
+                  "repr": "[-8.607, 41.393]"
                 }
               },
               "groups": {}
@@ -285,7 +285,7 @@
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[-34.001, 15.999]"
+                  "repr": "[-8.750999999999998, 41.249]"
                 }
               },
               "groups": {}
@@ -431,7 +431,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'type_name': 'autonomy_msgs/Takeoff', 'topic_name': '/takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}]\""
+                  "repr": "u\"[{'topic_name': '/takeoff', 'type_name': 'autonomy_msgs/Takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}, {'type_name': 'autonomy_msgs/Landing', 'topic_name': '/landing', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 1, 'counter': 0}]\""
                 }
               },
               "groups": {}

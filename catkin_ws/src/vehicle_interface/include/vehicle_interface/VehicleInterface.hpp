@@ -12,6 +12,7 @@ namespace vi
 
 // Forward Declarations
 class VehicleInterfaceConfig;
+class Controller;
 class TopicPublisher;
 class TopicSubscriber;
 class TrajectoryUnspooler;
@@ -34,6 +35,7 @@ private:
     void update(const ros::TimerEvent& event);
     
     std::shared_ptr<VehicleInterfaceConfig> m_cfg;         ///< Configuration of vehicle interface
+    std::unique_ptr<Controller>             m_controller;  ///< Controller
     std::unique_ptr<TopicSubscriber>        m_topic_sub;   ///< Topic Subscriber
     std::unique_ptr<TopicPublisher>         m_topic_pub;   ///< Topic Publisher
     std::unique_ptr<TrajectoryUnspooler>    m_unspooler;   ///< Trajectory Unspooler

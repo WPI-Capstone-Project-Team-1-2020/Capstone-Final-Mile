@@ -1,6 +1,9 @@
 #ifndef VI_VEHICLE_INTERFACE_CONFIG_HPP
 #define VI_VEHICLE_INTERFACE_CONFIG_HPP
 
+// Component
+#include "PIDConfig.hpp"
+
 // Libraries
 #include <boost/cstdfloat.hpp>
 
@@ -22,7 +25,9 @@ class VehicleInterfaceConfig
 public:
     /// @brief Default constructor
     /// @param pnh Private nodehandle used to snipe params
-    VehicleInterfaceConfig(ros::NodeHandle& pnh)
+    VehicleInterfaceConfig(ros::NodeHandle& pnh) :
+        m_linear_config{pnh, "linear"},
+        m_angular_config{pnh, "angular"}
     {
         pnh.getParam("goal_reached_topic",          m_goal_reached_topic);
         pnh.getParam("trajectory_topic",            m_traj_topic);
@@ -42,6 +47,8 @@ public:
     const std::string& getLocalPoseTopic()   const noexcept {return m_local_pose_topic;}    
     const std::string& getCommandTopic()     const noexcept {return m_cmd_topic;}
     float64_t          getUpdateRateHz()     const noexcept {return m_update_rate_hz;}
+    const PIDConfig&   getLinearPIDConfig()  const noexcept {return m_linear_config;}
+    const PIDConfig&   getAngularPIDConfig() const noexcept {return m_angular_config;}
 
 private:
     /// @brief I/O Topics
@@ -55,6 +62,12 @@ private:
     /// @brief Performance
     /// @{
     float64_t m_update_rate_hz{10.0}; ///< Update rate in hz
+    /// @}
+
+    /// @brief PID Configs
+    /// @{
+    PIDConfig m_linear_config;  ///< Linear velocity config
+    PIDConfig m_angular_config; ///< Angular velocity config
     /// @}
 };
 

@@ -147,6 +147,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(vehicle_interface_node 
+ src/types/core/Controller.cpp
+ src/types/core/PIDController.cpp
  src/types/core/TrajectoryUnspooler.cpp
  src/types/helper/ForwardSimHelper.cpp
  src/types/helper/RosConversionHelper.cpp

@@ -1,4 +1,5 @@
 // Component
+#include "Controller.hpp"
 #include "ForwardSimHelper.hpp"
 #include "TopicPublisher.hpp"
 #include "TopicSubscriber.hpp"
@@ -15,6 +16,7 @@ namespace vi
 
 VehicleInterface::VehicleInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh) :    
     m_cfg{std::make_shared<VehicleInterfaceConfig>(pnh)},
+    m_controller{std::make_unique<Controller>(m_cfg)},
     m_topic_sub{std::make_unique<TopicSubscriber>(nh, m_cfg)},
     m_topic_pub{std::make_unique<TopicPublisher>(nh, m_cfg)},
     m_unspooler{std::make_unique<TrajectoryUnspooler>()}
@@ -42,7 +44,9 @@ void VehicleInterface::update(const ros::TimerEvent& event)
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getVehicleInterfaceData().getLocalPose(), event.current_real));
         m_unspooler->setVehicleInterfaceData(std::move(data));
         m_unspooler->update(event.current_real);
-        m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(m_unspooler->getCommand()));        
+        m_controller->setCurrentState(data.getLocalPose()->twist.twist);
+        m_controller->setCommandSetpoint(m_unspooler->getCommand());
+        m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(m_controller->getCommand()));        
     }
 }
 

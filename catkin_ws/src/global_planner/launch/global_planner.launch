@@ -1,8 +1,17 @@
 <launch>
+
+ <include file="$(find vehicle_interface)/launch/vehicle_interface.launch" />
+ <include file="$(find local_planner)/launch/local_planner.launch" /> 
+ <!-- <include file="$(find takeoff)/launch/takeoff.launch" />  --> 
+ <include file="$(find landing)/launch/landing.launch" />  
+
+
   <arg name="odom" default ="/ground_truth/state"/>  <!-- "/nav_msgs/Odometry" -->
   <arg name="takeoff" default ="/takeoff"/>  <!-- "/autonomy_msgs/Takeoff" -->
   <arg name="landing" default ="/landing"/>  <!-- "/autonomy_msgs/Landing" -->
-  <arg name="goal_pose" default ="/local_planner/local_planner"/>  <!-- "/autonomy_msgs/GoalPose" -->
+  <arg name="takeoff_status" default ="/takeoff_status"/>  <!-- "/autonomy_msgs/Status" -->
+  <arg name="landing_status" default ="/landing_status"/>  <!-- "/autonomy_msgs/Status" -->
+  <arg name="goal_pose" default ="/local_planner/local_goal"/>  <!-- "/autonomy_msgs/GoalPose" -->
   <arg name="local_status" default ="/local_planner/goal_status"/>  <!-- "/autonomy_msgs/GoalReached" -->
 
   <arg name="name" default="global_planner"/> 
@@ -10,6 +19,8 @@
   <param name="odom_topic_name" value="$(arg odom)"/> 
   <param name="takeoff_topic_name" value="$(arg takeoff)"/>  
   <param name="landing_topic_name" value="$(arg landing)"/>  
+  <param name="takeoff_status_topic_name" value="$(arg takeoff_status)" />
+  <param name="landing_status_topic_name" value="$(arg landing_status)" />
   <param name="goal_pose_topic_name" value="$(arg goal_pose)"/>  
   <param name="local_status_topic_name" value="$(arg local_status)"/>  
 

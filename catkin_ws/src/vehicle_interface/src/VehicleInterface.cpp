@@ -31,22 +31,53 @@ VehicleInterface::~VehicleInterface()
 
 void VehicleInterface::update(const ros::TimerEvent& event)
 {
-    if ((m_topic_sub->getVehicleInterfaceData().getTrajectory() != nullptr) &&
-        (m_topic_sub->getVehicleInterfaceData().getLocalPose()  != nullptr))
+    if (m_topic_sub->getVehicleInterfaceData().getTakeoffLandGoalReached() == true)
     {
-        VehicleInterfaceData data = m_topic_sub->getVehicleInterfaceData();
-
-        if (data.getGoalReached() == true)
+        if ((m_topic_sub->getVehicleInterfaceData().getTrajectory() != nullptr) &&
+            (m_topic_sub->getVehicleInterfaceData().getLocalPose()  != nullptr))
         {
-            return;
-        }
+            VehicleInterfaceData data = m_topic_sub->getVehicleInterfaceData();
 
-        data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getVehicleInterfaceData().getLocalPose(), event.current_real));
-        m_unspooler->setVehicleInterfaceData(std::move(data));
-        m_unspooler->update(event.current_real);
-        m_controller->setCurrentState(data.getLocalPose()->twist.twist);
-        m_controller->setCommandSetpoint(m_unspooler->getCommand());
-        m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(m_controller->getCommand()));        
+            if (data.getGoalReached() == true)
+            {
+                geometry_msgs::Twist cmd;
+                cmd.linear.x = 0.0;
+                cmd.linear.y = 0.0;
+                cmd.linear.z = 0.0;
+                cmd.angular.x = 0.0;
+                cmd.angular.y = 0.0;
+                cmd.angular.z = 0.0;
+                m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(cmd));
+
+                return;
+            }
+
+            data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getVehicleInterfaceData().getLocalPose(), event.current_real));
+            m_unspooler->setVehicleInterfaceData(std::move(data));
+            m_unspooler->update(event.current_real);
+            m_controller->setCurrentState(data.getLocalPose()->twist.twist);
+            m_controller->setCommandSetpoint(m_unspooler->getCommand());
+            m_controller->update(event.current_real);
+            m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(m_controller->getCommand()));       
+        }            
+    }
+    else
+    {
+        if (m_topic_sub->getVehicleInterfaceData().getTakeoffLandCommand() != nullptr)
+        {
+            m_topic_pub->publishCommand(m_topic_sub->getVehicleInterfaceData().getTakeoffLandCommand());
+        }
+        else
+        {
+            geometry_msgs::Twist cmd;
+            cmd.linear.x = 0.0;
+            cmd.linear.y = 0.0;
+            cmd.linear.z = 0.0;
+            cmd.angular.x = 0.0;
+            cmd.angular.y = 0.0;
+            cmd.angular.z = 0.0;
+            //m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(cmd));
+        }
     }
 }
 

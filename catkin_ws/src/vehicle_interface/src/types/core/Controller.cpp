@@ -10,9 +10,9 @@ namespace vi
 
 Controller::Controller(const std::shared_ptr<VehicleInterfaceConfig>& cfg) :
     m_cfg{cfg},
-    m_linear_x_pid{std::make_unique<PIDController>(m_cfg->getLinearPIDConfig())},
-    m_linear_y_pid{std::make_unique<PIDController>(m_cfg->getLinearPIDConfig())},
-    m_angular_z_pid{std::make_unique<PIDController>(m_cfg->getAngularPIDConfig())}
+    m_linear_x_pid{std::make_unique<PIDController>(cfg->getLinearPIDConfig())},
+    m_linear_y_pid{std::make_unique<PIDController>(cfg->getLinearPIDConfig())},
+    m_angular_z_pid{std::make_unique<PIDController>(cfg->getAngularPIDConfig())}
 {}
 
 Controller::~Controller() = default;

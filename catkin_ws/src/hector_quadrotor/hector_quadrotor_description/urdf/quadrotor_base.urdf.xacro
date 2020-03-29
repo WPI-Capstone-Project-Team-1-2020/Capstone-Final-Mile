@@ -4,6 +4,7 @@
 
   <xacro:include filename="$(find hector_sensors_description)/urdf/sonar_sensor.urdf.xacro" />
   <xacro:property name="pi" value="3.1415926535897931" />
+  <xacro:property name="size" value="0.022" />
 
   <!-- Main quadrotor link -->
   <xacro:macro name="quadrotor_base_macro">
@@ -28,6 +29,62 @@
         </geometry>
       </collision>
     </link>
+
+    <link name="left_payload">
+      <inertial>
+        <mass value="0.0" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 -${pi/2}" />
+        <geometry>
+          <mesh filename="package://hector_quadrotor_description/meshes/assembly/Payload_Assembly.stl" scale= "${size} ${size} ${size}"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 -${pi/2}" />
+        <geometry>
+          <mesh filename="package://hector_quadrotor_description/meshes/assembly/Payload_Assembly.stl" scale= "${size} ${size} ${size}"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <link name="right_payload">
+      <inertial>
+        <mass value="0.0" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
+        <geometry>
+          <mesh filename="package://hector_quadrotor_description/meshes/assembly/Payload_Assembly.stl" scale= "${size} ${size} ${size}"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
+        <geometry>
+          <mesh filename="package://hector_quadrotor_description/meshes/assembly/Payload_Assembly.stl" scale= "${size} ${size} ${size}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="base_to_right_payload" type="fixed">
+      <parent link="base_link"/>
+      <child link="right_payload"/>
+      <origin xyz="-0.05 -0.035 -0.13" />
+    </joint>
+
+    <joint name="base_to_left_payload" type="fixed">
+      <parent link="base_link"/>
+      <child link="left_payload"/>
+      <origin xyz="0.02 0.035 -0.13" />
+    </joint>
 
     <!-- Sonar height sensor -->
     <xacro:sonar_sensor name="sonar" parent="base_link" ros_topic="sonar_height" update_rate="10" min_range="0.1" max_range="5.0" field_of_view="${60*pi/180}" ray_count="2">

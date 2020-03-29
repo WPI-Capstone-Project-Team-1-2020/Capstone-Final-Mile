@@ -5,6 +5,7 @@
 #include "VehicleInterfaceData.hpp"
 
 // Ros
+#include <autonomy_msgs/GoalReached.h>
 #include <autonomy_msgs/Trajectory.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -13,11 +14,11 @@
 // Standard
 #include <memory>
 
-// Forward declares
-class VehicleInterfaceConfig;
-
 namespace vi
 {
+
+// Forward declares
+class VehicleInterfaceConfig;
 
 /// @brief Class for subscribing to topics
 class TopicSubscriber
@@ -40,9 +41,17 @@ private:
     /// @param msg `true` if goal has been reached
     void onGoalReachedReceived(const std_msgs::Bool::ConstPtr& msg);
 
+    /// @brief Takeoff and landing goal reached callback
+    /// @param msg Goal reached message sent through IPC
+    void onTakeoffLandGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
+
     /// @brief Trajectory callback
     /// @param msg Trajectory message sent through IPC
     void onTrajectoryReceived(const autonomy_msgs::Trajectory::ConstPtr& msg);
+
+    /// @brief Takeoff Land Command callback
+    /// @param msg The command from either takeoff or landing nodes
+    void onTakeoffLandReceived(const geometry_msgs::Twist::ConstPtr& msg);
 
     /// @brief Local pose callback
     /// @param msg Local pose message sent through IPC
@@ -51,9 +60,11 @@ private:
 
     std::shared_ptr<VehicleInterfaceConfig> m_cfg; ///< Config of the vehicle interface
 
-    ros::Subscriber m_goal_reached_sub; ///< Goal reached subscriber
-    ros::Subscriber m_traj_sub;         ///< Goal pose subscriber
-    ros::Subscriber m_pose_sub;         ///< Local pose subscriber
+    ros::Subscriber m_goal_reached_sub;         ///< Goal reached subscriber
+    ros::Subscriber m_takeoff_land_reached_sub; ///< Goal status of takeoff/land
+    ros::Subscriber m_traj_sub;                 ///< Goal pose subscriber
+    ros::Subscriber m_takeoff_land_sub;         ///< Takeoff/landing cmd subscriber
+    ros::Subscriber m_pose_sub;                 ///< Local pose subscriber
 
     VehicleInterfaceData m_data; ///< vehicle interface Data
 };    

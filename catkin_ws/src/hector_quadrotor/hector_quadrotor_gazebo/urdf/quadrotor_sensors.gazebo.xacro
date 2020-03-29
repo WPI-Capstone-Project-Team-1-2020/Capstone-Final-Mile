@@ -45,8 +45,8 @@
             <frameId>$(arg base_link_frame)</frameId>
             <topicName>fix</topicName>
             <velocityTopicName>fix_velocity</velocityTopicName>
-            <referenceLatitude>42.273060</referenceLatitude>
-            <referenceLongitude>-71.792174</referenceLongitude>
+            <referenceLatitude>42.275011</referenceLatitude>
+            <referenceLongitude>-71.777747</referenceLongitude>
             <drift>5.0 5.0 5.0</drift>
             <gaussianNoise>0.01 0.01 0.01</gaussianNoise>
             <velocityDrift>0 0 0</velocityDrift>

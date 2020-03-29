@@ -49,6 +49,10 @@ class Landing_Node:
             # Inform the Global Planner that the Goal is NOT reached
             self.status_msg.status = self.goal_reached
             self.status_pub.publish(self.status_msg)
+    
+    def callbackGPS(self, msg):
+        self.gps_lat = msg.latitude
+        self.gps_lon = msg.longitude
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -81,6 +85,11 @@ class Landing_Node:
         goalveh = hom_trans.dot(goallocal)
         return goalveh
 
+    def GPS_to_meters(self, gpslat, gpslon, goallat, goallon):
+        deltax = (goallat - gpslat)*111.32*1000  # delta in latittude converted to meters
+        deltay = (goallon - gpslon)*40075*1000*math.cos((gpslat+goallat)/2)/360 # delta in lon converted to meters
+        return deltax, deltay
+
     # Main Function
     def __init__(self):
         print("Setting up Takeoff Node")
@@ -93,23 +102,25 @@ class Landing_Node:
         self.goal_reached = True            # Assume goal reached (no action required) upon startup.
         self.landing_check = 0              # Track number of sequential returns less than threshold
         self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
+        self.gps_lat = 0                    # Initialize variable
+        self.gps_lon = 0                    # Initialize variable
 
         PID_alt = [0.5, 0, 0]      # PID Controller Tuning Values TODO Tune/Limit Controller
-        PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
-        PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
+        PID_x = [0.9, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
+        PID_y = [0.9, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
-        goal_x = 1292
-        goal_y = 205.5
-        # goal_lat = 42.277712    # Corresponds to Lat of Landing Pad
-        # goal_lon = -71.761568   # Corresponds to Lon of Landing Pad
+        # goal_x = 287
+        # goal_y = -1356
+        goal_lat = 42.277561788    # Corresponds to Lat of Landing Pad (simulated GPS based off of reference)
+        goal_lon = -71.7613541733   # Corresponds to Lon of Landing Pad (simulated GPS based off of reference)
         goal_alt = 8            # Desired Alititude in Meters (staying hardcoded since building height won't change)
 
         self.Hertz = 20  # frequency of while loop
       
         # Subscribers
         print("Defining Subscribers")
-        # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
+        rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
         rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1) # Altimeter Data
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
         rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1) # Altimeter Data
@@ -144,8 +155,9 @@ class Landing_Node:
                 else:                        # In range of the sonic sensor
                     vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
                 
-                # Lateral control based on ground truth
-                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                # Lateral control based on GPS
+                delta_x, delta_y = self.GPS_to_meters(self.gps_lat, self.gps_lon, goal_lat, goal_lon)
+                goal_veh = self.local_to_vehicle_frame(0, 0, delta_x, delta_y, cardinal_heading)
                 x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 vel_msg.linear.x = x_pid(0)

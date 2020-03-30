@@ -76,7 +76,7 @@ void VehicleInterface::update(const ros::TimerEvent& event)
             cmd.angular.x = 0.0;
             cmd.angular.y = 0.0;
             cmd.angular.z = 0.0;
-            //m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(cmd));
+            m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(cmd));
         }
     }
 }

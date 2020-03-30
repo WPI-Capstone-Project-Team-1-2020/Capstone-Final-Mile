@@ -7,13 +7,13 @@ path_topic:         "/local_planner/path"         # Path topic
 
 # Performance
 update_rate_hz:     10.0 # Update rate in hz
-goal_reached_tol_m: 1.0  # Goal tolerance
+goal_reached_tol_m: 2.0  # Goal tolerance
 
 # Tuning parameters
 graph_discretization_m: 0.1 # Discretization of graph, in meters
 
 # Trajectory generation
-time_step_ms:     100.0 # Time step between profile points in trajectory
-max_speed_mps:    10.0  # Max speed of the vehicle
-max_accel_mps2:   2.0   # Max acceleration, mps2
-max_yaw_rate_rps: 1.5  # Max yaw rate, rps
+time_step_ms:     10.0 # Time step between profile points in trajectory
+max_speed_mps:    5.0  # Max speed of the vehicle
+max_accel_mps2:   1.5  # Max acceleration, mps2
+max_yaw_rate_rps: 1.0   # Max yaw rate, rps

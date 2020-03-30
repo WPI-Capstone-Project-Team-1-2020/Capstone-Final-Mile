@@ -12,9 +12,9 @@ max_dt_s:       0.5    # Max dt in seconds before things get trumped
 
 # Gains
 linear_p: 0.025   # Linear p-gain
-linear_i: 0.0005  # Linear i-gain
-linear_d: 0.00725 # Linear d-gain
+linear_i: 0.00005  # Linear i-gain
+linear_d: 0.0725 # Linear d-gain
 
 angular_p: 0.025    # angular p-gain
-angular_i: 0.0005   # angular i-gain
-angular_d: 0.00525  # angular d-gain
+angular_i: 0.00005   # angular i-gain
+angular_d: 0.0525  # angular d-gain

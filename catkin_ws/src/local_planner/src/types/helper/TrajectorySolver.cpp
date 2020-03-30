@@ -9,7 +9,6 @@
 // Libraries
 #include <boost/cstdfloat.hpp>
 #include <boost/shared_ptr.hpp>
-#include <unsupported/Eigen/Polynomials>
 #include <unsupported/Eigen/Splines>
 
 // Standard
@@ -84,38 +83,29 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
 
         const float64_t dist_left_m = total_path_dist_m - dist_traveled_m;
 
-        Eigen::PolynomialSolver<float64_t, Eigen::Dynamic> solver;
-        Eigen::VectorXd coeff(3U);
+        bool needs_to_slow{true};
 
-        coeff << 0.0, cur_speed_mps, -m_cfg.getMaxAccelMps2();
-        solver.compute(coeff);
-        bool has_real{true};
-        const float64_t time_to_stop_s = solver.greatestRealRoot(has_real);
-
-        if (has_real == false)
+        if (cur_speed_mps > end_speed_mps)
         {
-            ROS_ERROR_STREAM("No real roots found for slowing trajectory polynomial fitting");
+            const float64_t time_to_goal_speed = (cur_speed_mps - end_speed_mps)/(m_cfg.getMaxAccelMps2());
+            const float64_t dist_to_goal_speed = cur_speed_mps*time_to_goal_speed - m_cfg.getMaxAccelMps2()*std::pow(time_to_goal_speed, 2U)/2.0;
 
-            return;
+            needs_to_slow = (dist_to_goal_speed >= dist_left_m);
         }
-        
-        const float64_t dist_to_stop = cur_speed_mps*time_to_stop_s - m_cfg.getMaxAccelMps2()*std::pow(time_to_stop_s, 2U)/2.0;
 
-        bool needs_to_slow = dist_to_stop >= dist_left_m;
+        const float64_t accel_mps2 = needs_to_slow ?  -m_cfg.getMaxAccelMps2() : m_cfg.getMaxAccelMps2();
 
-        coeff = Eigen::VectorXd(3U);
-        coeff << -dp_m, cur_speed_mps, m_cfg.getMaxAccelMps2();
-        solver.compute(coeff);
-        float64_t dt_s = solver.greatestRealRoot(has_real);
+        float64_t dt_s{0.0};
 
-        if (has_real == false)
-        {
-            ROS_ERROR_STREAM("No real roots found for trajectory polynomial fitting");
-
+        const float64_t vf = std::sqrt(std::pow(cur_speed_mps, 2U) + 2.0*dp_m*accel_mps2);
+        dt_s = (vf - cur_speed_mps)/accel_mps2;
+            
+        if (std::signbit(dt_s) == true)
+        {         
             return;
         }
 
-        const float64_t next_speed_mps = needs_to_slow ? std::max(cur_speed_mps - m_cfg.getMaxAccelMps2()*dt_s, end_speed_mps) : cur_speed_mps + m_cfg.getMaxAccelMps2()*dt_s;
+        const float64_t next_speed_mps = cur_speed_mps + accel_mps2*dt_s;
 
         if (next_speed_mps > m_cfg.getMaxSpeedMps())
         {

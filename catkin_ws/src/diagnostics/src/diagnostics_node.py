@@ -18,6 +18,7 @@ class Diagnostics_Node:
         # Variable Initialization
         print("Diagnostics Node: Initializing Variables")
         self.names = []  # List of different diagnostics message names
+        self.received_diag_msg = []
 
         # Configuration Parameters
         self.Hertz = 20  # frequency of while loop
@@ -42,14 +43,15 @@ class Diagnostics_Node:
 
         print("Commencing Diagnostics Node Execution")
         while not rospy.is_shutdown():
-            if self.received_diag_msg.name in self.names:
-                self.diag_agg_status[self.names.index(self.received_diag_msg.name)] = self.received_diag_msg
-            else:
-                self.names.append(self.received_diag_msg.name)
-                self.diag_agg_status.append(self.received_diag_msg)
+            if self.received_diag_msg in globals():
+                if self.received_diag_msg.name in self.names:
+                    self.diag_agg_status[self.names.index(self.received_diag_msg.name)] = self.received_diag_msg
+                else:
+                    self.names.append(self.received_diag_msg.name)
+                    self.diag_agg_status.append(self.received_diag_msg)
 
-            self.diag_agg_msg.status = self.diag_agg_status
-            self.diag_pub.publish(self.diag_agg_msg)
+                self.diag_agg_msg.status = self.diag_agg_status
+                self.diag_pub.publish(self.diag_agg_msg)
             rate.sleep()
 
 

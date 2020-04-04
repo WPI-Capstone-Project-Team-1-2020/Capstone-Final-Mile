@@ -63,12 +63,22 @@ void VehicleInterface::update(const ros::TimerEvent& event)
     
     if (pass_through == false)
     {
-        if ((m_topic_sub->getVehicleInterfaceData().getTakeoffGoalReached() == false) ||
-            (m_topic_sub->getVehicleInterfaceData().getLandingGoalReached() == false))
+        if (m_data->getGoalReached() == true)
+        {
+            if ((m_topic_sub->getVehicleInterfaceData().getTakeoffGoalReached() == false) ||
+                (m_topic_sub->getVehicleInterfaceData().getLandingGoalReached() == false))
+            {
+                pass_through = true;
+            }
+        }
+    }
+
+    if ((m_topic_sub->getVehicleInterfaceData().getTakeoffGoalReached() == false) &&
+        (m_topic_sub->getVehicleInterfaceData().getLandingGoalReached() == false) &&
+        (m_data->getGoalReached() == false))
         {
             pass_through = true;
         }
-    }
 
     if (pass_through == true)
     {

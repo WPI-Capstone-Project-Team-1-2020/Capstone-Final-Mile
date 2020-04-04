@@ -16,22 +16,22 @@ class Diagnostics_Node:
         print("Setting up Diagnostics Node")
 
         # Variable Initialization
-        print("Initializing Variables")
+        print("Diagnostics Node: Initializing Variables")
         self.names = []  # List of different diagnostics message names
 
         # Configuration Parameters
         self.Hertz = 20  # frequency of while loop
 
         # Subscribers
-        print("Defining Subscribers")
+        print("Diagnostics Node: Defining Subscribers")
         rospy.Subscriber("/diagnostics", DiagnosticArray, self.callbackDiagnostics, queue_size=1) # Diagnostics
 
         # Publishers
-        print("Defining Publishers")
+        print("Diagnostics Node: Defining Publishers")
         self.diag_pub = rospy.Publisher('/diagnostics_agg', DiagnosticArray, queue_size=1)
 
         # Messages
-        print("Defining Messages")
+        print("Diagnostics Node: Defining Messages")
 
         self.diag_agg_msg = DiagnosticArray()
         self.diag_agg_status = []

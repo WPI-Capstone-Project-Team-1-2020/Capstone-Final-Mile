@@ -83,7 +83,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
 
         const float64_t dist_left_m = total_path_dist_m - dist_traveled_m;
 
-        bool needs_to_slow{true};
+        bool needs_to_slow{false};
 
         if (cur_speed_mps > end_speed_mps)
         {

@@ -14,8 +14,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 class Take_Off:
     # Call Back Functions
     def callbackAltimeter(self, msg):
-        global barro_alt
-        barro_alt = msg.altitude
+        self.barro_alt = msg.altitude
 
     def callbacktruth(self, msg):
         global x_truth, y_truth
@@ -92,6 +91,7 @@ class Take_Off:
         self.goal_alt = 0               # Initial Goal Altitude
         self.should_be_done_time = 120  # Seconds it should take to complete a takeoff
         self.start_time = time.time()   # Initialize Start Time
+        self.barro_alt = 13             # Default altitude until first callback
 
         PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
@@ -141,7 +141,7 @@ class Take_Off:
                 
                 # Vertical control based on altimeter (barometer)
                 alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
-                vel_msg.linear.z = alt_pid(barro_alt)
+                vel_msg.linear.z = alt_pid(self.barro_alt)
                 
                 # Lateral control based on ground truth
                 goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
@@ -153,7 +153,7 @@ class Take_Off:
                 vel_pub.publish(vel_msg)
 
                 # Determine when the goal is met and tell the global planner
-                delta_alt = abs(self.goal_alt - barro_alt)
+                delta_alt = abs(self.goal_alt - self.barro_alt)
                 horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
                 if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
                     print("Takeoff Complete")

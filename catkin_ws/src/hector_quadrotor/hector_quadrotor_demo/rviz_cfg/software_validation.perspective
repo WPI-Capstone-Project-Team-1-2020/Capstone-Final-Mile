@@ -234,11 +234,11 @@
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[-0.16223803097426898, 60.0]"
+                  "repr": "[-0.16223803097426898, 3.4028234663852886e+38]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[-8.607, 41.393]"
+                  "repr": "[-21.501, 28.499]"
                 }
               },
               "groups": {}
@@ -285,7 +285,7 @@
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[-8.750999999999998, 41.249]"
+                  "repr": "[-21.501, 28.499]"
                 }
               },
               "groups": {}
@@ -431,7 +431,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'topic_name': '/takeoff', 'type_name': 'autonomy_msgs/Takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}, {'type_name': 'autonomy_msgs/Landing', 'topic_name': '/landing', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 1, 'counter': 0}]\""
+                  "repr": "u\"[{'type_name': 'autonomy_msgs/Takeoff', 'topic_name': '/takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}, {'topic_name': '/landing', 'type_name': 'autonomy_msgs/Landing', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 1, 'counter': 0}, {'type_name': 'std_msgs/Bool', 'topic_name': '/estop', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 2, 'counter': 0}]\""
                 }
               },
               "groups": {}

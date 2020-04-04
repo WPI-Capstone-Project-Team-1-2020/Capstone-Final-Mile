@@ -14,9 +14,14 @@ TopicSubscriber::TopicSubscriber(ros::NodeHandle& nh, std::shared_ptr<VehicleInt
         m_goal_reached_sub = nh.subscribe<std_msgs::Bool>(m_cfg->getGoalReachedTopic(), 1, &TopicSubscriber::onGoalReachedReceived, this, ros::TransportHints().tcpNoDelay(true));
     }
 
-    if (m_cfg->getTakeoffLandReachedTopic().empty() == false)
+    if (m_cfg->getTakeoffReachedTopic().empty() == false)
     {
-        m_takeoff_land_reached_sub = nh.subscribe<autonomy_msgs::GoalReached>(m_cfg->getTakeoffLandReachedTopic(), 1, &TopicSubscriber::onTakeoffLandGoalReachedReceived, this, ros::TransportHints().tcpNoDelay(true));
+        m_takeoff_reached_sub = nh.subscribe<autonomy_msgs::GoalReached>(m_cfg->getTakeoffReachedTopic(), 1, &TopicSubscriber::onTakeoffGoalReachedReceived, this, ros::TransportHints().tcpNoDelay(true));
+    }
+
+    if (m_cfg->getLandingReachedTopic().empty() == false)
+    {
+        m_landing_reached_sub = nh.subscribe<autonomy_msgs::GoalReached>(m_cfg->getLandingReachedTopic(), 1, &TopicSubscriber::onLandingGoalReachedReceived, this, ros::TransportHints().tcpNoDelay(true));
     }
 
     if (m_cfg->getTrajectoryTopic().empty() == false)
@@ -42,9 +47,14 @@ void TopicSubscriber::onGoalReachedReceived(const std_msgs::Bool::ConstPtr& msg)
     m_data.setGoalReached(msg->data);
 }
 
-void TopicSubscriber::onTakeoffLandGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg)
+void TopicSubscriber::onTakeoffGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg)
 {
-    m_data.setTakeoffLandGoalReached(msg->goalReached);
+    m_data.setTakeoffGoalReached(msg->goalReached);
+}
+
+void TopicSubscriber::onLandingGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg)
+{
+    m_data.setLandingGoalReached(msg->goalReached);
 }
 
 void TopicSubscriber::onTrajectoryReceived(const autonomy_msgs::Trajectory::ConstPtr& msg)

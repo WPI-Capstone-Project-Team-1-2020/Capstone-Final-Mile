@@ -41,9 +41,13 @@ private:
     /// @param msg `true` if goal has been reached
     void onGoalReachedReceived(const std_msgs::Bool::ConstPtr& msg);
 
-    /// @brief Takeoff and landing goal reached callback
+    /// @brief Takeoff goal reached callback
     /// @param msg Goal reached message sent through IPC
-    void onTakeoffLandGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
+    void onTakeoffGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
+
+    /// @brief Takeoff goal reached callback
+    /// @param msg Goal reached message sent through IPC
+    void onLandingGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
 
     /// @brief Trajectory callback
     /// @param msg Trajectory message sent through IPC
@@ -61,7 +65,8 @@ private:
     std::shared_ptr<VehicleInterfaceConfig> m_cfg; ///< Config of the vehicle interface
 
     ros::Subscriber m_goal_reached_sub;         ///< Goal reached subscriber
-    ros::Subscriber m_takeoff_land_reached_sub; ///< Goal status of takeoff/land
+    ros::Subscriber m_takeoff_reached_sub;      ///< Goal status of takeoff
+    ros::Subscriber m_landing_reached_sub;      ///< Goal status of land
     ros::Subscriber m_traj_sub;                 ///< Goal pose subscriber
     ros::Subscriber m_takeoff_land_sub;         ///< Takeoff/landing cmd subscriber
     ros::Subscriber m_pose_sub;                 ///< Local pose subscriber

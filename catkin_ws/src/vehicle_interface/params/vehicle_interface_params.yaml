@@ -1,6 +1,7 @@
 # I/O Topics
 goal_reached_topic:         "/local_planner/goal_reached" # Goal reached topic
-takeoff_land_reached_topic: "/goal_reached"               # Goal reached topic
+takeoff_goal_reached_topic: "/takeoff_status"             # Takeoff Goal reached topic
+landing_goal_reached_topic: "/landing_status"             # Landing Goal reached topic
 trajectory_topic:           "/local_planner/trajectory"   # Local trajectory topic
 takeoff_land_topic:         "/height_controller"          # Height control topic
 local_pose_topic:           "/ground_truth/state"         # Local Pose Topic
@@ -12,9 +13,9 @@ max_dt_s:       0.5    # Max dt in seconds before things get trumped
 
 # Gains
 linear_p: 0.025   # Linear p-gain
-linear_i: 0.00005  # Linear i-gain
-linear_d: 0.0725 # Linear d-gain
+linear_i: 0.00005 # Linear i-gain
+linear_d: 0.0725  # Linear d-gain
 
-angular_p: 0.025    # angular p-gain
-angular_i: 0.00005   # angular i-gain
+angular_p: 0.025   # angular p-gain
+angular_i: 0.00005 # angular i-gain
 angular_d: 0.0525  # angular d-gain

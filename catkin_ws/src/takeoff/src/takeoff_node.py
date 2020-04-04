@@ -9,6 +9,7 @@ from sensor_msgs.msg import NavSatFix
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
 from autonomy_msgs.msg import Takeoff, Status
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 class Take_Off:
     # Call Back Functions
@@ -36,8 +37,11 @@ class Take_Off:
             cardinal_heading = cardinal_heading_temp
 
     def callbackTakeoff(self, msg):
+        # Save information from the message
         self.goal_reached = msg.goalReached
         self.goal_alt = msg.height
+        self.start_time = time.time()
+        # Update the Flag for other nodes indicating the status of the takeoff node
         if not self.goal_reached:
             print("Commence Takeoff")
             # Inform the Global Planner that the Goal is NOT reached
@@ -82,10 +86,12 @@ class Take_Off:
         # Variable Initialization
         print("Initializing Variables")
 
-        alt_threshold = 0.5      # meters
-        horizontal_threshold = 2 # meters, summed in x and y axis
-        self.goal_reached = True # Assume goal is reached (no action required) until told otherwise.
-        self.goal_alt = 0        # Initial Goal Altitude
+        alt_threshold = 0.5             # meters
+        horizontal_threshold = 2        # meters, summed in x and y axis
+        self.goal_reached = True        # Assume goal is reached (no action required) until told otherwise.
+        self.goal_alt = 0               # Initial Goal Altitude
+        self.should_be_done_time = 120  # Seconds it should take to complete a takeoff
+        self.start_time = time.time()   # Initialize Start Time
 
         PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
@@ -111,6 +117,7 @@ class Take_Off:
         print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.status_pub = rospy.Publisher('/takeoff_status', Status, queue_size=1)
+        self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
 
         # Messages
         print("Defining Messages")
@@ -118,6 +125,9 @@ class Take_Off:
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
+
+        self.diag_msg = DiagnosticArray()
+        self.diag_status = DiagnosticStatus(name = 'Takeoff Node:', level = 0, message = 'OK')  # Default Status
 
         self.status_msg = Status()
 
@@ -150,6 +160,23 @@ class Take_Off:
                     self.goal_reached = True
                     self.status_msg.status = self.goal_reached
                     self.status_pub.publish(self.status_msg)
+            
+            # Publish Diagnostic Info
+            self.current_time = time.time()
+            self.elapsed_time = self.current_time - self.start_time
+            
+            if self.goal_reached:
+                self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Standby'),
+                                KeyValue(key = 'Goal Height', value = 'None')]
+            else:
+                self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Running'),
+                                    KeyValue(key = 'Goal Height', value = '{}'.format(self.goal_alt))]
+                if self.elapsed_time > self.should_be_done_time:
+                    self.diag_status.level = 1
+                    self.diag_status.message = 'Takeoff Taking Longer Than Expected'
+            self.diag_msg.status = [self.diag_status]
+            self.diag_pub.publish(self.diag_msg)
+        
             rate.sleep()
 
 

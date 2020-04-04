@@ -39,6 +39,8 @@ public:
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
         pnh.getParam("goal_reached_tol_m",          m_goal_tol_m);
         pnh.getParam("search_timeout_ms",           m_timeout_ms);
+        pnh.getParam("lethal_cost_probability",     m_lethal_prob);
+        pnh.getParam("non_lethal_cost_mult",        m_non_lethal_cost_mult);
     }
 
     /// @brief Default destructor for forward declares
@@ -56,6 +58,8 @@ public:
     float64_t                       getUpdateRateHz()                   const noexcept {return m_update_rate_hz;}
     float64_t                       getGoalReachedTolerance()           const noexcept {return m_goal_tol_m;}
     std::int32_t                    getSearchTimeoutMs()                const noexcept {return m_timeout_ms;}
+    std::int32_t                    getLethalProbability()              const noexcept {return m_lethal_prob;}
+    float64_t                       getNonLethalCostMult()              const noexcept {return m_non_lethal_cost_mult;}
     const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()       const noexcept {return m_node_cfg;}
     const TrajectoryConfig&         getTrajectoryConfig()               const noexcept {return m_traj_cfg;}
 
@@ -76,6 +80,12 @@ private:
     float64_t    m_update_rate_hz{10.0}; ///< Update rate in hz
     float64_t    m_goal_tol_m{0.5};      ///< Tolerance when checking for goal (outside of solvers)
     std::int32_t m_timeout_ms{150};      ///< Timeout in ms
+    /// @}
+
+    /// @brief Collision parameters
+    /// @{
+    std::int32_t m_lethal_prob{90};                    ///< Probability of space being occupied that is unrecoverable from
+    float64_t    m_non_lethal_cost_mult{1000000.0};    ///< Multiplier on cost for non-lethal collissions
     /// @}
 
     /// @brief Tuning Parameters

@@ -22,7 +22,7 @@ AStar::AStar(const std::shared_ptr<LocalPlannerConfig>& cfg) :
     GraphNode::tolerance_cfg = m_cfg->getGraphNodeToleranceConfig();
 }
 
-AStar::~AStar(){}
+AStar::~AStar() = default;
 
 bool AStar::update()
 {
@@ -112,12 +112,12 @@ void AStar::expandFrontier(const GraphNode& current_node)
         {
             const std::int64_t prob_coll = getProbabilityCollision(node.getPointM());
 
-            if (prob_coll >= 90)
+            if (prob_coll >= m_cfg->getLethalProbability())
             {
                 return;
             }
             
-            node.setCost(node.getCost() + prob_coll*1000000);
+            node.setCost(node.getCost() + prob_coll*m_cfg->getNonLethalCostMult());
             m_nodes.emplace(node.getID(), node);
 
             std::unordered_set<GraphNode>::const_iterator open_it = m_open_nodes.find(node);

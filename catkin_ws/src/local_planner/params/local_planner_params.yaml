@@ -14,6 +14,10 @@ goal_reached_tol_m: 2.0  # Goal tolerance
 graph_discretization_m: 0.1  # Discretization of graph, in meters
 search_timeout_ms:      500  # Retry planning if time spent exceeds this         
 
+# Collision parameters
+lethal_cost_probability: 90         # Probability space is occupied to be considered lethal
+non_lethal_cost_mult:    1000000.0  # Multiplier on cost for non-lethal collisions (allows for some actuation error within non-lethal range)
+
 # Trajectory generation
 time_step_ms:     10.0 # Time step between profile points in trajectory
 max_speed_mps:    5.0  # Max speed of the vehicle

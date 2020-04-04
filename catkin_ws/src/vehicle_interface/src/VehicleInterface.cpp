@@ -34,7 +34,7 @@ void VehicleInterface::update(const ros::TimerEvent& event)
     bool pass_through{false};
 
     if (m_topic_sub->getVehicleInterfaceData().getTakeoffGoalReached() == true)
-    {
+    {        
         if ((m_topic_sub->getVehicleInterfaceData().getTrajectory() != nullptr) &&
             (m_topic_sub->getVehicleInterfaceData().getLocalPose()  != nullptr))
         {
@@ -68,7 +68,7 @@ void VehicleInterface::update(const ros::TimerEvent& event)
             if ((m_topic_sub->getVehicleInterfaceData().getTakeoffGoalReached() == false) ||
                 (m_topic_sub->getVehicleInterfaceData().getLandingGoalReached() == false))
             {
-                pass_through = true;
+                pass_through = true;                            
             }
         }
     }
@@ -81,7 +81,7 @@ void VehicleInterface::update(const ros::TimerEvent& event)
         }
 
     if (pass_through == true)
-    {
+    {        
         if (m_topic_sub->getVehicleInterfaceData().getTakeoffLandCommand() != nullptr)
         {            
             m_topic_pub->publishCommand(m_topic_sub->getVehicleInterfaceData().getTakeoffLandCommand());

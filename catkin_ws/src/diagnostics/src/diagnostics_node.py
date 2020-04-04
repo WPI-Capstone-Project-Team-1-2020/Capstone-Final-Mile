@@ -43,7 +43,7 @@ class Diagnostics_Node:
 
         print("Commencing Diagnostics Node Execution")
         while not rospy.is_shutdown():
-            if self.received_diag_msg in globals():
+            if self.received_diag_msg != []:
                 if self.received_diag_msg.name in self.names:
                     self.diag_agg_status[self.names.index(self.received_diag_msg.name)] = self.received_diag_msg
                 else:

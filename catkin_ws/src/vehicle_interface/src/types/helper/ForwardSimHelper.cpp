@@ -21,11 +21,15 @@ nav_msgs::Odometry::ConstPtr ForwardSimHelper::forwardSimPose(const nav_msgs::Od
 {
     const ros::Duration dt_s = pose->header.stamp - now_s;
 
-    nav_msgs::Odometry new_pose;
+    nav_msgs::Odometry new_pose = *pose;
 
-    new_pose.pose.pose.position.x = pose->pose.pose.position.x + pose->twist.twist.linear.x*dt_s.toSec();
-    new_pose.pose.pose.position.y = pose->pose.pose.position.y + pose->twist.twist.linear.y*dt_s.toSec();
-    new_pose.pose.pose.position.z = pose->pose.pose.position.z + pose->twist.twist.linear.z*dt_s.toSec();
+    const float64_t x_mps = pose->twist.twist.linear.x;
+    const float64_t y_mps = pose->twist.twist.linear.y;
+    const float64_t z_mps = pose->twist.twist.linear.z;
+
+    new_pose.pose.pose.position.x = pose->pose.pose.position.x + x_mps*dt_s.toSec();
+    new_pose.pose.pose.position.y = pose->pose.pose.position.y + y_mps*dt_s.toSec();
+    new_pose.pose.pose.position.z = pose->pose.pose.position.z + z_mps*dt_s.toSec();
 
     tf::Quaternion q;
     tf::quaternionMsgToTF(pose->pose.pose.orientation, q);
@@ -35,6 +39,9 @@ nav_msgs::Odometry::ConstPtr ForwardSimHelper::forwardSimPose(const nav_msgs::Od
     roll_r  += pose->twist.twist.angular.x*dt_s.toSec();
     pitch_r += pose->twist.twist.angular.y*dt_s.toSec();
     yaw_r   += pose->twist.twist.angular.z*dt_s.toSec();  
+
+    new_pose.twist.twist.linear.x =  x_mps*std::cos(yaw_r) + y_mps*std::sin(yaw_r);        
+    new_pose.twist.twist.linear.y = -x_mps*std::sin(yaw_r) + y_mps*std::cos(yaw_r);
         
     geometry_msgs::Quaternion new_q;
     tf::quaternionTFToMsg(tf::createQuaternionFromRPY(roll_r, pitch_r, yaw_r), new_q);

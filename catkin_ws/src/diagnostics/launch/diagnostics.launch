@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+     <node pkg="diagnostics" type="diagnostics_node.py" name="diagnostics_node" output="screen"/>
+</launch>

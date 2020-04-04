@@ -10,6 +10,7 @@ from sensor_msgs.msg import Range
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
 from autonomy_msgs.msg import Landing, Status
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 class Landing_Node:
     # Call Back Functions
@@ -44,6 +45,7 @@ class Landing_Node:
    
     def callbackLanding(self, msg):
         self.goal_reached = msg.goalReached
+        self.start_time = time.time()
         if not self.goal_reached:
             print("Commence Landing")
             # Inform the Global Planner that the Goal is NOT reached
@@ -93,6 +95,8 @@ class Landing_Node:
         self.goal_reached = True            # Assume goal reached (no action required) upon startup.
         self.landing_check = 0              # Track number of sequential returns less than threshold
         self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
+        self.should_be_done_time = 120      # Seconds it should take to complete a landing
+        self.start_time = time.time()       # Initialize Start Time
 
         PID_alt = [0.5, 0, 0]      # PID Controller Tuning Values TODO Tune/Limit Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
@@ -103,7 +107,7 @@ class Landing_Node:
         goal_y = 205.5
         # goal_lat = 42.277712    # Corresponds to Lat of Landing Pad
         # goal_lon = -71.761568   # Corresponds to Lon of Landing Pad
-        goal_alt = 8            # Desired Alititude in Meters (staying hardcoded since building height won't change)
+        self.goal_alt = 8         # Desired Alititude in Meters (staying hardcoded since building height won't change)
 
         self.Hertz = 20  # frequency of while loop
       
@@ -120,6 +124,7 @@ class Landing_Node:
         print("Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.status_pub = rospy.Publisher('/landing_status', Status, queue_size=1)
+        self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
 
         # Messages
         print("Defining Messages")
@@ -128,6 +133,9 @@ class Landing_Node:
         vel_msg.angular.y = 0
         vel_msg.angular.z = 0
 
+        self.diag_msg = DiagnosticArray()
+        self.diag_status = DiagnosticStatus(name = 'Landing Node:', level = 0, message = 'OK')  # Default Status
+        
         self.status_msg = Status()
 
         # Loop Timing
@@ -138,11 +146,11 @@ class Landing_Node:
         while not rospy.is_shutdown():
             if not self.goal_reached:
                 # Vertical control based on altimeter (barometer)
-                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
+                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
                 if (sonic_dist == sonic_max) and (barro_alt > sonic_max):  # If outside range of the sonic sensor, use the barometer.
                     vel_msg.linear.z = alt_pid(barro_alt) 
                 else:                        # In range of the sonic sensor
-                    vel_msg.linear.z = alt_pid(goal_alt + sonic_dist)
+                    vel_msg.linear.z = alt_pid(self.goal_alt + sonic_dist)
                 
                 # Lateral control based on ground truth
                 goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
@@ -165,6 +173,22 @@ class Landing_Node:
                     self.goal_reached = True
                     self.status_msg.status = self.goal_reached
                     self.status_pub.publish(self.status_msg)
+            
+            # Publish Diagnostic Info
+            self.current_time = time.time()
+            self.elapsed_time = self.current_time - self.start_time
+            
+            if self.goal_reached:
+                self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Standby'),
+                                KeyValue(key = 'Goal Height', value = 'None')]
+            else:
+                self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Running'),
+                                    KeyValue(key = 'Goal Height', value = '{}'.format(self.goal_alt))]
+                if self.elapsed_time > self.should_be_done_time:
+                    self.diag_status.level = 1
+                    self.diag_status.message = 'Takeoff Taking Longer Than Expected'
+            self.diag_msg.status = [self.diag_status]
+            self.diag_pub.publish(self.diag_msg)
 
             rate.sleep()
 

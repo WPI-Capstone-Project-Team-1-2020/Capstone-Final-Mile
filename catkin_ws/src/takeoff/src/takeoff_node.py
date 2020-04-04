@@ -84,7 +84,7 @@ class Take_Off:
         print("Setting up Takeoff Node")
 
         # Variable Initialization
-        print("Initializing Variables")
+        print("Takeoff Node: Initializing Variables")
 
         alt_threshold = 0.5             # meters
         horizontal_threshold = 2        # meters, summed in x and y axis
@@ -106,7 +106,7 @@ class Take_Off:
         self.Hertz = 20  # frequency of while loop
       
         # Subscribers
-        print("Defining Subscribers")
+        print("Takeoff Node: Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1)                 # GPS Subscriber
         rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1)     # Altimeter Subscriber
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
@@ -114,13 +114,13 @@ class Take_Off:
         rospy.Subscriber("/takeoff", Takeoff, self.callbackTakeoff, queue_size=1)           # Global Planner Subscriber
         
         # Publishers
-        print("Defining Publishers")
+        print("Takeoff Node: Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.status_pub = rospy.Publisher('/takeoff_status', Status, queue_size=1)
         self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
 
         # Messages
-        print("Defining Messages")
+        print("Takeoff Node: Defining Messages")
         vel_msg = Twist()
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0

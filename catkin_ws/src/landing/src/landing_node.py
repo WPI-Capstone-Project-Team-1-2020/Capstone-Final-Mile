@@ -85,10 +85,10 @@ class Landing_Node:
 
     # Main Function
     def __init__(self):
-        print("Setting up Takeoff Node")
+        print("Setting up Landing Node")
 
         # Variable Initialization
-        print("Initializing Variables")
+        print("Landing Node: Initializing Variables")
 
         alt_threshold = 0.25                # meters, based on sonar return
         horizontal_threshold = 2            # meters, summed in x and y axis
@@ -112,7 +112,7 @@ class Landing_Node:
         self.Hertz = 20  # frequency of while loop
       
         # Subscribers
-        print("Defining Subscribers")
+        print("Landing Node: Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
         rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1) # Altimeter Data
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
@@ -121,13 +121,13 @@ class Landing_Node:
         rospy.Subscriber("/landing", Landing, self.callbackLanding, queue_size=1)           # Global Planner Subscriber
 
         # Publishers
-        print("Defining Publishers")
+        print("Landing Node: Defining Publishers")
         vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.status_pub = rospy.Publisher('/landing_status', Status, queue_size=1)
         self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
 
         # Messages
-        print("Defining Messages")
+        print("Landing Node: Defining Messages")
         vel_msg = Twist()
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0

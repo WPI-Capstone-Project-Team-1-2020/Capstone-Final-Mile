@@ -5,7 +5,7 @@
 #include "VehicleInterfaceData.hpp"
 
 // Ros
-#include <autonomy_msgs/GoalReached.h>
+#include <autonomy_msgs/Status.h>
 #include <autonomy_msgs/Trajectory.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -43,11 +43,11 @@ private:
 
     /// @brief Takeoff goal reached callback
     /// @param msg Goal reached message sent through IPC
-    void onTakeoffGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
+    void onTakeoffGoalReachedReceived(const autonomy_msgs::Status::ConstPtr& msg);
 
     /// @brief Takeoff goal reached callback
     /// @param msg Goal reached message sent through IPC
-    void onLandingGoalReachedReceived(const autonomy_msgs::GoalReached::ConstPtr& msg);
+    void onLandingGoalReachedReceived(const autonomy_msgs::Status::ConstPtr& msg);
 
     /// @brief Trajectory callback
     /// @param msg Trajectory message sent through IPC

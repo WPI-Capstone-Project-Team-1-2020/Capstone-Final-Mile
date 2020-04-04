@@ -1,7 +1,7 @@
 # I/O Topics
 goal_reached_topic:         "/local_planner/goal_reached" # Goal reached topic
-takeoff_goal_reached_topic: "/takeoff_status"             # Takeoff Goal reached topic
-landing_goal_reached_topic: "/landing_status"             # Landing Goal reached topic
+takeoff_reached_topic:      "/takeoff_status"             # Takeoff Goal reached topic
+landing_reached_topic:      "/landing_status"             # Landing Goal reached topic
 trajectory_topic:           "/local_planner/trajectory"   # Local trajectory topic
 takeoff_land_topic:         "/height_controller"          # Height control topic
 local_pose_topic:           "/ground_truth/state"         # Local Pose Topic

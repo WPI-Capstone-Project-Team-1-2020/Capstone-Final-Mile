@@ -19,7 +19,6 @@ void PIDController::update(const ros::Time& now_s)
     updateDtS(now_s);
     updateError();
     m_output = m_setpoint + calculateP() + calculateI() + calculateD();
-    // std::cout << "error: " << m_error << " setpoint: " << m_setpoint << " p: " << calculateP() << " i: " << calculateI() << " d: " << calculateD() << " dt: " << m_dt_s.toSec() << std::endl;
     m_last_error = m_error;
     m_last_time_s = now_s;
 }

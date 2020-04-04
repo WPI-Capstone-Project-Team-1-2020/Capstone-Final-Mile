@@ -122,7 +122,7 @@ class Landing_Node:
 
         # Publishers
         print("Landing Node: Defining Publishers")
-        vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        vel_pub = rospy.Publisher('/height_controller', Twist, queue_size=1)
         self.status_pub = rospy.Publisher('/landing_status', Status, queue_size=1)
         self.diag_pub = rospy.Publisher('/diagnostics', DiagnosticArray, queue_size=1)
 

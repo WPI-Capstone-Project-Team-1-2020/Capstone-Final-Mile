@@ -31,8 +31,9 @@ LocalPlanner::~LocalPlanner()
 
 void LocalPlanner::update(const ros::TimerEvent& event)
 {
-    if ((m_topic_sub->getLocalPlannerData().getGoalPose()  != nullptr) &&
-        (m_topic_sub->getLocalPlannerData().getLocalPose() != nullptr))
+    if ((m_topic_sub->getLocalPlannerData().getCostmap()       != nullptr) &&
+        (m_topic_sub->getLocalPlannerData().getGoalPose()      != nullptr) &&
+        (m_topic_sub->getLocalPlannerData().getLocalPose()     != nullptr))
     {
         LocalPlannerData data = m_topic_sub->getLocalPlannerData();
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getLocalPlannerData().getLocalPose(), event.current_real));
@@ -58,8 +59,8 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         else
         {
             ROS_ERROR_STREAM("Unable to plan trajectory");
-        }
-    }
+        }  
+    }        
 }
 
 } // namespace local_planner

@@ -4,6 +4,9 @@
 #include "LocalPlannerConfig.hpp"
 #include "RosConversionHelper.hpp"
 
+// Libraries
+#include <chrono>
+
 // Standard
 #include <utility>
 
@@ -41,6 +44,8 @@ void AStar::resetPlanner() noexcept
 
 void AStar::initializePlanner() noexcept
 {
+    m_costmap.setOccupancyGrid(m_data.getCostmap(), m_data.getLocalPose()->pose.pose);
+
     GraphNode start_node;    
     start_node.setEstimatedPointM(Point(m_data.getLocalPose()->pose.pose.position.x, m_data.getLocalPose()->pose.pose.position.y));
     start_node.setCost(std::numeric_limits<float64_t>::max());
@@ -54,8 +59,20 @@ void AStar::initializePlanner() noexcept
 
 bool AStar::planTrajectory()
 {  
+    const auto start_time_ns = std::chrono::high_resolution_clock::now();
+
     while (true)
     {
+        const auto current_time_ns = std::chrono::high_resolution_clock::now();
+        const auto dt_ms           = std::chrono::duration_cast<std::chrono::milliseconds>(current_time_ns - start_time_ns);
+
+        if (dt_ms.count() > m_cfg->getSearchTimeoutMs())
+        {
+            ROS_ERROR_STREAM("Failed to plan path during given time allotted");
+
+            return false;
+        }
+
         if (m_frontier.empty() == false)
         {
             GraphNode current_node = m_frontier.top();
@@ -91,13 +108,21 @@ void AStar::expandFrontier(const GraphNode& current_node)
     
     std::for_each(std::make_move_iterator(neighbors.begin()),
         std::make_move_iterator(neighbors.end()),
-        [&current_node, &frontier = this->m_frontier, &open_nodes = this->m_open_nodes, &nodes = this->m_nodes](GraphNode&& node) -> void
+        [&current_node, this](GraphNode&& node) -> void
         {
-            nodes.emplace(node.getID(), node);
+            const std::int64_t prob_coll = getProbabilityCollision(node.getPointM());
 
-            std::unordered_set<GraphNode>::const_iterator open_it = open_nodes.find(node);
+            if (prob_coll >= 90)
+            {
+                return;
+            }
+            
+            node.setCost(node.getCost() + prob_coll*1000000);
+            m_nodes.emplace(node.getID(), node);
 
-            if (open_it != open_nodes.cend())
+            std::unordered_set<GraphNode>::const_iterator open_it = m_open_nodes.find(node);
+
+            if (open_it != m_open_nodes.cend())
             {
                 if(node.getCost() >= open_it->getCost())
                 {
@@ -106,8 +131,8 @@ void AStar::expandFrontier(const GraphNode& current_node)
             }                                    
             else
             {
-                frontier.emplace(node);
-                open_nodes.emplace(std::move(node));
+                m_frontier.emplace(node);
+                m_open_nodes.emplace(std::move(node));
             }
         });
 }
@@ -174,6 +199,11 @@ float64_t AStar::calcNodeCost(const GraphNode& node) const
 {
     return (node.getG() + std::sqrt(std::pow(node.getPointM().getX() - m_goal_node.getPointM().getX(), 2U) +
                                     std::pow(node.getPointM().getY() - m_goal_node.getPointM().getY(), 2U)));
+}
+
+std::int64_t AStar::getProbabilityCollision(const Point& pt)
+{
+    return m_costmap.getProbabilityOccupied(pt);
 }
 
 bool AStar::reconstructPath()

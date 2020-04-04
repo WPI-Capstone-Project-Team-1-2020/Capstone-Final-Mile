@@ -30,6 +30,7 @@ public:
         m_node_cfg{GraphNodeToleranceConfig(pnh)},
         m_traj_cfg{TrajectoryConfig(pnh)}
     {
+        pnh.getParam("costmap_topic",               m_costmap_topic);
         pnh.getParam("goal_topic",                  m_goal_topic);
         pnh.getParam("goal_reached_topic",          m_goal_reached_topic);
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
@@ -37,6 +38,7 @@ public:
         pnh.getParam("path_topic",                  m_path_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
         pnh.getParam("goal_reached_tol_m",          m_goal_tol_m);
+        pnh.getParam("search_timeout_ms",           m_timeout_ms);
     }
 
     /// @brief Default destructor for forward declares
@@ -44,38 +46,42 @@ public:
 
     /// @brief Accessor
     /// @return Val
-    /// @{
-    const std::string&              getGoalTopic()                 const noexcept {return m_goal_topic;}
-    const std::string&              getGoalReachedTopic()          const noexcept {return m_goal_reached_topic;}
-    const std::string&              getLocalPoseTopic()            const noexcept {return m_local_pose_topic;}
-    const std::string&              getTrajectoryTopic()           const noexcept {return m_traj_topic;}
-    const std::string&              getPathTopic()                 const noexcept {return m_path_topic;}
-    float64_t                       getUpdateRateHz()              const noexcept {return m_update_rate_hz;}
-    float64_t                       getGoalReachedTolerance()      const noexcept {return m_goal_tol_m;}
-    const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()  const noexcept {return m_node_cfg;}
-    const TrajectoryConfig&         getTrajectoryConfig()          const noexcept {return m_traj_cfg;}
+    /// @{      
+    const std::string&              getCostmapTopic()                   const noexcept {return m_costmap_topic;}
+    const std::string&              getGoalTopic()                      const noexcept {return m_goal_topic;}
+    const std::string&              getGoalReachedTopic()               const noexcept {return m_goal_reached_topic;}
+    const std::string&              getLocalPoseTopic()                 const noexcept {return m_local_pose_topic;}
+    const std::string&              getTrajectoryTopic()                const noexcept {return m_traj_topic;}
+    const std::string&              getPathTopic()                      const noexcept {return m_path_topic;}
+    float64_t                       getUpdateRateHz()                   const noexcept {return m_update_rate_hz;}
+    float64_t                       getGoalReachedTolerance()           const noexcept {return m_goal_tol_m;}
+    std::int32_t                    getSearchTimeoutMs()                const noexcept {return m_timeout_ms;}
+    const GraphNodeToleranceConfig& getGraphNodeToleranceConfig()       const noexcept {return m_node_cfg;}
+    const TrajectoryConfig&         getTrajectoryConfig()               const noexcept {return m_traj_cfg;}
 
 
 private:
     /// @brief I/O Topics
     /// @{
-    std::string m_goal_topic{""};         ///< Goal topic
-    std::string m_goal_reached_topic{""}; ///< Goal reached topic
-    std::string m_local_pose_topic{""};   ///< Local pose topic  
-    std::string m_traj_topic{""};         ///< Trajectory publish topic
-    std::string m_path_topic{""};         ///< Path publish topic
+    std::string m_costmap_topic{""};        ///< Costmap topic
+    std::string m_goal_topic{""};           ///< Goal topic
+    std::string m_goal_reached_topic{""};   ///< Goal reached topic
+    std::string m_local_pose_topic{""};     ///< Local pose topic  
+    std::string m_traj_topic{""};           ///< Trajectory publish topic
+    std::string m_path_topic{""};           ///< Path publish topic
     /// @}
 
     /// @brief Performance
     /// @{
-    float64_t m_update_rate_hz{10.0}; ///< Update rate in hz
-    float64_t m_goal_tol_m{0.5};      ///< Tolerance when checking for goal (outside of solvers)
+    float64_t    m_update_rate_hz{10.0}; ///< Update rate in hz
+    float64_t    m_goal_tol_m{0.5};      ///< Tolerance when checking for goal (outside of solvers)
+    std::int32_t m_timeout_ms{150};      ///< Timeout in ms
     /// @}
 
     /// @brief Tuning Parameters
     /// @{
-    GraphNodeToleranceConfig m_node_cfg; ///< Graph node tolerance config
-    TrajectoryConfig         m_traj_cfg; ///< Trajectory config
+    GraphNodeToleranceConfig m_node_cfg;             ///< Graph node tolerance config
+    TrajectoryConfig         m_traj_cfg;             ///< Trajectory config
     /// @}
 };
 

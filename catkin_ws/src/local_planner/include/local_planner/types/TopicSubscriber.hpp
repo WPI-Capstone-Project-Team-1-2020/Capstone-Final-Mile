@@ -6,6 +6,7 @@
 
 // Ros
 #include <autonomy_msgs/GoalPose.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 
@@ -35,6 +36,10 @@ public:
     const LocalPlannerData& getLocalPlannerData() const noexcept {return m_data;}
 
 private:
+    /// @brief Costmap callback
+    /// @param msg Costmap sent through IPC
+    void onCostmapReceived(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+
     /// @brief Goal pose callback
     /// @param msg Goal pose message sent through IPC
     void onGoalPoseReceived(const autonomy_msgs::GoalPose::ConstPtr& msg);
@@ -46,8 +51,9 @@ private:
 
     std::shared_ptr<LocalPlannerConfig> m_cfg; ///< Config of the local planner
 
-    ros::Subscriber m_goal_sub; ///< Goal pose subscriber
-    ros::Subscriber m_pose_sub; ///< Local pose subscriber
+    ros::Subscriber m_costmap_sub;         ///< Costmap subscriber    
+    ros::Subscriber m_goal_sub;            ///< Goal pose subscriber
+    ros::Subscriber m_pose_sub;            ///< Local pose subscriber
 
     LocalPlannerData m_data; ///< Local Planner Data
 };    

@@ -2,6 +2,7 @@
 #define PLANNING_ASTAR_HPP
 
 // Component
+#include "Costmap.hpp"
 #include "GraphNode.hpp"
 #include "LocalPlannerConfig.hpp"
 #include "LocalPlannerData.hpp"
@@ -86,6 +87,11 @@ private:
     /// @return The cost of the node
     float64_t calcNodeCost(const GraphNode& node) const;
 
+    /// @brief Checks for collision
+    /// @param point The point to check for collision (uses inflated params)
+    /// @return probability of collision
+    std::int64_t getProbabilityCollision(const Point& pt);
+
     /// @brief Reconstructs path from the nodes after the goal is found
     /// @return `true` if successful
     bool reconstructPath();
@@ -96,6 +102,7 @@ private:
     std::unordered_set<GraphNode>                          m_open_nodes;   ///< Open nodes
     std::unordered_map<std::uint64_t, GraphNode>           m_nodes;        ///< All nodes by ID, used for reconstruction
     GraphNode                                              m_goal_node;    ///< Goal node
+    Costmap                                                m_costmap;      ///< Costmap for collision checking
     /// @}
 
     /// @brief Inputs and outputs

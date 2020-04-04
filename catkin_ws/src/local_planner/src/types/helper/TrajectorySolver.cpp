@@ -77,8 +77,8 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
         const float64_t dp_m = std::sqrt(std::pow(dx_m, 2U) + std::pow(dy_m, 2U));        
         dist_traveled_m += dp_m;
 
-        const float64_t cur_vel_x = current_state.linear.x*std::cos(current_heading_r);
-        const float64_t cur_vel_y = current_state.linear.y*std::sin(current_heading_r);
+        const float64_t cur_vel_x =  current_state.linear.x*std::cos(current_heading_r) + current_state.linear.y*std::sin(current_heading_r);
+        const float64_t cur_vel_y = -current_state.linear.x*std::sin(current_heading_r) + current_state.linear.y*std::cos(current_heading_r);
         const float64_t cur_speed_mps = std::sqrt(std::pow(cur_vel_x, 2U) + std::pow(cur_vel_y, 2U));
 
         const float64_t dist_left_m = total_path_dist_m - dist_traveled_m;
@@ -93,7 +93,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
             needs_to_slow = (dist_to_goal_speed >= dist_left_m);
         }
 
-        const float64_t accel_mps2 = needs_to_slow ?  -m_cfg.getMaxAccelMps2() : m_cfg.getMaxAccelMps2();
+        const float64_t accel_mps2 = needs_to_slow ? -m_cfg.getMaxAccelMps2() : m_cfg.getMaxAccelMps2();
 
         float64_t dt_s{0.0};
 
@@ -120,7 +120,7 @@ void TrajectorySolver::calculateDistanceBasedTrajectory(const std::vector<Point>
 
         float64_t velocity_heading_r  = std::atan2(dy_m, dx_m);
         correctAngle(velocity_heading_r);
-        float64_t actual_vs_velocity_heading_diff_r = current_heading_r - velocity_heading_r;
+        float64_t actual_vs_velocity_heading_diff_r = velocity_heading_r - current_heading_r;
         correctAngle(actual_vs_velocity_heading_diff_r);
 
         const float64_t lon_vel_mps = commanded_speed_mps*std::cos(actual_vs_velocity_heading_diff_r);

@@ -3,9 +3,11 @@
 #include <vector>
 #include <ros/ros.h>
 #include <ros/rate.h>
-#include <ros/callback_queue.h>
+#include <math.h>
 
 #include "GlobalPlanner.hpp" 
+
+#define pi 3.14159265;
 
 using namespace ros;
 
@@ -36,126 +38,86 @@ bool GlobalPlanner::init()
   std::string landing_status_topic_name = nh_.param<std::string>("landing_status_topic_name", "");
   std::string local_status_topic_name = nh_.param<std::string>("local_status_topic_name", "");
   std::string odom_topic_name = nh_.param<std::string>("odom_topic_name", "");
+  //std::string takeoff_status = nh_.param<std::string>("takeoff_status", ""); //new
+  //std::string landing_status = nh_.param<std::string>("landing_status", ""); //new
+  //std::string local_status = nh_.param<std::string>("local_status", ""); //new
+  //std::string ground_truth = nh_.param<std::string>("ground_truth/state", ""); //new was odom instead of ground_truth
 
   // initialize variables
   //double quad_pose[3] = {-1231.0, -285.6, 13.5}; 
   //double quad_goal_pose[3] = {1292, 205.5, 8};  
 
   // initialize publishers
-  goal_pose_pub_ = nh_.advertise<autonomy_msgs::GoalPose>("goal_pose_topic_name", 10);  //goal_pose_topic_name
-  takeoff_pub_ = nh_.advertise<autonomy_msgs::Takeoff>("takeoff_topic_name", 10); //takeoff_topic_name
-  landing_pub_ = nh_.advertise<autonomy_msgs::Landing>("landing_topic_name", 10); //landing_topic_name
+  goal_pose_pub_ = nh_.advertise<autonomy_msgs::GoalPose>(goal_pose_topic_name, 10);  //goal_pose_topic_name
+  takeoff_pub_ = nh_.advertise<autonomy_msgs::Takeoff>(takeoff_topic_name, 10); //takeoff_topic_name
+  landing_pub_ = nh_.advertise<autonomy_msgs::Landing>(landing_topic_name, 10); //landing_topic_name
 
   // initialize subscribers
-  odom_sub_ = nh_.subscribe("odom", 1, &GlobalPlanner::odomMsgCallBack, this);
-  takeoff_status_sub_ = nh_.subscribe("takeoff_status", 1, &GlobalPlanner::takeoffMsgCallBack, this);
-  landing_status_sub_ = nh_.subscribe("landing_status", 1, &GlobalPlanner::landingMsgCallBack, this); 
-  local_sub_ = nh_.subscribe("local_status", 1, &GlobalPlanner::localMsgCallBack, this); 
+  odom_sub_ = nh_.subscribe("ground_truth/state", 10, &GlobalPlanner::odomMsgCallBack, this); //"odom"
+  takeoff_status_sub_ = nh_.subscribe("takeoff_status", 10, &GlobalPlanner::takeoffMsgCallBack, this); //"takeoff_status"
+  landing_status_sub_ = nh_.subscribe("landing_status", 10, &GlobalPlanner::landingMsgCallBack, this); //"landing_status"
+  local_sub_ = nh_.subscribe("local_planner/local_status", 10, &GlobalPlanner::localMsgCallBack, this);  //"local_status", then "goal_reached"
 
   return true;
 }
 
 
 // Receive odometry data
-void GlobalPlanner::odomMsgCallBack(const nav_msgs::Odometry::ConstPtr &msg)
+void GlobalPlanner::odomMsgCallBack(const nav_msgs::Odometry::ConstPtr& msg) // was nav_msgs::Odometry
 {
 
-    double odom_x = msg->pose.pose.position.x;
-    double odom_y = msg->pose.pose.position.y;
+    odom_x = msg->pose.pose.position.x; //double //float
+    odom_y = msg->pose.pose.position.y; //double //float
 
-    std::cout << "odom pos x is " << odom_x << " and y is " << odom_y << std::endl;
+    //double odom_x = msg->x;
+    //double odom_y = msg->y;
+
+    //std::cout << "odom pos x is " << odom_x << " and y is " << odom_y << std::endl;
 
 }
 
-// can I have nested function??
-std::vector<double> GlobalPlanner::linspace(double start_x, double end_x, double start_y, double end_y, int n)
-{
-    std::vector<double> array;
-    double step = (end_x - start_x)/(n-1);
 
-    while(start_x <= end_x) 
-    {
-        array.push_back(start_x);
-        start_x += step;
-    }
-    return array;
-}
-
-void GlobalPlanner::initLine(double start_x, double end_x, double start_y, double end_y, int n) //added this
-{
-  autonomy_msgs::GoalPose goal_pose;
-
-  double m = (start_y-end_y)/(start_x-end_x);
-  double b = start_y - m*start_x;
-
-  goal_pose.speed_mps = 10;
-
-  std::vector<double>array = GlobalPlanner::linspace(start_x, end_x, start_y, end_y, n); //array = // std::vector<double>linspace()
-
-  double y = m*array[0] + b;
-
-  std::cout << "y is " << y << " and x is  " << array[0] << std::endl;
-
-  goal_pose.x_m = array[0];
-  goal_pose.y_m = y;
-
-  goal_pose_pub_.publish(goal_pose); 
-}
 
 // Creating linear trajectory
-void GlobalPlanner::line(double start_x, double end_x, double start_y, double end_y, bool local_reached)
+void GlobalPlanner::line(float end_x, float end_y) //local_reached to local_status //included double odom_x, double odom_y, bool local_status //double
 {
     autonomy_msgs::GoalPose goal_pose; 
 
-    //std::vector<double> linspace(double start_x, double end_x, double start_y, double end_y, int n);
-
-    int n = 50;
-    double m = (start_y-end_y)/(start_x-end_x);
-    double b = start_y - m*start_x;
-
-    goal_pose.speed_mps = 10;
-
-    std::vector<double>array = GlobalPlanner::linspace(start_x, end_x, start_y, end_y, n); //array = // std::vector<double>linspace()
-
-    //double y = m*array[1] + b;
-
-    //std::cout << "y is " << y << " and x is  " << array[1] << std::endl;
-
-    //goal_pose.x_m = array[1];
-    //goal_pose.y_m = y;
-
-    //goal_pose_pub_.publish(goal_pose);
-
-    //std::cout << " in line function and goal_pose is" << goal_pose << std::endl;
-
-    for(int i=1; i<n; i++)
-    {
-      if(local_reached != 1) //false
-      {
-        //wait
-        std::cout << "waiting for local goal to be reached, local_reache is  " << local_reached << std::endl;
-      }
-      else if(local_reached == 1)  //true
-      {
-        double y = m*array[i] + b;
-
-        std::cout << "y is " << y << " and x is  " << array[i] << std::endl;
-
-        goal_pose.x_m = array[i];
-        goal_pose.y_m = y;
-
-        goal_pose_pub_.publish(goal_pose);
-
-        std::cout << " in line function and goal_pose is" << goal_pose << std::endl;
-
-        //add in send local goal reached
-        local_reached = false;
-      }
-        //local_reached = false; //this was added
-    }
+    int n = 30; // magnitude in meters for each goal (magnitude of full line in sqrt(x_d^2 + y_d^2))
     
+    float x_d = end_x - odom_x;  // delta x //double
+    float y_d = end_y - odom_y; // delta y //double
+
+    std::cout <<"odom_x is " << odom_x << " odom_y is " << odom_y << " x_d is " << x_d << " y_d is " << y_d << std::endl;
+
+
+    if(x_d != 0 || y_d != 0) //false //local_reached
+    {
+      //wait
+      //double x_d = end_x - odom_x;  // delta x
+      //double y_d = end_y - odom_y; // delta y
+
+      double angle = atan2(y_d,x_d)*180/pi; //double or float?
+
+      std::cout << "angle is  " << angle << std::endl;
+
+      double x = odom_x + n*cos(angle); //*180/pi; //double or float? 
+      double y = odom_y - n*sin(angle); //*180/pi; //double or float?
+
+      goal_pose.x_m = x;
+      goal_pose.y_m = y;
+      goal_pose.speed_mps = 10;
+
+      goal_pose_pub_.publish(goal_pose); 
+      std::cout << "sent new local goal  " << goal_pose << std::endl;  //local_reached
+    }
+    else if(x_d == 0 || y_d == 0)  //true //local_reached
+    {
+      std::cout << " goal should be met" << std::endl;
+    }
 
 }
+    
 
 // Send takeoff messages
 void GlobalPlanner::updateTakeoff(double altitude, bool reached) 
@@ -216,17 +178,18 @@ void GlobalPlanner::updateLocalPlanner(double linear_x, double linear_y)
 
 
 // Receive Local Planner messages
-void GlobalPlanner::localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg)
+void GlobalPlanner::localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg) //std::Bool
 {
-    local_reached = msg->goalReached;
+    local_status = msg->goalReached; //local_reached
 
-    std::cout << "local planner msg is " << local_reached << std::endl;
+    std::cout << "local planner msg is " << local_status << std::endl; //local_reached
 }
 
 /*******************************************************************************
 * Control Loop function
 *******************************************************************************/
-void GlobalPlanner::controlLoop(bool takeoff_reached, bool land_reached, bool local_reached)  //bool
+//void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
+void GlobalPlanner::controlLoop()  //bool
 {
 
   // Initial parameters  
@@ -235,34 +198,37 @@ void GlobalPlanner::controlLoop(bool takeoff_reached, bool land_reached, bool lo
   //bool local_reached = false;
   //bool land_reached = false;
 
-  start_x = -1231.0;
+  //start_x = -1231.0;
   end_x = 1292.0;
-  start_y = -285.6;
+  //start_y = -285.6;
   end_y = 205.5;
 
 
   // Listen for takeoff goal reached
   if(takeoff_status != 1) //false = 0
   {
-    std::cout << "waiting for takeoff to reach goal" << std::endl;
+    std::cout << "waiting for takeoff to reach goal, takeoff_status is " << takeoff_status << std::endl;
   }
   else if(takeoff_status == 1) //true = 1
   {
     std::cout << "takeoff reached by global planner" << std::endl;
+    //takeoff_reached = true;
 
-    if(local_reached != 1) //false = 0
+    if(local_status != 1) //false = 0 //local_reached to local_status //was !=1
     {
-      line(start_x, end_x, start_y, end_y, local_reached); //linear trajectory
+
+      line(end_x, end_y); //linear trajectory  //local_reached to local_status //odom_x, odom_y, local_status
       
-      std::cout << "sending to local planner" << std::endl;
+      //std::cout << "sending to local planner" << std::endl;
     }
-    else if(local_reached == 1) //true = 1
+    else if(local_status == 1) //true = 1  //local_reached to local_status //was ==1
     {
-      if(land_status != 1) //false = 0
-      {
         // Send landing command
         GlobalPlanner::updateLanding(land_reached);  //send landing 
         std::cout << "initiating land" << std::endl;
+      if(land_status != 1) //false = 0
+      {
+        std::cout << "waiting for landing goal to be reached, land_status is " << land_status << std::endl;
       }
       else if (land_status == 1) //true = 1
       {
@@ -289,30 +255,29 @@ int main(int argc, char* argv[])
   bool takeoff_reached = false; //false is 0
   bool land_reached = false; //false is 0
   bool local_reached = false; //false is 0
-  int n = 50;
+  //bool takeoff_status; // = false; //bool
+  //bool land_status; // = false; //bool
+  //int n = 30;
   double start_x = -1231.0;
-  double end_x = 1292.0;
+  float end_x = 1292.0; //double
   double start_y = -285.6;
-  double end_y = 205.5;
+  float end_y = 205.5; //double
 
-  //ros::CallbackQueue my_queue;
 
   ros::init(argc, argv, "GlobalPlanner"); 
   GlobalPlanner GlobalPlanner;  
 
-  ros::Rate loop_rate(10); //125 per second - changed to 5 for 5x per second
+  ros::Rate loop_rate(10); //10 for 10x per second
   std::cout << "rate started" << std::endl;
 
   // Send takeoff command
   GlobalPlanner.updateTakeoff(altitude, takeoff_reached);  //send takeoff 
   std::cout << "taking off" << std::endl;
 
-  GlobalPlanner.initLine(start_x, end_x, start_y, end_y, n);
 
   while (ros::ok())
   {
-    GlobalPlanner.controlLoop(takeoff_reached, land_reached, local_reached);  
-    //my_queue.callAvailable(ros::WallDuration(5));
+    GlobalPlanner.controlLoop();  
     ros::spinOnce();
     loop_rate.sleep();
 

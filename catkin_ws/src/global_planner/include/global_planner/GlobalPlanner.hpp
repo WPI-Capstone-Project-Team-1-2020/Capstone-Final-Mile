@@ -13,6 +13,7 @@
 #include <autonomy_msgs/Status.h>
 #include <autonomy_msgs/GoalReached.h>
 #include <nav_msgs/Odometry.h> 
+#include <geometry_msgs/Point.h>
 
 using namespace ros;
 
@@ -22,8 +23,8 @@ class GlobalPlanner
   GlobalPlanner(); 
   ~GlobalPlanner(); 
   bool init();
-  void controlLoop(bool takeoff_reached, bool land_reached, bool local_reached); //bool
-  void initLine(double start_x, double end_x, double start_y, double end_y, int n); //start of trajectory
+  void controlLoop(); //bool
+  //void controlLoop(bool takeoff_status, bool land_status, bool local_reached); //bool
   void updateTakeoff(double altitude, bool reached);  //send takeoff 
 
  private:
@@ -51,23 +52,22 @@ class GlobalPlanner
   //double quad_goal_pose_[3]; // = {0.0, 0.0, 0.0}; 
   bool takeoff_reached;
   bool land_reached;
-  bool takeoff_status;
-  bool land_status;
-  bool local_reached;
+  bool takeoff_status; //bool
+  bool land_status; //bool
+  bool local_status; //local_reached
+  float odom_x; //double
+  float odom_y; //double
+  float end_x; //double
+  float end_y; //double
   double altitude;
   int n;
-  double start_x;
-  double end_x;
-  double start_y;
-  double end_y;
 
   // Function prototypes
-  std::vector<double> linspace(double start_x, double end_x, double start_y, double end_y, int n);
-  void line(double start_x, double end_x, double start_y, double end_y,bool local_reached); //linear trajectory
+  void line(float end_x, float end_y); //linear trajectory //local_reached instead of local_status // double odom_x, double odom_y, bool local_status //double, double
   void updateLocalPlanner(double linear_x, double linear_y); // send goal to local planner
   void updateLanding(bool reached);  //send landing 
-  void odomMsgCallBack(const nav_msgs::Odometry::ConstPtr &msgs); // global planner input
-  void localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg); // receive goal status from local planner
+  void odomMsgCallBack(const nav_msgs::Odometry::ConstPtr& msg); // global planner input - was nav_msgs::Odometry
+  void localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg); // receive goal status from local planner - std::Bool
   void takeoffMsgCallBack(const autonomy_msgs::Status::ConstPtr &msg);  //receive takeoff status
   void landingMsgCallBack(const autonomy_msgs::Status::ConstPtr &msg);  //receive landing status
 };

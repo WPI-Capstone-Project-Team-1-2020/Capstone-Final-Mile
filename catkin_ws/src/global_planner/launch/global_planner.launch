@@ -6,17 +6,17 @@
  <include file="$(find landing)/launch/landing.launch" />  
 
 
-  <arg name="odom" default ="/ground_truth/state"/>  <!-- "/nav_msgs/Odometry" -->
+  <arg name="ground_truth/state" default ="/ground_truth/state"/>  <!-- "/nav_msgs/Odometry" - was "odom" -->
   <arg name="takeoff" default ="/takeoff"/>  <!-- "/autonomy_msgs/Takeoff" -->
   <arg name="landing" default ="/landing"/>  <!-- "/autonomy_msgs/Landing" -->
   <arg name="takeoff_status" default ="/takeoff_status"/>  <!-- "/autonomy_msgs/Status" -->
   <arg name="landing_status" default ="/landing_status"/>  <!-- "/autonomy_msgs/Status" -->
   <arg name="goal_pose" default ="/local_planner/local_goal"/>  <!-- "/autonomy_msgs/GoalPose" -->
-  <arg name="local_status" default ="/local_planner/goal_status"/>  <!-- "/autonomy_msgs/GoalReached" -->
+  <arg name="local_status" default ="/local_planner/local_status"/>  <!-- "/autonomy_msgs/GoalReached" was goal_status, then goal_reached, now local_status -->
 
   <arg name="name" default="global_planner"/> 
 
-  <param name="odom_topic_name" value="$(arg odom)"/> 
+  <param name="odom_topic_name" value="$(arg ground_truth/state)"/>  <!-- was odom-->
   <param name="takeoff_topic_name" value="$(arg takeoff)"/>  
   <param name="landing_topic_name" value="$(arg landing)"/>  
   <param name="takeoff_status_topic_name" value="$(arg takeoff_status)" />

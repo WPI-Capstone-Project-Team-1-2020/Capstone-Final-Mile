@@ -56,7 +56,7 @@ bool GlobalPlanner::init()
   odom_sub_ = nh_.subscribe("ground_truth/state", 10, &GlobalPlanner::odomMsgCallBack, this); //"odom"
   takeoff_status_sub_ = nh_.subscribe("takeoff_status", 10, &GlobalPlanner::takeoffMsgCallBack, this); //"takeoff_status"
   landing_status_sub_ = nh_.subscribe("landing_status", 10, &GlobalPlanner::landingMsgCallBack, this); //"landing_status"
-  local_sub_ = nh_.subscribe("local_planner/local_status", 10, &GlobalPlanner::localMsgCallBack, this);  //"local_status", then "goal_reached"
+  local_sub_ = nh_.subscribe("local_planner/goal_reached", 10, &GlobalPlanner::localMsgCallBack, this);  //"local_status", then "goal_reached"
 
   return true;
 }
@@ -178,9 +178,11 @@ void GlobalPlanner::updateLocalPlanner(double linear_x, double linear_y)
 
 
 // Receive Local Planner messages
-void GlobalPlanner::localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg) //std::Bool
+void GlobalPlanner::localMsgCallBack(const std_msgs::Bool::ConstPtr &msg) //std_msgs::Bool, autonomy_msgs::GoalReached
 {
-    local_status = msg->goalReached; //local_reached
+    //local_status = msg->goalReached; //local_reached
+
+    local_status = msg->data; //local_reached
 
     std::cout << "local planner msg is " << local_status << std::endl; //local_reached
 }

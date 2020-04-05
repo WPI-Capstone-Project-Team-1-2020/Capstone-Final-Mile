@@ -14,6 +14,7 @@
 #include <autonomy_msgs/GoalReached.h>
 #include <nav_msgs/Odometry.h> 
 #include <geometry_msgs/Point.h>
+#include <std_msgs/Bool.h>
 
 using namespace ros;
 
@@ -67,7 +68,7 @@ class GlobalPlanner
   void updateLocalPlanner(double linear_x, double linear_y); // send goal to local planner
   void updateLanding(bool reached);  //send landing 
   void odomMsgCallBack(const nav_msgs::Odometry::ConstPtr& msg); // global planner input - was nav_msgs::Odometry
-  void localMsgCallBack(const autonomy_msgs::GoalReached::ConstPtr &msg); // receive goal status from local planner - std::Bool
+  void localMsgCallBack(const std_msgs::Bool::ConstPtr &msg); // receive goal status from local planner - std_msgs::Bool, autonomy_msgs::GoalReached
   void takeoffMsgCallBack(const autonomy_msgs::Status::ConstPtr &msg);  //receive takeoff status
   void landingMsgCallBack(const autonomy_msgs::Status::ConstPtr &msg);  //receive landing status
 };

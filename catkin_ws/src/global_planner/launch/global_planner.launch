@@ -5,7 +5,7 @@
   <arg name="takeoff_status" default ="/takeoff_status"/>  <!-- "/autonomy_msgs/Status" -->
   <arg name="landing_status" default ="/landing_status"/>  <!-- "/autonomy_msgs/Status" -->
   <arg name="goal_pose" default ="/local_planner/local_goal"/>  <!-- "/autonomy_msgs/GoalPose" -->
-  <arg name="local_status" default ="/local_planner/local_status"/>  <!-- "/autonomy_msgs/GoalReached" was goal_status, then goal_reached, now local_status -->
+  <arg name="local_status" default ="/local_planner/goal_reached"/>  <!-- "/autonomy_msgs/GoalReached" was goal_status, then goal_reached, now local_status -->
 
   <arg name="name" default="global_planner"/> 
 

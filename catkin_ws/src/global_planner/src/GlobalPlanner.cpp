@@ -83,7 +83,7 @@ void GlobalPlanner::line(float end_x, float end_y) //local_reached to local_stat
 {
     autonomy_msgs::GoalPose goal_pose; 
 
-    int n = 30; // magnitude in meters for each goal (magnitude of full line in sqrt(x_d^2 + y_d^2))
+    double n = 30; // magnitude in meters for each goal (magnitude of full line in sqrt(x_d^2 + y_d^2))
     
     float x_d = end_x - odom_x;  // delta x //double
     float y_d = end_y - odom_y; // delta y //double
@@ -100,6 +100,10 @@ void GlobalPlanner::line(float end_x, float end_y) //local_reached to local_stat
       double angle = atan2(y_d,x_d); //double or float?
 
       std::cout << "angle is  " << angle << std::endl;
+
+      double dist_to_goal = std::sqrt(std::pow(x_d, 2) + std::pow(y_d, 2));
+
+      n = std::min(n, dist_to_goal);
 
       double x = odom_x + n*cos(angle); //*180/pi; //double or float? 
       double y = odom_y + n*sin(angle); //*180/pi; //double or float?
@@ -253,7 +257,7 @@ int main(int argc, char* argv[])
   std::cout << "global planner started" << std::endl;
 
   //Initialize parameters
-  double altitude = 30;
+  double altitude = 60;
   bool takeoff_reached = false; //false is 0
   bool land_reached = false; //false is 0
   bool local_reached = false; //false is 0

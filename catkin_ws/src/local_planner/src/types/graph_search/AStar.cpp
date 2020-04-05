@@ -226,7 +226,14 @@ float64_t AStar::calcNodeCost(const GraphNode& node) const
 
 std::int64_t AStar::getProbabilityCollision(const Point& pt)
 {
-    return m_costmap.getProbabilityOccupied(pt);
+    const float64_t dx_m      = m_data.getGoalPose()->x_m - m_data.getLocalPose()->pose.pose.position.x;
+    const float64_t dy_m      = m_data.getGoalPose()->y_m - m_data.getLocalPose()->pose.pose.position.y;    
+    const float64_t heading_r = std::atan2(dy_m, dx_m);
+    const float64_t dp_m      = std::sqrt(std::pow(pt.getX(), 2U) + std::pow(pt.getY(), 2U));
+    const float64_t x_m       = m_data.getLocalPose()->pose.pose.position.x + dp_m*std::cos(heading_r);
+    const float64_t y_m       = m_data.getLocalPose()->pose.pose.position.y + dp_m*std::sin(heading_r);        
+
+    return m_costmap.getProbabilityOccupied(Point(x_m, y_m));
 }
 
 bool AStar::reconstructPath()

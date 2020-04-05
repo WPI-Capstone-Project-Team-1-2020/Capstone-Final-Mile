@@ -6,6 +6,7 @@
 
 // Libraries
 #include <chrono>
+#include <unsupported/Eigen/Splines>
 
 // Standard
 #include <utility>
@@ -27,7 +28,14 @@ AStar::~AStar() = default;
 bool AStar::update()
 {
     resetPlanner();
-    initializePlanner();
+    
+    if (initializePlanner() == false)
+    {
+        ROS_ERROR_STREAM("Failed to initialize planner");
+
+        return false;
+    }
+
     return planTrajectory();
 }
 
@@ -42,19 +50,33 @@ void AStar::resetPlanner() noexcept
    GraphNode::id_generator = 0U;
 }
 
-void AStar::initializePlanner() noexcept
+bool AStar::initializePlanner() noexcept
 {
     m_costmap.setOccupancyGrid(m_data.getCostmap(), m_data.getLocalPose()->pose.pose);
 
     GraphNode start_node;    
-    start_node.setEstimatedPointM(Point(m_data.getLocalPose()->pose.pose.position.x, m_data.getLocalPose()->pose.pose.position.y));
+    start_node.setEstimatedPointM(Point(0.0, 0.0));
     start_node.setCost(std::numeric_limits<float64_t>::max());
 
     m_frontier.emplace(start_node);
     m_open_nodes.emplace(start_node);
     m_nodes.emplace(start_node.getID(), std::move(start_node));
 
-    m_goal_node.setEstimatedPointM(Point(m_data.getGoalPose()->x_m, m_data.getGoalPose()->y_m));
+    const float64_t dx_m      = m_data.getGoalPose()->x_m - m_data.getLocalPose()->pose.pose.position.x;
+    const float64_t dy_m      = m_data.getGoalPose()->y_m - m_data.getLocalPose()->pose.pose.position.y;    
+    const float64_t dp_m      = std::sqrt(std::pow(dx_m, 2U) + std::pow(dy_m, 2U));
+    
+    if (dp_m > 40.0)
+    {        
+        return false;
+    }
+    
+    const float64_t goal_x_m  = dp_m;
+    const float64_t goal_y_m  = 0.0;
+
+    m_goal_node.setEstimatedPointM(Point(goal_x_m, goal_y_m));
+
+    return true;
 }
 
 bool AStar::planTrajectory()
@@ -97,6 +119,7 @@ bool AStar::planTrajectory()
         else
         {
             ROS_ERROR_STREAM("Frontier empty, all possible nodes explored");
+
             return false;
         }
     }
@@ -208,13 +231,25 @@ std::int64_t AStar::getProbabilityCollision(const Point& pt)
 
 bool AStar::reconstructPath()
 {
+    auto transform_pt = [&data = this->m_data](const Point& pt) -> Point
+    {
+
+        const float64_t dx_m      = data.getGoalPose()->x_m - data.getLocalPose()->pose.pose.position.x;
+        const float64_t dy_m      = data.getGoalPose()->y_m - data.getLocalPose()->pose.pose.position.y;    
+        const float64_t heading_r = std::atan2(dy_m, dx_m);
+        const float64_t dp_m      = std::sqrt(std::pow(pt.getX(), 2U) + std::pow(pt.getY(), 2U));
+        const float64_t x_m       = data.getLocalPose()->pose.pose.position.x + dp_m*std::cos(heading_r);
+        const float64_t y_m       = data.getLocalPose()->pose.pose.position.y + dp_m*std::sin(heading_r);        
+
+        return Point(x_m, y_m);
+    };
+
     m_path.clear();
     GraphNode cur_node = m_goal_node;
-    m_path.emplace_back(cur_node.getPointM());
     constexpr std::uint64_t start_id{0U};
 
     while (cur_node.getID() != start_id)
-    {                 
+    {              
         std::unordered_map<std::uint64_t, GraphNode>::const_iterator parent_it = m_nodes.find(cur_node.getParentID());
         
         if (parent_it != m_nodes.cend())
@@ -226,10 +261,42 @@ bool AStar::reconstructPath()
             return false;
         }
 
-        m_path.emplace_back(cur_node.getPointM());
+        m_path.emplace_back(transform_pt(cur_node.getPointM()));
     }
 
     std::reverse(m_path.begin(), m_path.end());
+
+    using Spline1d               = Eigen::Spline<float64_t, 2>;
+    using Spline1dFitting        = Eigen::SplineFitting<Spline1d>;
+    using KnotVectorType         = Spline1d::KnotVectorType;
+    using ControlPointVectorType = Spline1d::ControlPointVectorType;
+
+    ControlPointVectorType ctrl_pts(2, m_path.size());    
+    KnotVectorType         chord_lengths;
+
+    for (std::size_t pt_it = 0U; pt_it < m_path.size(); ++pt_it)
+    {   
+        ctrl_pts(0, pt_it) = m_path[pt_it].getX();
+        ctrl_pts(1, pt_it) = m_path[pt_it].getY();
+    }
+
+    Eigen::ChordLengths(ctrl_pts, chord_lengths);
+
+    const Spline1d spline = Spline1dFitting::Interpolate(ctrl_pts, 3, chord_lengths);    
+
+    std::vector<Point> smoothed_path;
+    smoothed_path.reserve(m_path.size());
+    const std::size_t num_spline_pts = m_path.size();
+
+    for (std::size_t spline_it = 0U; spline_it < num_spline_pts; ++spline_it)
+    {        
+        const float64_t spline_disc_pt  = static_cast<float64_t>(spline_it)/static_cast<float64_t>(num_spline_pts);
+        const Eigen::MatrixXd spline_pt = spline.operator()(spline_disc_pt);
+        Point tmp_pt(spline_pt(0), spline_pt(1));
+        smoothed_path.emplace_back(std::move(tmp_pt));
+    }
+
+    m_path = std::move(smoothed_path);
 
     m_ros_path.poses.reserve(m_path.size());
     std::for_each(m_path.cbegin(),

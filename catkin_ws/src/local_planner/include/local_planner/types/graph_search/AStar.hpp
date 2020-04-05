@@ -62,7 +62,8 @@ private:
     void resetPlanner() noexcept;
 
     /// @brief Initializes the planner
-    void initializePlanner() noexcept;
+    /// @return `true` if successful
+    bool initializePlanner() noexcept;
 
     /// @brief Plans a trajectory
     /// @return `true` if successful

@@ -97,12 +97,12 @@ void GlobalPlanner::line(float end_x, float end_y) //local_reached to local_stat
       //double x_d = end_x - odom_x;  // delta x
       //double y_d = end_y - odom_y; // delta y
 
-      double angle = atan2(y_d,x_d)*180/pi; //double or float?
+      double angle = atan2(y_d,x_d); //double or float?
 
       std::cout << "angle is  " << angle << std::endl;
 
       double x = odom_x + n*cos(angle); //*180/pi; //double or float? 
-      double y = odom_y - n*sin(angle); //*180/pi; //double or float?
+      double y = odom_y + n*sin(angle); //*180/pi; //double or float?
 
       goal_pose.x_m = x;
       goal_pose.y_m = y;
@@ -269,6 +269,8 @@ int main(int argc, char* argv[])
 
   ros::Rate loop_rate(10); //10 for 10x per second
   std::cout << "rate started" << std::endl;
+
+  sleep(5);
 
   // Send takeoff command
   GlobalPlanner.updateTakeoff(altitude, takeoff_reached);  //send takeoff 

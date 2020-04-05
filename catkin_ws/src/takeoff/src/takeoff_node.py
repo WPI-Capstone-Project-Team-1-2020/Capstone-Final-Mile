@@ -40,12 +40,10 @@ class Take_Off:
         self.goal_reached = msg.goalReached
         self.goal_alt = msg.height
         self.start_time = time.time()
+        self.got_new_goal = True
         # Update the Flag for other nodes indicating the status of the takeoff node
         if not self.goal_reached:
             print("Commence Takeoff")
-            # Inform the Global Planner that the Goal is NOT reached
-            self.status_msg.status = self.goal_reached
-            self.status_pub.publish(self.status_msg)
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -87,11 +85,12 @@ class Take_Off:
 
         alt_threshold = 0.5             # meters
         horizontal_threshold = 2        # meters, summed in x and y axis
-        self.goal_reached = True        # Assume goal is reached (no action required) until told otherwise.
+        self.goal_reached = False       # Assume goal is reached (no action required) until told otherwise.
         self.goal_alt = 0               # Initial Goal Altitude
         self.should_be_done_time = 120  # Seconds it should take to complete a takeoff
         self.start_time = time.time()   # Initialize Start Time
         self.barro_alt = 13             # Default altitude until first callback
+        self.got_new_goal = False       # Flag for status of getting New Goal
 
         PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
@@ -111,7 +110,7 @@ class Take_Off:
         rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1)     # Altimeter Subscriber
         rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
         rospy.Subscriber("/ground_truth/state", Odometry, self.callbacktruth, queue_size=1) # Ground truth Subscriber
-        rospy.Subscriber("/takeoff", Takeoff, self.callbackTakeoff, queue_size=1)           # Global Planner Subscriber
+        rospy.Subscriber("/takeoff", Takeoff, self.callbackTakeoff, queue_size=10)          # Global Planner Subscriber
         
         # Publishers
         print("Takeoff Node: Defining Publishers")
@@ -137,7 +136,7 @@ class Take_Off:
 
         print("Commencing Takeoff Node Execution")
         while not rospy.is_shutdown():
-            if not self.goal_reached:
+            if self.got_new_goal:
                 
                 # Vertical control based on altimeter (barometer)
                 alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
@@ -158,22 +157,34 @@ class Take_Off:
                 if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
                     print("Takeoff Complete")
                     self.goal_reached = True
-                    self.status_msg.status = self.goal_reached
-                    self.status_pub.publish(self.status_msg)
+                    self.got_new_goal = False
+
+            self.status_msg.status = self.goal_reached
+            self.status_pub.publish(self.status_msg)
             
             # Publish Diagnostic Info
             self.current_time = time.time()
             self.elapsed_time = self.current_time - self.start_time
             
-            if self.goal_reached:
+            if not self.goal_reached and not self.got_new_goal:
                 self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Standby'),
-                                KeyValue(key = 'Goal Height', value = 'None')]
-            else:
+                                            KeyValue(key = 'Goal Height', value = 'None')]
+                self.diag_status.level = 0
+                self.diag_status.message = 'OK'
+            elif not self.goal_reached and self.got_new_goal:
                 self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Running'),
-                                    KeyValue(key = 'Goal Height', value = '{}'.format(self.goal_alt))]
+                                            KeyValue(key = 'Goal Height', value = '{}'.format(self.goal_alt))]
                 if self.elapsed_time > self.should_be_done_time:
                     self.diag_status.level = 1
                     self.diag_status.message = 'Takeoff Taking Longer Than Expected'
+                else:
+                    self.diag_status.level = 0
+                    self.diag_status.message = 'OK'
+            else:
+                self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Error'),
+                                            KeyValue(key = 'Goal Height', value = 'Error')]
+                self.diag_status.level = 2
+                self.diag_status.message = 'Invalid Takeoff Node State'    
             self.diag_msg.status = [self.diag_status]
             self.diag_pub.publish(self.diag_msg)
         

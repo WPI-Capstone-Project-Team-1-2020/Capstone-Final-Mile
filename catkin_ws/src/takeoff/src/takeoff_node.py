@@ -44,6 +44,8 @@ class Take_Off:
         # Update the Flag for other nodes indicating the status of the takeoff node
         if not self.goal_reached:
             print("Commence Takeoff")
+            self.status_msg.status = self.goal_reached
+            self.status_pub.publish(self.status_msg)
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -158,15 +160,15 @@ class Take_Off:
                     print("Takeoff Complete")
                     self.goal_reached = True
                     self.got_new_goal = False
+                    self.status_msg.status = self.goal_reached
+                    self.status_pub.publish(self.status_msg)
 
-            self.status_msg.status = self.goal_reached
-            self.status_pub.publish(self.status_msg)
+            
             
             # Publish Diagnostic Info
             self.current_time = time.time()
             self.elapsed_time = self.current_time - self.start_time
             
-            print(self.goal_reached, self.got_new_goal)
             if not self.got_new_goal:
                 self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Standby'),
                                             KeyValue(key = 'Goal Height', value = 'None')]

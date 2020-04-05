@@ -166,7 +166,8 @@ class Take_Off:
             self.current_time = time.time()
             self.elapsed_time = self.current_time - self.start_time
             
-            if not self.goal_reached and not self.got_new_goal:
+            print(self.goal_reached, self.got_new_goal)
+            if not self.got_new_goal:
                 self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Standby'),
                                             KeyValue(key = 'Goal Height', value = 'None')]
                 self.diag_status.level = 0

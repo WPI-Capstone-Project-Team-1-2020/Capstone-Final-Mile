@@ -84,7 +84,7 @@ class Take_Off:
         self.ang_vel = np.zeros(3)        # IMU Angular Velocity
 
         # Configuration Parameters
-        self.Hertz = 50  # frequency of while loop
+        self.Hertz = 100            # frequency of while loop
         self.lat_ref = 42.275011    # Latitude at origin of local frame
         self.lon_ref = -71.777747   # Longitude at origin of local frame
         self.declination = -14.10   # Difference between magnetic and true north at origin of local frame (West -> minus)

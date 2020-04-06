@@ -12,6 +12,7 @@ goal_reached_tol_m: 5.0  # Goal tolerance
 
 # Tuning parameters
 graph_discretization_m: 0.1  # Discretization of graph, in meters
+max_goal_delta_m:       40.0 # Max distance a goal can be from local pose
 search_timeout_ms:      500  # Retry planning if time spent exceeds this         
 
 # Collision parameters

@@ -42,6 +42,7 @@ public:
     float64_t    getDGain()             const noexcept {return m_d;}
     float64_t    getMaxDtS()            const noexcept {return m_max_dt_s;}
     std::int32_t getControlBufferSize() const noexcept {return m_ctl_buffer_size;}
+    /// @}
 
 private:
     /// @brief Gains

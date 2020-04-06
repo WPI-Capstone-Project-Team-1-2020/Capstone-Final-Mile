@@ -92,6 +92,7 @@ class Landing_Node:
 
         alt_threshold = 0.25                # meters, based on sonar return
         horizontal_threshold = 2            # meters, summed in x and y axis
+        self.altitude_ctrl_shift = 20       # meters at which control shifts to ultrasonic sensor
         self.goal_reached = True            # Assume goal reached (no action required) upon startup.
         self.landing_check = 0              # Track number of sequential returns less than threshold
         self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
@@ -147,7 +148,7 @@ class Landing_Node:
             if not self.goal_reached:
                 # Vertical control based on altimeter (barometer)
                 alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
-                if (sonic_dist == sonic_max) and (barro_alt > sonic_max):  # If outside range of the sonic sensor, use the barometer.
+                if barro_alt > sonic_max:  # If outside range of the sonic sensor, use the barometer.
                     vel_msg.linear.z = alt_pid(barro_alt) 
                 else:                        # In range of the sonic sensor
                     vel_msg.linear.z = alt_pid(self.goal_alt + sonic_dist)

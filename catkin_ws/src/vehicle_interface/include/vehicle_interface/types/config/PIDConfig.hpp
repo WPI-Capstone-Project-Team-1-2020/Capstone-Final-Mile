@@ -32,7 +32,7 @@ public:
     }
 
     /// @brief Default destructor for forward declares
-    PIDConfig() = default;
+    ~PIDConfig() = default;
 
     /// @brief Accessor
     /// @return Val

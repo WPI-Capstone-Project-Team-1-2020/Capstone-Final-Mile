@@ -57,8 +57,8 @@ class Take_Off:
 
         lat_avg = ((gpslat + reflat)/2)*(math.pi/180)   # Average of the two latitudes in radians
 
-        # delta in latittude converted to meters
-        xlocal = (reflat - gpslat)*(111132.92 - 559.82*math.cos(2*lat_avg) + 1.175*math.cos(4*lat_avg) - 0.0023*math.cos(6*lat_avg))  
+        # delta in latittude converted to meters IMPORTANT: Only works in this quadrant of the hemisphere based on order of the reference and gps lat/lon.
+        xlocal = (gpslat - reflat)*(111132.92 - 559.82*math.cos(2*lat_avg) + 1.175*math.cos(4*lat_avg) - 0.0023*math.cos(6*lat_avg))  
         # delta in longitude converted to meters
         ylocal = (reflon - gpslon)*(111412.84*math.cos(lat_avg) - 93.5*math.cos(3*lat_avg) + 0.118*math.cos(5*lat_avg))
 
@@ -84,7 +84,7 @@ class Take_Off:
         self.ang_vel = np.zeros(3)        # IMU Angular Velocity
 
         # Configuration Parameters
-        self.Hertz = 20  # frequency of while loop
+        self.Hertz = 50  # frequency of while loop
         self.lat_ref = 42.275011    # Latitude at origin of local frame
         self.lon_ref = -71.777747   # Longitude at origin of local frame
         self.declination = -14.10   # Difference between magnetic and true north at origin of local frame (West -> minus)

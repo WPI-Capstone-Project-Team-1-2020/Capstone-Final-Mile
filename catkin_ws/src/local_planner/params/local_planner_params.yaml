@@ -8,7 +8,7 @@ path_topic:           "/local_planner/path"                   # Path topic
 
 # Performance
 update_rate_hz:     10.0 # Update rate in hz
-goal_reached_tol_m: 5.0  # Goal tolerance
+goal_reached_tol_m: 2.0  # Goal tolerance
 
 # Tuning parameters
 graph_discretization_m: 0.1  # Discretization of graph, in meters

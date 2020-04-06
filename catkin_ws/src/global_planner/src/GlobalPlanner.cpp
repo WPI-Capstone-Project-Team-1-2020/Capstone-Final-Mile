@@ -195,7 +195,7 @@ void GlobalPlanner::localMsgCallBack(const std_msgs::Bool::ConstPtr &msg) //std_
 * Control Loop function
 *******************************************************************************/
 //void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
-void GlobalPlanner::controlLoop()  //bool
+void GlobalPlanner::controlLoop(bool land_reached)  //bool
 {
 
   // Initial parameters  
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 
   while (ros::ok())
   {
-    GlobalPlanner.controlLoop();  
+    GlobalPlanner.controlLoop(land_reached);  
     ros::spinOnce();
     loop_rate.sleep();
 

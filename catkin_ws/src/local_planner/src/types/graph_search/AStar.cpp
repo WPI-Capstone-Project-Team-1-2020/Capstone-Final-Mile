@@ -66,8 +66,10 @@ bool AStar::initializePlanner() noexcept
     const float64_t dy_m      = m_data.getGoalPose()->y_m - m_data.getLocalPose()->pose.pose.position.y;    
     const float64_t dp_m      = std::sqrt(std::pow(dx_m, 2U) + std::pow(dy_m, 2U));
     
-    if (dp_m > 40.0)
+    if (dp_m > m_cfg->getMaxGoalDeltaM())
     {        
+        ROS_ERROR_STREAM("Goal requested is " + std::to_string(dp_m) + " meters away, max is" + std::to_string(m_cfg->getMaxGoalDeltaM()) + " meters");
+
         return false;
     }
     

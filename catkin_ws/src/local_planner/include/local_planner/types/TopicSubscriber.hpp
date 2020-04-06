@@ -35,6 +35,10 @@ public:
     /// @return Local planner data
     const LocalPlannerData& getLocalPlannerData() const noexcept {return m_data;}
 
+    /// @brief Mutator for goal reached
+    /// @param goal_reached `true` if goal has been reached
+    void setGoalReached(const bool goal_reached) noexcept {m_data.setGoalReached(goal_reached);}
+
 private:
     /// @brief Costmap callback
     /// @param msg Costmap sent through IPC

@@ -16,6 +16,7 @@ public:
     /// @brief Accessor
     /// @return Val
     /// @{
+    bool                                     getGoalReached()   const noexcept {return m_goal_reached;}
     const nav_msgs::OccupancyGrid::ConstPtr& getCostmap()       const noexcept {return m_costmap;}
     const autonomy_msgs::GoalPose::ConstPtr& getGoalPose()      const noexcept {return m_goal_pose;}
     const nav_msgs::Odometry::ConstPtr&      getLocalPose()     const noexcept {return m_local_pose;}
@@ -24,15 +25,17 @@ public:
     /// @brief Mutator
     /// @param val Val
     /// @{
+    void setGoalReached(const bool val)                            noexcept {m_goal_reached = val;}
     void setCostmap(const nav_msgs::OccupancyGrid::ConstPtr& val)  noexcept {m_costmap = val;}
     void setGoalPose(const autonomy_msgs::GoalPose::ConstPtr& val) noexcept {m_goal_pose = val;}
     void setLocalPose(const nav_msgs::Odometry::ConstPtr& val)     noexcept {m_local_pose = val;}
     /// @}
 
 private:
-    nav_msgs::OccupancyGrid::ConstPtr       m_costmap;        ///< Costmap for the local planner
-    autonomy_msgs::GoalPose::ConstPtr       m_goal_pose;      ///< Goal pose for the local planner
-    nav_msgs::Odometry::ConstPtr            m_local_pose;     ///< Local pose for the local planner
+    bool                                    m_goal_reached{false};  ///< Flag to indicate goal has been reached
+    nav_msgs::OccupancyGrid::ConstPtr       m_costmap;              ///< Costmap for the local planner
+    autonomy_msgs::GoalPose::ConstPtr       m_goal_pose;            ///< Goal pose for the local planner
+    nav_msgs::Odometry::ConstPtr            m_local_pose;           ///< Local pose for the local planner
 };    
 
 } // namespace local_planner

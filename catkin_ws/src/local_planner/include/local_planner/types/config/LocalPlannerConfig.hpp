@@ -38,6 +38,7 @@ public:
         pnh.getParam("path_topic",                  m_path_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
         pnh.getParam("goal_reached_tol_m",          m_goal_tol_m);
+        pnh.getParam("max_goal_delta_m",            m_max_goal_delta_m);
         pnh.getParam("search_timeout_ms",           m_timeout_ms);
         pnh.getParam("lethal_cost_probability",     m_lethal_prob);
         pnh.getParam("non_lethal_cost_mult",        m_non_lethal_cost_mult);
@@ -57,6 +58,7 @@ public:
     const std::string&              getPathTopic()                      const noexcept {return m_path_topic;}
     float64_t                       getUpdateRateHz()                   const noexcept {return m_update_rate_hz;}
     float64_t                       getGoalReachedTolerance()           const noexcept {return m_goal_tol_m;}
+    float64_t                       getMaxGoalDeltaM()                  const noexcept {return m_max_goal_delta_m;}
     std::int32_t                    getSearchTimeoutMs()                const noexcept {return m_timeout_ms;}
     std::int32_t                    getLethalProbability()              const noexcept {return m_lethal_prob;}
     float64_t                       getNonLethalCostMult()              const noexcept {return m_non_lethal_cost_mult;}
@@ -77,9 +79,10 @@ private:
 
     /// @brief Performance
     /// @{
-    float64_t    m_update_rate_hz{10.0}; ///< Update rate in hz
-    float64_t    m_goal_tol_m{0.5};      ///< Tolerance when checking for goal (outside of solvers)
-    std::int32_t m_timeout_ms{150};      ///< Timeout in ms
+    float64_t    m_update_rate_hz{10.0};   ///< Update rate in hz
+    float64_t    m_goal_tol_m{0.5};        ///< Tolerance when checking for goal (outside of solvers)
+    float64_t    m_max_goal_delta_m{40.0}; ///< Max distance a goal can be from current pose
+    std::int32_t m_timeout_ms{150};        ///< Timeout in ms
     /// @}
 
     /// @brief Collision parameters

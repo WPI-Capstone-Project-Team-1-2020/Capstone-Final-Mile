@@ -40,7 +40,8 @@ void LocalPlanner::update(const ros::TimerEvent& event)
 
         if (GoalChecker::checkGoalReached(data, m_cfg->getGoalReachedTolerance()) == true)
         {
-            m_topic_pub->publishGoalReached(true); 
+            m_topic_sub->setGoalReached(true);
+            m_topic_pub->publishGoalReached(true);             
 
             return;
         }

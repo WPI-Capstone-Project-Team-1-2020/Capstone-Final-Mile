@@ -7,6 +7,7 @@
 
 // Libraries
 #include <boost/cstdfloat.hpp>
+#include <boost/circular_buffer.hpp>
 
 // Ros
 #include <geometry_msgs/Twist.h>
@@ -62,6 +63,10 @@ private:
     float64_t calculateD() const noexcept;
     /// @}
 
+    /// @brief FIR filter helper function
+    /// @param input The input to filter into output
+    float64_t filterOutput(const float64_t input);
+
 
     float64_t m_setpoint{0.0}; ///< Setpoint
     float64_t m_feedback{0.0}; ///< Feedback
@@ -73,6 +78,8 @@ private:
     float64_t m_error{0.0};         ///< Current error
     float64_t m_integral{0.0};      ///< Integral
     float64_t m_last_error{0.0};    ///< Last error (previous iteration)
+
+    boost::circular_buffer<float64_t> m_fir_buffer; ///< Circular buffer for FIR filter
 
     PIDConfig m_cfg;           ///< PID Config
 };

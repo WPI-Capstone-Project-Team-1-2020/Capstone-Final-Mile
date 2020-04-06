@@ -10,7 +10,7 @@ namespace vi
 PIDController::PIDController(const PIDConfig& cfg) :
     m_cfg{cfg},
     m_last_time_s{ros::Time(0.0)},
-    m_fir_buffer{boost::circular_buffer<float64_t>(cfg.getFIRBufferSize())}
+    m_ctl_buffer{boost::circular_buffer<float64_t>(cfg.getControlBufferSize())}
 {}
 
 PIDController::~PIDController() = default;
@@ -64,8 +64,8 @@ float64_t PIDController::calculateD() const noexcept
 
 float64_t PIDController::filterOutput(const float64_t input)
 {
-    m_fir_buffer.push_back(input);
-    return std::accumulate(m_fir_buffer.begin(), m_fir_buffer.end(), 0.0)/m_fir_buffer.size();
+    m_ctl_buffer.push_back(input);
+    return std::accumulate(m_ctl_buffer.begin(), m_ctl_buffer.end(), 0.0)/m_ctl_buffer.size();
 }
 
 } // namespace vi

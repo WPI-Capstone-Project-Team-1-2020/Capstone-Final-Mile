@@ -63,7 +63,7 @@ private:
     float64_t calculateD() const noexcept;
     /// @}
 
-    /// @brief FIR filter helper function
+    /// @brief ctl filter helper function
     /// @param input The input to filter into output
     float64_t filterOutput(const float64_t input);
 
@@ -79,7 +79,7 @@ private:
     float64_t m_integral{0.0};      ///< Integral
     float64_t m_last_error{0.0};    ///< Last error (previous iteration)
 
-    boost::circular_buffer<float64_t> m_fir_buffer; ///< Circular buffer for FIR filter
+    boost::circular_buffer<float64_t> m_ctl_buffer; ///< Circular buffer for ctl filter
 
     PIDConfig m_cfg;           ///< PID Config
 };

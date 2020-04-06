@@ -28,7 +28,7 @@ public:
         pnh.getParam(prefix + "_i",     m_i);
         pnh.getParam(prefix + "_d",     m_d);        
         pnh.getParam("max_dt_s",        m_max_dt_s);
-        pnh.getParam("fir_buffer_size", m_fir_buffer_size);
+        pnh.getParam("ctl_buffer_size", m_ctl_buffer_size);
     }
 
     /// @brief Default destructor for forward declares
@@ -37,11 +37,11 @@ public:
     /// @brief Accessor
     /// @return Val
     /// @{
-    float64_t    getPGain()         const noexcept {return m_p;}
-    float64_t    getIGain()         const noexcept {return m_i;}
-    float64_t    getDGain()         const noexcept {return m_d;}
-    float64_t    getMaxDtS()        const noexcept {return m_max_dt_s;}
-    std::int32_t getFIRBufferSize() const noexcept {return m_fir_buffer_size;}
+    float64_t    getPGain()             const noexcept {return m_p;}
+    float64_t    getIGain()             const noexcept {return m_i;}
+    float64_t    getDGain()             const noexcept {return m_d;}
+    float64_t    getMaxDtS()            const noexcept {return m_max_dt_s;}
+    std::int32_t getControlBufferSize() const noexcept {return m_ctl_buffer_size;}
 
 private:
     /// @brief Gains
@@ -58,7 +58,7 @@ private:
 
     /// @brief Filter configs
     /// @{
-    std::int32_t m_fir_buffer_size{100};
+    std::int32_t m_ctl_buffer_size{100};
     /// @}
 };
 

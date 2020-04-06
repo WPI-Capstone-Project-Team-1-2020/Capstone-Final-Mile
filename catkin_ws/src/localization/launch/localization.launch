@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+     <node pkg="localization" type="localization_node.py" name="localization_node" output="screen"/>
+</launch>

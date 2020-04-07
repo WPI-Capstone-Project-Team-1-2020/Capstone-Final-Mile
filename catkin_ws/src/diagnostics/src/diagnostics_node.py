@@ -8,6 +8,11 @@ class Diagnostics_Node:
 
     def callbackDiagnostics(self, msg):
         self.received_diag_msg = msg.status[0]
+        if self.received_diag_msg.name in self.names:
+            self.diag_agg_status[self.names.index(self.received_diag_msg.name)] = self.received_diag_msg
+        else:
+            self.names.append(self.received_diag_msg.name)
+            self.diag_agg_status.append(self.received_diag_msg)
 
     # Utility Functions
 
@@ -21,11 +26,11 @@ class Diagnostics_Node:
         self.received_diag_msg = []
 
         # Configuration Parameters
-        self.Hertz = 20  # frequency of while loop
+        self.Hertz = 100  # frequency of while loop
 
         # Subscribers
         print("Diagnostics Node: Defining Subscribers")
-        rospy.Subscriber("/diagnostics", DiagnosticArray, self.callbackDiagnostics, queue_size=10) # Diagnostics
+        rospy.Subscriber("/diagnostics", DiagnosticArray, self.callbackDiagnostics, queue_size=1000) # Diagnostics
 
         # Publishers
         print("Diagnostics Node: Defining Publishers")
@@ -43,15 +48,8 @@ class Diagnostics_Node:
 
         print("Commencing Diagnostics Node Execution")
         while not rospy.is_shutdown():
-            if self.received_diag_msg != []:
-                if self.received_diag_msg.name in self.names:
-                    self.diag_agg_status[self.names.index(self.received_diag_msg.name)] = self.received_diag_msg
-                else:
-                    self.names.append(self.received_diag_msg.name)
-                    self.diag_agg_status.append(self.received_diag_msg)
-
-                self.diag_agg_msg.status = self.diag_agg_status
-                self.diag_pub.publish(self.diag_agg_msg)
+            self.diag_agg_msg.status = self.diag_agg_status
+            self.diag_pub.publish(self.diag_agg_msg)
             rate.sleep()
 
 

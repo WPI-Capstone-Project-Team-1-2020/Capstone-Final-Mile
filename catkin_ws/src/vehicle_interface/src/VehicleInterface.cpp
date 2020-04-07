@@ -89,9 +89,9 @@ void VehicleInterface::update(const ros::TimerEvent& event)
         else
         {
             geometry_msgs::Twist cmd;
-            cmd.linear.x = 0.0;
-            cmd.linear.y = 0.0;
-            cmd.linear.z = 0.0;
+            cmd.linear.x  = 0.0;
+            cmd.linear.y  = 0.0;
+            cmd.linear.z  = 0.0;
             cmd.angular.x = 0.0;
             cmd.angular.y = 0.0;
             cmd.angular.z = 0.0;

@@ -11,6 +11,7 @@ find_package (Eigen3 3.3.7 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   autonomy_msgs
   geometry_msgs
+  diagnostic_msgs
   nav_msgs
   roscpp
   sensor_msgs
@@ -116,7 +117,7 @@ catkin_package(
    include/local_planner/types/graph_search
    include/local_planner/types/helper
 #  LIBRARIES local_planner
-  CATKIN_DEPENDS autonomy_msgs geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
+  CATKIN_DEPENDS autonomy_msgs diagnostic_msgs geometry_msgs nav_msgs roscpp sensor_msgs tf urdf
 #  DEPENDS system_lib
 )
 

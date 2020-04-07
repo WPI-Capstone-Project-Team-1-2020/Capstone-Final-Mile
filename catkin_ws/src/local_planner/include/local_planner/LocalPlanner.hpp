@@ -37,6 +37,10 @@ private:
     /// @param event Timer event
     void update(const ros::TimerEvent& event);
 
+    /// @brief Reports diagnostics on the local planner
+    /// @param health `true` if healthy
+    void updateDiagnostics(const bool health);
+
     std::shared_ptr<LocalPlannerConfig> m_cfg;         ///< Configuration of local planner
     std::unique_ptr<TopicSubscriber>    m_topic_sub;   ///< Topic Subscriber
     std::unique_ptr<TopicPublisher>     m_topic_pub;   ///< Topic Publisher

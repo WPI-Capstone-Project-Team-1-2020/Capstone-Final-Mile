@@ -41,7 +41,8 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         if (GoalChecker::checkGoalReached(data, m_cfg->getGoalReachedTolerance()) == true)
         {
             m_topic_sub->setGoalReached(true);
-            m_topic_pub->publishGoalReached(true);             
+            m_topic_pub->publishGoalReached(true);        
+            updateDiagnostics(true);     
 
             return;
         }
@@ -56,12 +57,37 @@ void LocalPlanner::update(const ros::TimerEvent& event)
             m_topic_pub->publishGoalReached(false);                    
             m_topic_pub->publishTrajectory(traj);
             m_topic_pub->publishPath(ros_path);
+
+            updateDiagnostics(true);
         }
         else
         {
             ROS_ERROR_STREAM("Unable to plan trajectory");
+            updateDiagnostics(false);
         }  
-    }        
+    }  
+    else
+    {
+        if ((m_topic_sub->getLocalPlannerData().getCostmap()       == nullptr) ||
+            (m_topic_sub->getLocalPlannerData().getLocalPose()     == nullptr))
+        {   
+            updateDiagnostics(false);    
+        }   
+    }      
+}
+
+void LocalPlanner::updateDiagnostics(const bool health)
+{
+    diagnostic_msgs::DiagnosticArray array;
+    array.header.stamp = ros::Time::now();
+
+    diagnostic_msgs::DiagnosticStatus status;
+    status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
+    status.name  = "Local Planner Node";
+
+    array.status.push_back(status);
+
+    m_topic_pub->publishDiagnostics(boost::make_shared<diagnostic_msgs::DiagnosticArray>(array));
 }
 
 } // namespace local_planner

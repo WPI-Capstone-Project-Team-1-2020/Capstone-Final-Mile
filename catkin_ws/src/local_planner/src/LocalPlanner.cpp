@@ -33,7 +33,8 @@ void LocalPlanner::update(const ros::TimerEvent& event)
 {
     if ((m_topic_sub->getLocalPlannerData().getCostmap()       != nullptr) &&
         (m_topic_sub->getLocalPlannerData().getGoalPose()      != nullptr) &&
-        (m_topic_sub->getLocalPlannerData().getLocalPose()     != nullptr))
+        (m_topic_sub->getLocalPlannerData().getLocalPose()     != nullptr) &&
+        (m_topic_sub->getLocalPlannerData().getGoalReached()   == false))
     {
         LocalPlannerData data = m_topic_sub->getLocalPlannerData();
         data.setLocalPose(ForwardSimHelper::forwardSimPose(m_topic_sub->getLocalPlannerData().getLocalPose(), event.current_real));

@@ -98,6 +98,31 @@ void VehicleInterface::update(const ros::TimerEvent& event)
             m_topic_pub->publishCommand(boost::make_shared<geometry_msgs::Twist>(cmd));
         }
     }
+
+    if (m_topic_sub->getVehicleInterfaceData().getLocalPose()  == nullptr)
+    {
+        updateDiagnostics(false);
+    }
+    else
+    {
+        updateDiagnostics(true);
+    }
+    
+
+}
+
+void VehicleInterface::updateDiagnostics(const bool health)
+{
+    diagnostic_msgs::DiagnosticArray array;
+    array.header.stamp = ros::Time::now();
+
+    diagnostic_msgs::DiagnosticStatus status;
+    status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
+    status.name  = "Vehicle Interface Node";
+
+    array.status.push_back(status);
+
+    m_topic_pub->publishDiagnostics(boost::make_shared<diagnostic_msgs::DiagnosticArray>(array));
 }
 
 } // namespace vi

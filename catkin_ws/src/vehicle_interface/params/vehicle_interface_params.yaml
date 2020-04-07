@@ -6,6 +6,7 @@ trajectory_topic:           "/local_planner/trajectory"   # Local trajectory top
 takeoff_land_topic:         "/height_controller"          # Height control topic
 local_pose_topic:           "/local_odom"                 # Local Pose Topic
 command_topic:              "/cmd_vel"                    # Command topic
+diagnostics_topic:          "/diagnostics"                # Diagnostics topic
 
 # Performance
 update_rate_hz:  1000.0 # Update rate in hz

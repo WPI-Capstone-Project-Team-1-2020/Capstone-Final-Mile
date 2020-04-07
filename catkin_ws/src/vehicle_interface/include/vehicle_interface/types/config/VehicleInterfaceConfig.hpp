@@ -37,6 +37,7 @@ public:
         pnh.getParam("local_pose_topic",       m_local_pose_topic);        
         pnh.getParam("command_topic",          m_cmd_topic);
         pnh.getParam("update_rate_hz",         m_update_rate_hz);
+        pnh.getParam("diagnostics_topic",      m_diagnostics_topic);
     }
 
     /// @brief Default destructor for forward declares
@@ -52,6 +53,7 @@ public:
     const std::string& getTakeoffLandTopic()    const noexcept {return m_takeoff_land_topic;}
     const std::string& getLocalPoseTopic()      const noexcept {return m_local_pose_topic;}    
     const std::string& getCommandTopic()        const noexcept {return m_cmd_topic;}
+    const std::string& getDiagnosticsTopic()    const noexcept {return m_diagnostics_topic;}
     float64_t          getUpdateRateHz()        const noexcept {return m_update_rate_hz;}
     const PIDConfig&   getLinearPIDConfig()     const noexcept {return m_linear_config;}
     const PIDConfig&   getAngularPIDConfig()    const noexcept {return m_angular_config;}
@@ -66,6 +68,7 @@ private:
     std::string m_takeoff_land_topic{""};    ///< Takeoff/landing command topic
     std::string m_local_pose_topic{""};      ///< Local pose topic      
     std::string m_cmd_topic{""};             ///< Command topic
+    std::string m_diagnostics_topic{""};     ///< Diagnostics topic
     /// @}
 
     /// @brief Performance

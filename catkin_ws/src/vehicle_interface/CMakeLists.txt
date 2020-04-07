@@ -10,6 +10,7 @@ add_compile_options(-std=c++14)
 find_package (Eigen3 3.3.7 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   autonomy_msgs
+  diagnostic_msgs
   geometry_msgs
   nav_msgs
   roscpp
@@ -113,7 +114,7 @@ catkin_package(
    include/vehicle_interface/types/core
    include/vehicle_interface/types/helper
 #  LIBRARIES vehicle_interface
-  CATKIN_DEPENDS autonomy_msgs geometry_msgs nav_msgs roscpp
+  CATKIN_DEPENDS autonomy_msgs diagnostic_msgs geometry_msgs nav_msgs roscpp
 #  DEPENDS system_lib
 )
 

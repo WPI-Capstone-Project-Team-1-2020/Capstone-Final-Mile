@@ -24,7 +24,7 @@ class GlobalPlanner
   GlobalPlanner(); 
   ~GlobalPlanner(); 
   bool init();
-  void controlLoop(bool land_reached); //bool
+  void controlLoop(bool land_reached, bool count); //bool
   //void controlLoop(bool takeoff_status, bool land_status, bool local_reached); //bool
   void updateTakeoff(double altitude, bool reached);  //send takeoff 
 
@@ -62,6 +62,7 @@ class GlobalPlanner
   float end_y; //double
   double altitude;
   int n;
+  //bool count;
 
   // Function prototypes
   void line(float end_x, float end_y); //linear trajectory //local_reached instead of local_status // double odom_x, double odom_y, bool local_status //double, double

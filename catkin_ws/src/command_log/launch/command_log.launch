@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+     <node pkg="command_log" type="command_log_node.py" name="command_log_node" output="screen"/>
+</launch>

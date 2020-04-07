@@ -89,7 +89,7 @@ class Landing_Node:
         self.odom_y = 0                 # Vehicle Y position
         self.odom_quat = np.zeros(4)    # Quaternion from the Localization Node
 
-        PID_alt = [0.5, 0, 0]      # PID Controller Tuning Values TODO Tune/Limit Controller
+        PID_alt = [0.1, 0, 0]    # PID Controller Tuning Values TODO Tune/Limit Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
@@ -140,7 +140,7 @@ class Landing_Node:
         while not rospy.is_shutdown():
             if not self.goal_reached:
                 # Vertical control based on altimeter (barometer)
-                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
+                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-5, 5)) # PID Controller
                 if self.odom_alt > self.altitude_ctrl_shift:  # If outside range of the sonic sensor, use the barometer.
                     vel_msg.linear.z = alt_pid(self.odom_alt) 
                 else:                        # In range of the sonic sensor

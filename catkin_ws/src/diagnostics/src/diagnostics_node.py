@@ -25,7 +25,7 @@ class Diagnostics_Node:
 
         # Subscribers
         print("Diagnostics Node: Defining Subscribers")
-        rospy.Subscriber("/diagnostics", DiagnosticArray, self.callbackDiagnostics, queue_size=1) # Diagnostics
+        rospy.Subscriber("/diagnostics", DiagnosticArray, self.callbackDiagnostics, queue_size=10) # Diagnostics
 
         # Publishers
         print("Diagnostics Node: Defining Publishers")

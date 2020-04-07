@@ -68,7 +68,7 @@ bool AStar::initializePlanner() noexcept
     
     if (dp_m > m_cfg->getMaxGoalDeltaM())
     {        
-        ROS_ERROR_STREAM("Goal requested is " + std::to_string(dp_m) + " meters away, max is" + std::to_string(m_cfg->getMaxGoalDeltaM()) + " meters");
+        ROS_ERROR_STREAM("Goal requested is " + std::to_string(dp_m) + " meters away, max is " + std::to_string(m_cfg->getMaxGoalDeltaM()) + " meters");
 
         return false;
     }

@@ -2,6 +2,8 @@
 #define VI_TOPIC_PUBLISHER_HPP
 
 // Ros
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 
@@ -30,10 +32,15 @@ public:
     /// @param cmd Command to publish
     void publishCommand(const geometry_msgs::Twist::ConstPtr& cmd);
 
+    /// @brief Publishes diagnostics
+    /// @param statuses Diagnostic statuses
+    void publishDiagnostics(const diagnostic_msgs::DiagnosticArray::ConstPtr& statuses);
+
 private:
 
     std::shared_ptr<VehicleInterfaceConfig> m_cfg;      ///< Config of the vehicle interface
     ros::Publisher                          m_traj_pub; ///< Trajectory publisher
+    ros::Publisher                          m_diag_pub; ///< Diagnostics publisher
 };    
 
 } // namespace vi

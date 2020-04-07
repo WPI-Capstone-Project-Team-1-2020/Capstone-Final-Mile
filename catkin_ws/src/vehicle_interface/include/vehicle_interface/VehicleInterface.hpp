@@ -33,6 +33,10 @@ private:
     /// @brief Main driving function of the vehicle interface
     /// @param event Timer event
     void update(const ros::TimerEvent& event);
+
+    /// @brief Updates diagnostics
+    /// @param health `true` if healthy
+    void updateDiagnostics(const bool health);
     
     std::shared_ptr<VehicleInterfaceConfig> m_cfg;         ///< Configuration of vehicle interface
     std::unique_ptr<Controller>             m_controller;  ///< Controller

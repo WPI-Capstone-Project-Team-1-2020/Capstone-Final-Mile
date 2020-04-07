@@ -34,7 +34,7 @@ void TopicSubscriber::onCostmapReceived(const nav_msgs::OccupancyGrid::ConstPtr&
 
 void TopicSubscriber::onGoalPoseReceived(const autonomy_msgs::GoalPose::ConstPtr& msg)
 {
-    m_data.setGoalReached(false);
+    //m_data.setGoalReached(false);
     m_data.setGoalPose(msg);
 }
 

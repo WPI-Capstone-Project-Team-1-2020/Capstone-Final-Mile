@@ -205,9 +205,9 @@ void GlobalPlanner::controlLoop(bool land_reached, bool count)  //bool
   //bool land_reached = false;
 
   //start_x = -1231.0;
-  end_x = 1292.0;
+  end_x = 287.0;
   //start_y = -285.6;
-  end_y = 205.5;
+  end_y = -1356.0;
 
 
   // Listen for takeoff goal reached
@@ -274,10 +274,10 @@ int main(int argc, char* argv[])
   //bool takeoff_status; // = false; //bool
   //bool land_status; // = false; //bool
   //int n = 30;
-  double start_x = -1231.0;
-  float end_x = 1292.0; //double //1292.0
-  double start_y = -285.6;
-  float end_y = 205.5; //double //205.5
+  double start_x = -219.0;
+  float end_x = 287.0; //double //1292.0
+  double start_y = 1190.0;
+  float end_y = -1356.0; //double //205.5
   bool count = true;
 
 

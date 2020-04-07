@@ -99,8 +99,8 @@ class Take_Off:
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
-        goal_x = -1230.999713
-        goal_y = -285.600030
+        goal_x = -219.0
+        goal_y = 1190.0
         # goal_lat = 42.2644910473    # Corresponds to Lat of Takeoff Pad
         # goal_lon = -71.7737136467   # Corresponds to Lon of Takeoff Pad
 

@@ -104,8 +104,8 @@ class Landing_Node:
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
-        goal_x = 1292
-        goal_y = 205.5
+        goal_x = 287.0
+        goal_y = -1356.0
         # goal_lat = 42.277712    # Corresponds to Lat of Landing Pad
         # goal_lon = -71.761568   # Corresponds to Lon of Landing Pad
         self.goal_alt = 8         # Desired Alititude in Meters (staying hardcoded since building height won't change)

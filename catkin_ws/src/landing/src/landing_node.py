@@ -3,13 +3,14 @@ import rospy
 import time
 import math
 import numpy as np
+from scipy.spatial.transform import Rotation as Rot
 from simple_pid import PID
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Range
 from hector_uav_msgs.msg import Altimeter
 from geometry_msgs.msg import Twist, Vector3Stamped
-from autonomy_msgs.msg import Landing, Status
+from autonomy_msgs.msg import Landing, Status, HospitalGoal
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 class Landing_Node:
@@ -19,29 +20,6 @@ class Landing_Node:
         global sonic_dist, sonic_max
         sonic_dist = msg.range
         sonic_max = msg.max_range
-
-    def callbackAltimeter(self, msg):
-        global barro_alt
-        barro_alt = msg.altitude
-
-    def callbacktruth(self, msg):
-        global x_truth, y_truth
-        x_truth = msg.pose.pose.position.x
-        y_truth = msg.pose.pose.position.y
-
-    def callbackMagnetic(self, msg):
-        global cardinal_heading
-        x = msg.vector.x
-        y = msg.vector.y
-        theta = math.atan2(y, x)
-        cardinal_heading_temp = theta
-        cardinal_heading_temp = cardinal_heading_temp*180/math.pi
-        if cardinal_heading_temp < 0:
-            cardinal_heading = 360 + cardinal_heading_temp
-        elif cardinal_heading_temp > 360:
-            cardinal_heading = 360 - cardinal_heading_temp
-        else:
-            cardinal_heading = cardinal_heading_temp
    
     def callbackLanding(self, msg):
         self.goal_reached = msg.goalReached
@@ -51,6 +29,17 @@ class Landing_Node:
             # Inform the Global Planner that the Goal is NOT reached
             self.status_msg.status = self.goal_reached
             self.status_pub.publish(self.status_msg)
+
+    def callbackOdom(self, msg):
+        self.odom_alt = msg.pose.pose.position.z
+        self.odom_x = msg.pose.pose.position.x
+        self.odom_y = msg.pose.pose.position.y
+
+        self.odom_quat = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+
+    def callbackGoal(self, msg):
+        self.goal_x = msg.x_local
+        self.goal_y = msg.y_local
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -90,36 +79,40 @@ class Landing_Node:
         # Variable Initialization
         print("Landing Node: Initializing Variables")
 
-        alt_threshold = 0.25                # meters, based on sonar return
-        horizontal_threshold = 2            # meters, summed in x and y axis
-        self.altitude_ctrl_shift = 20       # meters at which control shifts to ultrasonic sensor
-        self.goal_reached = True            # Assume goal reached (no action required) upon startup.
-        self.landing_check = 0              # Track number of sequential returns less than threshold
-        self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
-        self.should_be_done_time = 120      # Seconds it should take to complete a landing
-        self.start_time = time.time()       # Initialize Start Time
+        self.goal_reached = True        # Assume goal reached (no action required) upon startup.
+        self.landing_check = 0          # Track number of sequential returns less than threshold
+        self.start_time = time.time()   # Initialize Start Time
+        self.goal_x = 0                 # Hospital Goal x in local frame
+        self.goal_y = 0                 # Hospital Goal y in local fram
+        self.odom_alt = 13              # Default altitude until first callback    
+        self.odom_x = 0                 # Vehicle X position 
+        self.odom_y = 0                 # Vehicle Y position
+        self.odom_quat = np.zeros(4)    # Quaternion from the Localization Node
 
         PID_alt = [0.5, 0, 0]      # PID Controller Tuning Values TODO Tune/Limit Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
-        goal_x = 287.0
-        goal_y = -1356.0
+        # goal_x = 287.0
+        # goal_y = -1356.0
         # goal_lat = 42.277712    # Corresponds to Lat of Landing Pad
         # goal_lon = -71.761568   # Corresponds to Lon of Landing Pad
         self.goal_alt = 8         # Desired Alititude in Meters (staying hardcoded since building height won't change)
-
+        alt_threshold = 0.25                # meters, based on sonar return
+        horizontal_threshold = 2            # meters, summed in x and y axis
         self.Hertz = 20  # frequency of while loop
-      
+        self.altitude_ctrl_shift = 20       # meters at which control shifts to ultrasonic sensor
+        self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
+        self.should_be_done_time = 120      # Seconds it should take to complete a landing
+        
         # Subscribers
         print("Landing Node: Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
-        rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1) # Altimeter Data
-        rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
-        rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1) # Altimeter Data
-        rospy.Subscriber("/ground_truth/state", Odometry, self.callbacktruth, queue_size=1) # Ground truth Subscriber
+        rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1)          # Altimeter Subscriber
+        rospy.Subscriber("/local_odom", Odometry, self.callbackOdom, queue_size=1)          # Local Odometry Subscriber
         rospy.Subscriber("/landing", Landing, self.callbackLanding, queue_size=1)           # Global Planner Subscriber
+        rospy.Subscriber("/hospital_goal", HospitalGoal, self.callbackGoal, queue_size=1)   # Hospital Destination Subscriber
 
         # Publishers
         print("Landing Node: Defining Publishers")
@@ -148,13 +141,15 @@ class Landing_Node:
             if not self.goal_reached:
                 # Vertical control based on altimeter (barometer)
                 alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-2.5, 5)) # PID Controller
-                if barro_alt > sonic_max:  # If outside range of the sonic sensor, use the barometer.
-                    vel_msg.linear.z = alt_pid(barro_alt) 
+                if self.odom_alt > self.altitude_ctrl_shift:  # If outside range of the sonic sensor, use the barometer.
+                    vel_msg.linear.z = alt_pid(self.odom_alt) 
                 else:                        # In range of the sonic sensor
                     vel_msg.linear.z = alt_pid(self.goal_alt + sonic_dist)
                 
                 # Lateral control based on ground truth
-                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                odom_rotation = Rot.from_quat(self.odom_quat, normalized=True)
+                odom_rotation = odom_rotation.as_euler('xyz', degrees=True)
+                goal_veh = self.local_to_vehicle_frame(self.odom_x, self.odom_y, self.goal_x, self.goal_y, odom_rotation[2])
                 x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 vel_msg.linear.x = x_pid(0)

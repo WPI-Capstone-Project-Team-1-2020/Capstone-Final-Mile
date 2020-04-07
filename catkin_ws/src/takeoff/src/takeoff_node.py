@@ -4,6 +4,7 @@ import time
 import math
 import numpy as np
 from simple_pid import PID
+from scipy.spatial.transform import Rotation as Rot
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import NavSatFix
 from hector_uav_msgs.msg import Altimeter
@@ -13,27 +14,12 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 
 class Take_Off:
     # Call Back Functions
-    def callbackAltimeter(self, msg):
-        self.barro_alt = msg.altitude
+    def callbackOdom(self, msg):
+        self.odom_alt = msg.pose.pose.position.z
+        self.odom_x = msg.pose.pose.position.x
+        self.odom_y = msg.pose.pose.position.y
 
-    def callbacktruth(self, msg):
-        global x_truth, y_truth
-        x_truth = msg.pose.pose.position.x
-        y_truth = msg.pose.pose.position.y
-
-    def callbackMagnetic(self, msg):
-        global cardinal_heading
-        x = msg.vector.x
-        y = msg.vector.y
-        theta = math.atan2(y, x)
-        cardinal_heading_temp = theta
-        cardinal_heading_temp = cardinal_heading_temp*180/math.pi
-        if cardinal_heading_temp < 0:
-            cardinal_heading = 360 + cardinal_heading_temp
-        elif cardinal_heading_temp > 360:
-            cardinal_heading = 360 - cardinal_heading_temp
-        else:
-            cardinal_heading = cardinal_heading_temp
+        self.odom_quat = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
 
     def callbackTakeoff(self, msg):
         # Save information from the message
@@ -41,6 +27,11 @@ class Take_Off:
         self.goal_alt = msg.height
         self.start_time = time.time()
         self.got_new_goal = True
+
+        # Define lateral goal as current local x and y
+        self.goal_x = self.odom_x
+        self.goal_y = self.odom_y
+
         # Update the Flag for other nodes indicating the status of the takeoff node
         if not self.goal_reached:
             print("Commence Takeoff")
@@ -54,7 +45,7 @@ class Take_Off:
         # Ignoring translation in the z, rotation in the x and y based on assumption
         # that the drone remains horizontal during takeoff and the fact that horizontal control
         # is done separately by the barometer.
-        offset_angle = heading*math.pi/180 # Convert to radians for trig functions
+        offset_angle = -heading*math.pi/180 # Convert to radians for trig functions, - due to rotation matrix from localization giving rotation about the z axis with z+ up
         if offset_angle > math.pi:
             offset_angle =  offset_angle - 2*math.pi
         elif offset_angle < math.pi:
@@ -84,34 +75,36 @@ class Take_Off:
 
         # Variable Initialization
         print("Takeoff Node: Initializing Variables")
-
-        alt_threshold = 0.5             # meters
-        horizontal_threshold = 2        # meters, summed in x and y axis
+        
+        # Flags
         self.goal_reached = False       # Assume goal is reached (no action required) until told otherwise.
-        self.goal_alt = 0               # Initial Goal Altitude
-        self.should_be_done_time = 120  # Seconds it should take to complete a takeoff
-        self.start_time = time.time()   # Initialize Start Time
-        self.barro_alt = 13             # Default altitude until first callback
         self.got_new_goal = False       # Flag for status of getting New Goal
+        self.goal_alt = 0               # Initial Goal Altitude
+        self.start_time = time.time()   # Initialize Start Time
+        self.odom_alt = 13              # Default altitude until first callback    
+        self.odom_x = 0                 # Vehicle X position 
+        self.odom_y = 0                 # Vehicle Y position
+        self.odom_quat = np.zeros(4)    # Quaternion from the Localization Node
+        self.goal_x = 0                 # Goal in local frame
+        self.goal_y = 0                 # Goal in local frame
 
         PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
         # Configuration Parameters
-        goal_x = -219.0
-        goal_y = 1190.0
-        # goal_lat = 42.2644910473    # Corresponds to Lat of Takeoff Pad
-        # goal_lon = -71.7737136467   # Corresponds to Lon of Takeoff Pad
-
-        self.Hertz = 20  # frequency of while loop
+        # goal_x = -219.0
+        # goal_y = 1190.0
+        # goal_lat = 42.2644910473      # Corresponds to Lat of Takeoff Pad
+        # goal_lon = -71.7737136467     # Corresponds to Lon of Takeoff Pad
+        alt_threshold = 0.5             # meters
+        horizontal_threshold = 2        # meters, summed in x and y axis
+        self.Hertz = 20                 # frequency of while loop
+        self.should_be_done_time = 120  # Seconds it should take to complete a takeoff
       
         # Subscribers
         print("Takeoff Node: Defining Subscribers")
-        # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1)                 # GPS Subscriber
-        rospy.Subscriber("/altimeter", Altimeter, self.callbackAltimeter, queue_size=1)     # Altimeter Subscriber
-        rospy.Subscriber("/magnetic", Vector3Stamped, self.callbackMagnetic, queue_size=1)  # Compass Subscriber
-        rospy.Subscriber("/ground_truth/state", Odometry, self.callbacktruth, queue_size=1) # Ground truth Subscriber
+        rospy.Subscriber("/local_odom", Odometry, self.callbackOdom, queue_size=1)          # Local Odometry Subscriber
         rospy.Subscriber("/takeoff", Takeoff, self.callbackTakeoff, queue_size=10)          # Global Planner Subscriber
         
         # Publishers
@@ -140,12 +133,14 @@ class Take_Off:
         while not rospy.is_shutdown():
             if self.got_new_goal:
                 
-                # Vertical control based on altimeter (barometer)
+                # Vertical control based on odometry
                 alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits = (-10, 10)) # Height PID Controller
-                vel_msg.linear.z = alt_pid(self.barro_alt)
+                vel_msg.linear.z = alt_pid(self.odom_alt)
                 
                 # Lateral control based on ground truth
-                goal_veh = self.local_to_vehicle_frame(x_truth, y_truth, goal_x, goal_y, cardinal_heading)
+                odom_rotation = Rot.from_quat(self.odom_quat, normalized=True)
+                odom_rotation = odom_rotation.as_euler('xyz', degrees=True)
+                goal_veh = self.local_to_vehicle_frame(self.odom_x, self.odom_y, self.goal_x, self.goal_y, odom_rotation[2])
                 x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
                 vel_msg.linear.x = x_pid(0)
@@ -154,7 +149,7 @@ class Take_Off:
                 vel_pub.publish(vel_msg)
 
                 # Determine when the goal is met and tell the global planner
-                delta_alt = abs(self.goal_alt - self.barro_alt)
+                delta_alt = abs(self.goal_alt - self.odom_alt)
                 horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
                 if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
                     print("Takeoff Complete")

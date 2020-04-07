@@ -15,6 +15,7 @@ add_message_files(
   Landing.msg
   GoalReached.msg
   Status.msg
+  HospitalGoal.msg
 )
 
 generate_messages(

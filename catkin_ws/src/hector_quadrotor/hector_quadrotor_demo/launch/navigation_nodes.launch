@@ -5,6 +5,7 @@
   <include file="$(find landing)/launch/landing.launch" />
   <include file="$(find costmap_2d)/launch/costmap.launch" />
   <include file="$(find diagnostics)/launch/diagnostics.launch" />
+  <include file="$(find localization)/launch/localization.launch" />
   <include file="$(find local_planner)/launch/local_planner.launch" />
   <include file="$(find vehicle_interface)/launch/vehicle_interface.launch" />
 </launch>

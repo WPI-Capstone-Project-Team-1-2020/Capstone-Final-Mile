@@ -82,8 +82,8 @@ class Landing_Node:
         self.goal_reached = True        # Assume goal reached (no action required) upon startup.
         self.landing_check = 0          # Track number of sequential returns less than threshold
         self.start_time = time.time()   # Initialize Start Time
-        self.goal_x = 0                 # Hospital Goal x in local frame
-        self.goal_y = 0                 # Hospital Goal y in local fram
+        self.goal_x = 287.0             # Hospital Goal x in local frame
+        self.goal_y = -1356.0           # Hospital Goal y in local fram
         self.odom_alt = 13              # Default altitude until first callback    
         self.odom_x = 0                 # Vehicle X position 
         self.odom_y = 0                 # Vehicle Y position

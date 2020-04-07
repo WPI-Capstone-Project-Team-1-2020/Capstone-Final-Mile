@@ -3,6 +3,8 @@
 
 // Ros
 #include <autonomy_msgs/Trajectory.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
@@ -40,12 +42,17 @@ public:
     /// @param path The path to publish
     void publishPath(const nav_msgs::Path::ConstPtr& path);
 
+    /// @brief Publishes diagnostics for health monitoring
+    /// @param statuses The diagnostic array of statuses
+    void publishDiagnostics(const diagnostic_msgs::DiagnosticArray::ConstPtr& statuses);
+
 private:
 
     std::shared_ptr<LocalPlannerConfig> m_cfg;              ///< Config of the local planner
     ros::Publisher                      m_goal_reached_pub; ///< Goal reached publisher
     ros::Publisher                      m_traj_pub;         ///< Trajectory publisher
     ros::Publisher                      m_path_pub;         ///< Path publisher
+    ros::Publisher                      m_diag_pub;         ///< Diagnostics publisher
 };    
 
 } // namespace local_planner

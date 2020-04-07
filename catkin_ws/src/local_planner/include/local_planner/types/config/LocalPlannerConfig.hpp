@@ -36,6 +36,7 @@ public:
         pnh.getParam("local_pose_topic",            m_local_pose_topic);
         pnh.getParam("local_traj_topic",            m_traj_topic);
         pnh.getParam("path_topic",                  m_path_topic);
+        pnh.getParam("diagnostics_topic",           m_diagnostics_topic);
         pnh.getParam("update_rate_hz",              m_update_rate_hz);
         pnh.getParam("goal_reached_tol_m",          m_goal_tol_m);
         pnh.getParam("max_goal_delta_m",            m_max_goal_delta_m);
@@ -56,6 +57,7 @@ public:
     const std::string&              getLocalPoseTopic()                 const noexcept {return m_local_pose_topic;}
     const std::string&              getTrajectoryTopic()                const noexcept {return m_traj_topic;}
     const std::string&              getPathTopic()                      const noexcept {return m_path_topic;}
+    const std::string&              getDiagnosticsTopic()               const noexcept {return m_diagnostics_topic;}
     float64_t                       getUpdateRateHz()                   const noexcept {return m_update_rate_hz;}
     float64_t                       getGoalReachedTolerance()           const noexcept {return m_goal_tol_m;}
     float64_t                       getMaxGoalDeltaM()                  const noexcept {return m_max_goal_delta_m;}
@@ -75,6 +77,7 @@ private:
     std::string m_local_pose_topic{""};     ///< Local pose topic  
     std::string m_traj_topic{""};           ///< Trajectory publish topic
     std::string m_path_topic{""};           ///< Path publish topic
+    std::string m_diagnostics_topic{""};    ///< Diagnostics topic
     /// @}
 
     /// @brief Performance

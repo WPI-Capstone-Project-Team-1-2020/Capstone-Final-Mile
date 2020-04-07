@@ -195,7 +195,7 @@ void GlobalPlanner::localMsgCallBack(const std_msgs::Bool::ConstPtr &msg) //std_
 * Control Loop function
 *******************************************************************************/
 //void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
-void GlobalPlanner::controlLoop(bool land_reached)  //bool
+void GlobalPlanner::controlLoop(bool land_reached, bool count)  //bool
 {
 
   // Initial parameters  
@@ -229,18 +229,28 @@ void GlobalPlanner::controlLoop(bool land_reached)  //bool
     }
     else if(local_status == 1) //true = 1  //local_reached to local_status //was ==1
     {
+      //added if/else statement with count and only count this once (working code otherwise)
+      if(count != 0)
+      {
+        count = false;
+        std::cout << "count is " << count << std::endl;
         // Send landing command
         GlobalPlanner::updateLanding(land_reached);  //send landing 
         std::cout << "initiating land" << std::endl;
-      if(land_status != 1) //false = 0
-      {
-        std::cout << "waiting for landing goal to be reached, land_status is " << land_status << std::endl;
+
       }
-      else if (land_status == 1) //true = 1
+      else if(count == 0)
       {
-        std::cout << "landing goal reached" << std::endl;
-      }
-      
+        //
+        if(land_status != 1) //false = 0
+        {
+          std::cout << "waiting for landing goal to be reached, land_status is " << land_status << std::endl;
+        }
+        else if (land_status == 1) //true = 1
+        {
+          std::cout << "landing goal reached" << std::endl;
+        }
+      }     
     }
     
   }
@@ -265,9 +275,10 @@ int main(int argc, char* argv[])
   //bool land_status; // = false; //bool
   //int n = 30;
   double start_x = -1231.0;
-  float end_x = 1292.0; //double
+  float end_x = 1292.0; //double //1292.0
   double start_y = -285.6;
-  float end_y = 205.5; //double
+  float end_y = 205.5; //double //205.5
+  bool count = true;
 
 
   ros::init(argc, argv, "GlobalPlanner"); 
@@ -285,7 +296,7 @@ int main(int argc, char* argv[])
 
   while (ros::ok())
   {
-    GlobalPlanner.controlLoop(land_reached);  
+    GlobalPlanner.controlLoop(land_reached, count);  
     ros::spinOnce();
     loop_rate.sleep();
 

@@ -23,6 +23,11 @@ TopicPublisher::TopicPublisher(ros::NodeHandle& nh, std::shared_ptr<LocalPlanner
     {
         m_path_pub = nh.advertise<nav_msgs::Path>(m_cfg->getPathTopic(), 1);
     }
+
+    if (m_cfg->getDiagnosticsTopic().empty() == false)
+    {
+        m_diag_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>(m_cfg->getDiagnosticsTopic(), 1);
+    }
 }
 
 TopicPublisher::~TopicPublisher() = default;
@@ -43,6 +48,11 @@ void TopicPublisher::publishTrajectory(const autonomy_msgs::Trajectory::ConstPtr
 void TopicPublisher::publishPath(const nav_msgs::Path::ConstPtr& path)
 {
     m_path_pub.publish(path);
+}
+
+void TopicPublisher::publishDiagnostics(const diagnostic_msgs::DiagnosticArray::ConstPtr& statuses)
+{
+    m_diag_pub.publish(statuses);
 }
 
 }// namespace local_planner

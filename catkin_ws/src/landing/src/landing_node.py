@@ -24,6 +24,8 @@ class Landing_Node:
     def callbackLanding(self, msg):
         self.goal_reached = msg.goalReached
         self.start_time = time.time()
+        self.goal_x = msg.x_local
+        self.goal_y = msg.y_local
         if not self.goal_reached:
             print("Commence Landing")
             # Inform the Global Planner that the Goal is NOT reached
@@ -36,10 +38,6 @@ class Landing_Node:
         self.odom_y = msg.pose.pose.position.y
 
         self.odom_quat = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
-
-    def callbackGoal(self, msg):
-        self.goal_x = msg.x_local
-        self.goal_y = msg.y_local
 
     # Utility Functions
     def local_to_vehicle_frame(self, xtruth, ytruth, xgoal, ygoal, heading):
@@ -112,7 +110,6 @@ class Landing_Node:
         rospy.Subscriber("/sonar_height", Range, self.callbackSonic, queue_size=1)          # Altimeter Subscriber
         rospy.Subscriber("/local_odom", Odometry, self.callbackOdom, queue_size=1)          # Local Odometry Subscriber
         rospy.Subscriber("/landing", Landing, self.callbackLanding, queue_size=1)           # Global Planner Subscriber
-        rospy.Subscriber("/hospital_goal", HospitalGoal, self.callbackGoal, queue_size=1)   # Hospital Destination Subscriber
 
         # Publishers
         print("Landing Node: Defining Publishers")

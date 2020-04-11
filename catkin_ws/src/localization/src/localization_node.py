@@ -14,6 +14,7 @@ class Take_Off:
     # Call Back Functions
     def callbackAltimeter(self, msg):
         self.barro_alt = msg.altitude
+        self.alt_time = msg.header.stamp
 
     def callbackMagnetic(self, msg):
         x = msg.vector.x
@@ -23,23 +24,26 @@ class Take_Off:
         cardinal_heading_temp = cardinal_heading_temp*180/math.pi
         cardinal_heading_temp = cardinal_heading_temp + self.declination
         self.true_heading = self.heading_limit(cardinal_heading_temp)
+        self.compass_time = msg.header.stamp
 
     def callbackGPS(self, msg):
         self.gps_lat = msg.latitude
         self.gps_lon = msg.longitude
         self.gps_alt = msg.altitude
+        self.gps_time = msg.header.stamp
 
     def callbackGPSVel(self, msg):
         self.gps_vel[0] = msg.vector.x
         self.gps_vel[1] = msg.vector.y
         self.gps_vel[2] = msg.vector.z
+        self.gps_vel_time = msg.header.stamp
 
     def callbackIMU(self, msg):
         self.ang_vel[0] = msg.angular_velocity.x
         self.ang_vel[1] = msg.angular_velocity.y
         self.ang_vel[2] = msg.angular_velocity.z
-
         self.quaternion = msg.orientation
+        self.imu_time = msg.header.stamp
 
     # Utility Functions
     def heading_limit(self, heading):
@@ -82,14 +86,20 @@ class Take_Off:
         self.gps_vel = np.zeros(3)        # GPS Velocity
         self.quaternion = Quaternion()    # Quaternion
         self.ang_vel = np.zeros(3)        # IMU Angular Velocity
+        self.alt_time = 0.0               # ROS Time altitude message received
+        self.compass_time = 0.0           # ROS Time compass message received
+        self.gps_time = 0.0               # ROS Time GPS message received
+        self.gps_vel_time = 0.0           # ROS Time GPS Velocity message received
+        self.imu_time = 0.0               # ROS Time IMU message received
 
         # Configuration Parameters
-        self.Hertz = 100            # frequency of while loop
-        self.lat_ref = 42.275011    # Latitude at origin of local frame
-        self.lon_ref = -71.777747   # Longitude at origin of local frame
-        self.declination = -14.10   # Difference between magnetic and true north at origin of local frame (West -> minus)
-                                    # https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml based on reference lat/lon and 05APR20
-        self.inclination = -0.1076  # Inclination (same source as above, 146 meters above sea level)
+        self.Hertz = 100.0               # frequency of while loop
+        self.stale_input_threshold = rospy.Duration(nsecs=500000000) # Age of message indicating inputs are stale in nsecs
+        self.lat_ref = 42.275011         # Latitude at origin of local frame
+        self.lon_ref = -71.777747        # Longitude at origin of local frame
+        self.declination = -14.10        # Difference between magnetic and true north at origin of local frame (West -> minus)
+                                         # https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml based on reference lat/lon and 05APR20
+        self.inclination = -0.1076       # Inclination (same source as above, 146 meters above sea level)
       
         # Subscribers
         print("Localization Node: Defining Subscribers")
@@ -142,8 +152,31 @@ class Take_Off:
             # Publish Odometry Message
             self.odom_pub.publish(self.odom_msg)
 
-            # Publish Diagnostic Info
+            # Determine Diagnostic Info
+            input_times = [self.alt_time, self.compass_time, self.gps_time, self.gps_vel_time, self.imu_time]
+            current_time = rospy.get_rostime()
+            index = 1
+            for input_time in input_times:
+                time_age = current_time - input_time
+                if time_age > self.stale_input_threshold:
+                    self.diag_status.values = [ KeyValue(key = 'Node Status',     value = 'Running'),
+                                                KeyValue(key = 'Sensor Age (ns)', value = '{}'.format(time_age))]
+                    self.diag_status.level = 1
+                    self.diag_status.message = 'Receiving Old Position Sensor Data'
+                    break
+                elif index == len(input_times):
+                    self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Running')]
+                    self.diag_status.level = 0
+                    self.diag_status.message = 'OK'
+                else:
+                    self.diag_status.values = [ KeyValue(key = 'Node Status', value = 'Error')]
+                    self.diag_status.level = 2
+                    self.diag_status.message = 'Error Processing Sensor Input Times'
+                index = index + 1
 
+            # Publish Diagnostic Info
+            self.diag_msg.status = [self.diag_status]
+            self.diag_pub.publish(self.diag_msg)
             rate.sleep()
 
 

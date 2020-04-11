@@ -8,4 +8,5 @@
   <include file="$(find localization)/launch/localization.launch" />
   <include file="$(find local_planner)/launch/local_planner.launch" />
   <include file="$(find vehicle_interface)/launch/vehicle_interface.launch" />
+  <include file="$(find command_log)/launch/command_log.launch" />
 </launch>

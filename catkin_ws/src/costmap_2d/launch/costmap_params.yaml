@@ -19,7 +19,7 @@ obstacles:
   # voxel_decay: 1
   # decay_model: 0
   transform_tolerance: 0.3
-  publish_voxel_map: true
+  publish_voxel_map: false
   always_send_full_cost_map: true
   # camera_depth: 
   #  data_type: PointCloud2 

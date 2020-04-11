@@ -237,24 +237,32 @@ float GlobalPlanner::hopsitalCase(int hospital_number, float x_hos_1, float y_ho
     //case 1: hospital 1
     end_x = x_hos_1;
     end_y = y_hos_1;
+    std::cout << "hospital number is " << hospital_number << std::endl;
+    std::cout << "x goal is " << end_x << ", y goal is " << end_y << std::endl;
     break;
 
     case 2: //code to be executed if hospital number = 2
     //case 2: hospital 2
     end_x = x_hos_2;
     end_y = y_hos_2;
+    std::cout << "hospital number is " << hospital_number << std::endl;
+    std::cout << "x goal is " << end_x << ", y goal is " << end_y << std::endl;
     break;
 
     case 3: //code to be executed if hospital number = 3
     //case 3: hospital test 1
     end_x = x_hos_test_1;
     end_y = y_hos_test_1;
+    std::cout << "hospital number is " << hospital_number << std::endl;
+    std::cout << "x goal is " << end_x << ", y goal is " << end_y << std::endl;
     break;
 
     case 4: //code to be excuted if hospital number = 4
     //case 4: hospital test 2
     end_x = x_hos_test_2;
     end_y = y_hos_test_2;
+    std::cout << "hospital number is " << hospital_number << std::endl;
+    std::cout << "x goal is " << end_x << ", y goal is " << end_y << std::endl;
     break;
 
     default: //code to be executed if hospital number is invalid

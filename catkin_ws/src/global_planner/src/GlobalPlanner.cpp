@@ -38,10 +38,19 @@ bool GlobalPlanner::init()
   std::string landing_status_topic_name = nh_.param<std::string>("landing_status_topic_name", "");
   std::string local_status_topic_name = nh_.param<std::string>("local_status_topic_name", "");
   std::string odom_topic_name = nh_.param<std::string>("odom_topic_name", "");
+  std::string diagnostics_topic_name = nh_.param<std::string>("diagnostics_topic_name", "");
   //std::string takeoff_status = nh_.param<std::string>("takeoff_status", ""); //new
   //std::string landing_status = nh_.param<std::string>("landing_status", ""); //new
   //std::string local_status = nh_.param<std::string>("local_status", ""); //new
   //std::string ground_truth = nh_.param<std::string>("ground_truth/state", ""); //new was odom instead of ground_truth
+  //const std::string x_hos_1 = nh_.param<std::string("x_hos_1", x_hos_1); //float x_hos_1
+  //const std::string y_hos_1 = nh_.param<std::string("y_hos_1", y_hos_1);
+  //const std::string x_hos_2 = nh_.param<std::string("x_hos_2", x_hos_2);
+  //const std::string y_hos_2 = nh_.param<std::string("y_hos_2", y_hos_2);
+  //const std::string x_hos_test_1 = nh_.param<std::string("x_hos_test_1", float x_hos_test_1);
+  //const std::string y_hos_test_1 = nh_.param<std::string("y_hos_test_1", float y_hos_test_1);
+  //const std::string x_hos_test_2 = nh_.param<std::string("x_hos_test_2", float x_hos_test_2);
+  //const std::string y_hos_test_2 = nh_.param<std::string("y_hos_test_2", float y_hos_test_2);
 
   // initialize variables
   //double quad_pose[3] = {-1231.0, -285.6, 13.5}; 
@@ -51,14 +60,39 @@ bool GlobalPlanner::init()
   goal_pose_pub_ = nh_.advertise<autonomy_msgs::GoalPose>(goal_pose_topic_name, 10);  //goal_pose_topic_name
   takeoff_pub_ = nh_.advertise<autonomy_msgs::Takeoff>(takeoff_topic_name, 10); //takeoff_topic_name
   landing_pub_ = nh_.advertise<autonomy_msgs::Landing>(landing_topic_name, 10); //landing_topic_name
+  diagnostics_pub_ = nh_.advertise<diagnostic_msgs::DiagnosticArray>(diagnostics_topic_name, 10); //diagnostics_topic_name //was DiagnosticStatus
 
   // initialize subscribers
   odom_sub_ = nh_.subscribe("ground_truth/state", 10, &GlobalPlanner::odomMsgCallBack, this); //"odom"
   takeoff_status_sub_ = nh_.subscribe("takeoff_status", 10, &GlobalPlanner::takeoffMsgCallBack, this); //"takeoff_status"
   landing_status_sub_ = nh_.subscribe("landing_status", 10, &GlobalPlanner::landingMsgCallBack, this); //"landing_status"
   local_sub_ = nh_.subscribe("local_planner/goal_reached", 10, &GlobalPlanner::localMsgCallBack, this);  //"local_status", then "goal_reached"
+  hospital_goal_sub_ = nh_.subscribe("hospital_goal", 10, &GlobalPlanner::hospitalMsgCallBack, this); //"hospital_goal"
 
   return true;
+}
+
+void GlobalPlanner::hospitalMsgCallBack(const autonomy_msgs::HospitalGoal::ConstPtr& msg) //hospital goal callback
+{
+  //hospital message here
+  hospital_number = msg->hospital_number;
+
+  std::cout << "hospital number is " << hospital_number << std::endl;
+
+}
+
+void GlobalPlanner::updateDiagnostics(const bool health) //this is new**
+{
+    diagnostic_msgs::DiagnosticArray array;
+    array.header.stamp = ros::Time::now();
+
+    diagnostic_msgs::DiagnosticStatus status;
+    status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
+    status.name  = "Global Planner Node";
+
+    array.status.push_back(status);
+
+    diagnostics_pub_.publish(array); 
 }
 
 
@@ -149,11 +183,13 @@ void GlobalPlanner::takeoffMsgCallBack(const autonomy_msgs::Status::ConstPtr &ms
 }
 
 // Send landing messages
-void GlobalPlanner::updateLanding(bool reached)
+void GlobalPlanner::updateLanding(bool reached, float end_x, float end_y)
 {
   autonomy_msgs::Landing landing; 
 
   landing.goalReached = reached;
+  landing.x_local = end_x;
+  landing.y_local = end_y;
 
   landing_pub_.publish(landing);
 
@@ -191,24 +227,55 @@ void GlobalPlanner::localMsgCallBack(const std_msgs::Bool::ConstPtr &msg) //std_
     std::cout << "local planner msg is " << local_status << std::endl; //local_reached
 }
 
+float GlobalPlanner::hopsitalCase(int hospital_number, float x_hos_1, float y_hos_1, float x_hos_2, float y_hos_2, float x_hos_test_1, float y_hos_test_1, float x_hos_test_2, float y_hos_test_2)
+{
+  //function for hospital selection
+  //switch case 1-4
+  switch (hospital_number)
+  {
+    case 1: //code to be executed if hospital number = 1
+    //case 1: hospital 1
+    end_x = x_hos_1;
+    end_y = y_hos_1;
+    break;
+
+    case 2: //code to be executed if hospital number = 2
+    //case 2: hospital 2
+    end_x = x_hos_2;
+    end_y = y_hos_2;
+    break;
+
+    case 3: //code to be executed if hospital number = 3
+    //case 3: hospital test 1
+    end_x = x_hos_test_1;
+    end_y = y_hos_test_1;
+    break;
+
+    case 4: //code to be excuted if hospital number = 4
+    //case 4: hospital test 2
+    end_x = x_hos_test_2;
+    end_y = y_hos_test_2;
+    break;
+
+    default: //code to be executed if hospital number is invalid
+    std::cout << "hospital number is invalid, your value was " << hospital_number << ". Value must be 1-4" << std::endl;
+    break;
+  }
+
+  return(end_x, end_y);
+}
+
 /*******************************************************************************
 * Control Loop function
 *******************************************************************************/
 //void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
-void GlobalPlanner::controlLoop(bool land_reached, bool count)  //bool
+void GlobalPlanner::controlLoop(float end_x, float end_y, bool land_reached, bool &count)  //bool
 {
 
-  // Initial parameters  
-  //double altitude = 18.5;
-  //bool takeoff_reached = false;
-  //bool local_reached = false;
-  //bool land_reached = false;
+  //end_x = 287; //1292.0;
+  //end_y = -1356; //205.5;
 
-  //start_x = -1231.0;
-  end_x = 287.0;
-  //start_y = -285.6;
-  end_y = -1356.0;
-
+  GlobalPlanner::updateDiagnostics(true); 
 
   // Listen for takeoff goal reached
   if(takeoff_status != 1) //false = 0
@@ -235,7 +302,7 @@ void GlobalPlanner::controlLoop(bool land_reached, bool count)  //bool
         count = false;
         std::cout << "count is " << count << std::endl;
         // Send landing command
-        GlobalPlanner::updateLanding(land_reached);  //send landing 
+        GlobalPlanner::updateLanding(land_reached, end_x, end_y);  //send landing 
         std::cout << "initiating land" << std::endl;
 
       }
@@ -274,11 +341,25 @@ int main(int argc, char* argv[])
   //bool takeoff_status; // = false; //bool
   //bool land_status; // = false; //bool
   //int n = 30;
-  double start_x = -219.0;
-  float end_x = 287.0; //double //1292.0
-  double start_y = 1190.0;
-  float end_y = -1356.0; //double //205.5
+  //double start_x = -1231.0;
+  //float end_x = 287.0; //-1356.0; //double //1292.0
+  //double start_y = -285.6;
+  //float end_y = -1356.0; //287.0; //double //205.5
   bool count = true;
+  float end_x;
+  float end_y;
+
+  // Hospital input
+  int hospital_number = 3; //eventually take out value
+  float x_hos_1;
+  float y_hos_1;
+  float x_hos_2;
+  float y_hos_2;
+  float x_hos_test_1;
+  float y_hos_test_1;
+  float x_hos_test_2;
+  float y_hos_test_2;
+  
 
 
   ros::init(argc, argv, "GlobalPlanner"); 
@@ -289,6 +370,9 @@ int main(int argc, char* argv[])
 
   sleep(5);
 
+  // Get hospital goal
+  GlobalPlanner.hopsitalCase(hospital_number, x_hos_1, y_hos_1, x_hos_2, y_hos_2, x_hos_test_1, y_hos_test_1, x_hos_test_2, y_hos_test_2);
+
   // Send takeoff command
   GlobalPlanner.updateTakeoff(altitude, takeoff_reached);  //send takeoff 
   std::cout << "taking off" << std::endl;
@@ -296,7 +380,7 @@ int main(int argc, char* argv[])
 
   while (ros::ok())
   {
-    GlobalPlanner.controlLoop(land_reached, count);  
+    GlobalPlanner.controlLoop(end_x, end_y, land_reached, count);  
     ros::spinOnce();
     loop_rate.sleep();
 

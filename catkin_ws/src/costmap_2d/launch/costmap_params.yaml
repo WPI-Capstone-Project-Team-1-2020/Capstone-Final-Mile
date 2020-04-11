@@ -59,7 +59,7 @@ static_map: false
 rolling_window: true
 width: 40.0
 height: 40.0
-resolution: 0.2
+resolution: 0.5
 
 map_type: voxel
 

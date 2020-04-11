@@ -89,7 +89,7 @@ class Landing_Node:
         self.odom_y = 0                 # Vehicle Y position
         self.odom_quat = np.zeros(4)    # Quaternion from the Localization Node
 
-        PID_alt = [0.1, 0, 0]    # PID Controller Tuning Values TODO Tune/Limit Controller
+        PID_alt = [0.15, 0, 0]   # PID Controller Tuning Values TODO Tune/Limit Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 

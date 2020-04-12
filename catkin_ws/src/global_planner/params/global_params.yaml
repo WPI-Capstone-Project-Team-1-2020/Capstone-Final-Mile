@@ -1,0 +1,18 @@
+# Hospital 1 
+x_hos_1: 287.0 # x position for hospital 1
+y_hos_1: -1356.0  # y position for hospital 1
+# 8.3 is height
+
+# Hospital 2
+x_hos_2: -219.0  # x position for hospital 2
+y_hos_2: 1190.0 # y position for hospital 2  
+# 13.3 is height  
+
+# Hospital Test 1
+x_hos_test_1: 220.0 # x position for hospital test 1
+y_hos_test_1: -1290.0 # y position for hospital test 1
+
+# Hospital Test 2
+x_hos_test_2: -19.0 # x position for hospital test 2
+y_hos_test_2: 900.0  # y position for hospital test 2
+

@@ -6,6 +6,8 @@
   <arg name="landing_status" default ="/landing_status"/>  <!-- "/autonomy_msgs/Status" -->
   <arg name="goal_pose" default ="/local_planner/local_goal"/>  <!-- "/autonomy_msgs/GoalPose" -->
   <arg name="local_status" default ="/local_planner/goal_reached"/>  <!-- "/autonomy_msgs/GoalReached" was goal_status, then goal_reached, now local_status -->
+  <arg name="diagnostics_status" default = "/diagnostics" /> <!-- this is new for diagnostics-->
+  <arg name="hospital_goal" default = "/hospital_goal" /> <!--this is new for hospital goal-->
 
   <arg name="name" default="global_planner"/> 
 
@@ -16,6 +18,10 @@
   <param name="landing_status_topic_name" value="$(arg landing_status)" />
   <param name="goal_pose_topic_name" value="$(arg goal_pose)"/>  
   <param name="local_status_topic_name" value="$(arg local_status)"/>  
+  <param name="diagnostics_topic_name" value="$(arg diagnostics_status)" /> <!-- this is new for diagnostics -->
+  <param name="hospital_goal_topic_name" value="$(arg hospital_goal)" /> <!--this is new for hospital goal-->
 
   <node name="$(arg name)_node" pkg="global_planner" type="global_planner" required="true" output="screen"/>
+    <!-- <rosparam command="load" file="$(find global_planner)/params/global_params.yaml"/>
+  </node> -->
 </launch>

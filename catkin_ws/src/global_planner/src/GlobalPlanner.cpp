@@ -3,6 +3,7 @@
 #include <vector>
 #include <ros/ros.h>
 #include <ros/rate.h>
+#include <ros/time.h>
 #include <math.h>
 
 #include "GlobalPlanner.hpp" 
@@ -264,7 +265,7 @@ void GlobalPlanner::hopsitalCase(float &end_x, float &end_y, float x_hos_1, floa
 * Control Loop function
 *******************************************************************************/
 //void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
-void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, bool &count)  //bool
+void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, ros::Time& begin)  //bool
 {
 
   //end_x = 287; //1292.0;
@@ -311,6 +312,11 @@ void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, b
         else if (land_status == 1) //true = 1
         {
           std::cout << "landing goal reached" << std::endl;
+          ros::Time end = ros::Time::now(); //this might need to change
+          std::cout << "end time is " << end << std::endl;
+
+          ros::Duration flight_time = end - begin;
+          std::cout << "duration of flight is " << flight_time << std::endl;
         }
       }     
     }
@@ -373,6 +379,8 @@ int main(int argc, char* argv[])
   // Send takeoff command
   GlobalPlanner.updateTakeoff(altitude, takeoff_reached);  //send takeoff 
   std::cout << "taking off" << std::endl;
+  ros::Time begin = ros::Time::now();
+  std::cout << "begin time is " << begin << std::endl;
 
 
   while (ros::ok())
@@ -380,7 +388,7 @@ int main(int argc, char* argv[])
       // Get hospital goal
       GlobalPlanner.hopsitalCase(end_x, end_y, x_hos_1, y_hos_1, x_hos_2, y_hos_2, x_hos_test_1, y_hos_test_1, x_hos_test_2, y_hos_test_2);
 
-      GlobalPlanner.controlLoop(end_x, end_y, land_reached, count);  
+      GlobalPlanner.controlLoop(end_x, end_y, land_reached, count, begin);  
       ros::spinOnce();
       loop_rate.sleep();
   }

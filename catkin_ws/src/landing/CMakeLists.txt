@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   hector_uav_msgs
   sensor_msgs
   geometry_msgs
+  cv_bridge
+  rospy
 )
 
 ## System dependencies are found with CMake's conventions

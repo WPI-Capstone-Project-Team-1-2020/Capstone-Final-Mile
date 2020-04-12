@@ -27,7 +27,7 @@ class GlobalPlanner
   GlobalPlanner(); 
   ~GlobalPlanner(); 
   bool init();
-  void controlLoop(float &end_x, float &end_y, bool land_reached, bool &count); //bool
+  void controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, ros::Time& begin); //bool
   //void controlLoop(bool takeoff_status, bool land_status, bool local_reached); //bool
   void updateTakeoff(double altitude, bool reached);  //send takeoff 
   void hopsitalCase(float &end_x, float &end_y, float x_hos_1, float y_hos_1, float x_hos_2, float y_hos_2, float x_hos_test_1, float y_hos_test_1, float x_hos_test_2, float y_hos_test_2); //choose hospital to fly to

@@ -234,11 +234,11 @@
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[-2.675366179098967, 92.38499450683594]"
+                  "repr": "[-5.19336115175716, 92.38499450683594]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[232.59900000000005, 282.59900000000005]"
+                  "repr": "[175.599, 225.599]"
                 }
               },
               "groups": {}
@@ -281,11 +281,11 @@
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[-11.817355930324384, 5.585713096123472]"
+                  "repr": "[-11.817355930324384, 5.792041373496759]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[232.49900000000002, 282.499]"
+                  "repr": "[175.499, 225.499]"
                 }
               },
               "groups": {}
@@ -431,7 +431,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'topic_name': '/takeoff', 'type_name': 'autonomy_msgs/Takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}, {'type_name': 'autonomy_msgs/Landing', 'topic_name': '/landing', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 1, 'counter': 16}, {'topic_name': '/estop', 'type_name': 'std_msgs/Bool', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 2, 'counter': 0}]\""
+                  "repr": "u\"[{'type_name': 'autonomy_msgs/Takeoff', 'topic_name': '/takeoff', 'enabled': False, 'rate': 1.0, 'expressions': {u'/takeoff/goalReached': 'False', u'/takeoff/height': '50'}, 'publisher_id': 0, 'counter': 0}, {'topic_name': '/landing', 'type_name': 'autonomy_msgs/Landing', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 1, 'counter': 0}, {'type_name': 'std_msgs/Bool', 'topic_name': '/estop', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 2, 'counter': 0}, {'type_name': 'autonomy_msgs/HospitalGoal', 'topic_name': '/hospital_goal', 'enabled': False, 'rate': 1.0, 'expressions': {u'/hospital_goal/hospital_number': '4'}, 'publisher_id': 3, 'counter': 8}]\""
                 }
               },
               "groups": {}

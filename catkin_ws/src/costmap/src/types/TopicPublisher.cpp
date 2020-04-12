@@ -32,4 +32,4 @@ void TopicPublisher::publishDiagnostics(const diagnostic_msgs::DiagnosticArray::
     m_diag_pub.publish(statuses);
 }
 
-}// namespace vi
+}// namespace cm

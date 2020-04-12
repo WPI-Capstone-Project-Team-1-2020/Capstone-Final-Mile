@@ -32,4 +32,4 @@ void TopicSubscriber::onPoseReceived(const nav_msgs::Odometry::ConstPtr& msg)
     m_data.setLocalPose(msg);
 }
 
-}// namespace vi
+} // namespace cm

@@ -32,6 +32,7 @@ public:
         pnh.getParam("width_m",              m_width_m);
         pnh.getParam("resolution_m",         m_resolution_m);        
         pnh.getParam("inflation_m",          m_inflation_m);
+        pnh.getParam("z_bandpass_m",         m_z_bandpass_m);
     }
 
     /// @brief Default destructor for forward declares
@@ -49,6 +50,7 @@ public:
     float64_t          getCostmapWidthM()      const noexcept {return m_width_m;}
     float64_t          getCostmapResolutionM() const noexcept {return m_resolution_m;}
     float64_t          getCostmapInflationM()  const noexcept {return m_inflation_m;}
+    float64_t          getZBandpassM()         const noexcept {return m_z_bandpass_m;}
     /// @}
 
 private:
@@ -68,6 +70,7 @@ private:
     float64_t m_width_m{60.0};     ///< Width of cm, in meters
     float64_t m_resolution_m{0.1}; ///< Resolution of cm, in meters
     float64_t m_inflation_m{10.0}; ///< Inflation radius, in meters
+    float64_t m_z_bandpass_m{1.0}; ///< Bandpass region for the pointcloud z-axis
     /// @}
 };
 

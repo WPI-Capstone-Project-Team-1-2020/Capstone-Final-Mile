@@ -144,6 +144,7 @@ include_directories(
 add_executable(${PROJECT_NAME}_node
   src/CostmapNode.cpp
   src/Costmap.cpp
+  src/types/GridBuilder.cpp
   src/types/helper/CloudTransformer.cpp
   src/types/helper/ForwardSimHelper.cpp
   src/types/helper/RosConversionHelper.cpp

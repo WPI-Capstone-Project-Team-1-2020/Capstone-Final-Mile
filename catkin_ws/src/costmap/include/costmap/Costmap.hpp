@@ -12,10 +12,9 @@ namespace cm
 
 // Forward Declarations
 class CostmapConfig;
-class Controller;
+class GridBuilder;
 class TopicPublisher;
 class TopicSubscriber;
-class TrajectoryUnspooler;
 
 /// @brief Class for Costmap to publish commands to vehicle
 class Costmap
@@ -38,9 +37,10 @@ private:
     /// @param health `true` if healthy
     void updateDiagnostics(const bool health);
     
-    std::shared_ptr<CostmapConfig> m_cfg;         ///< Configuration of Costmap    
+    std::shared_ptr<CostmapConfig>          m_cfg;         ///< Configuration of Costmap    
     std::unique_ptr<TopicSubscriber>        m_topic_sub;   ///< Topic Subscriber
     std::unique_ptr<TopicPublisher>         m_topic_pub;   ///< Topic Publisher
+    std::unique_ptr<GridBuilder>            m_builder;     ///< Occupancy grid builder
     ros::Timer                              m_timer;       ///< Timer to drive update cycles
 };
 

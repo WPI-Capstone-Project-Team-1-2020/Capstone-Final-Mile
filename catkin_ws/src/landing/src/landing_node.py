@@ -3,6 +3,7 @@ import rospy
 import time
 import math
 import numpy as np
+import cv2 as cv
 from scipy.spatial.transform import Rotation as Rot
 from simple_pid import PID
 from nav_msgs.msg import Odometry

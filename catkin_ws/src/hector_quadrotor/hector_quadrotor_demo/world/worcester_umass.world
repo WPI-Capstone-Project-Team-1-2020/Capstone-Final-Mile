@@ -102,6 +102,52 @@
       </link>
       <static>true</static>
     </model>
+    <model name="checker_board">
+      <link name="checker_board">
+        <pose>287.0 -1356.0 8.11 0 0 3.141593</pose>
+        <collision name="checker_board_collision">
+          <geometry>
+            <mesh>
+              <uri>model://checkerboard_plane/meshes/checkerboard_plane.dae</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="checker_board_visual">
+          <geometry>
+            <mesh>
+              <uri>model://checkerboard_plane/meshes/checkerboard_plane.dae</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+      <static>true</static>
+    </model>
+    <model name="checker_board_cal">
+      <link name="checker_board_cal">
+        <pose>-219.0 1190.0 13.11 0 0 3.141593</pose>
+        <collision name="checker_board_cal_collision">
+          <geometry>
+            <mesh>
+              <uri>model://checkerboard_plane/meshes/checkerboard_plane.dae</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="checker_board_cal_visual">
+          <geometry>
+            <mesh>
+              <uri>model://checkerboard_plane/meshes/checkerboard_plane.dae</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+      <static>true</static>
+    </model>
     <gui>
         <camera name="user_camera">
             <pose>-203.185 1228.885 27.082 0 0.309 -2.047</pose>

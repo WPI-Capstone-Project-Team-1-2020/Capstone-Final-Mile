@@ -34,7 +34,7 @@ class Take_Off:
 
         # Update the Flag for other nodes indicating the status of the takeoff node
         if not self.goal_reached:
-            print("Commence Takeoff")
+            print("Takeoff Node: Commence Takeoff")
             self.status_msg.status = self.goal_reached
             self.status_pub.publish(self.status_msg)
 
@@ -88,7 +88,7 @@ class Take_Off:
         self.goal_x = 0                 # Goal in local frame
         self.goal_y = 0                 # Goal in local frame
 
-        PID_alt = [1, 1, 5]      # PID Controller Tuning Values (altitude) TODO Tune Controller
+        PID_alt = [0.3, 1, 4]    # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 
@@ -152,7 +152,7 @@ class Take_Off:
                 delta_alt = abs(self.goal_alt - self.odom_alt)
                 horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
                 if (delta_alt < alt_threshold) and (horizontal_error < horizontal_threshold):
-                    print("Takeoff Complete")
+                    print("Takeoff Node: Takeoff Complete")
                     self.goal_reached = True
                     self.got_new_goal = False
                     self.status_msg.status = self.goal_reached

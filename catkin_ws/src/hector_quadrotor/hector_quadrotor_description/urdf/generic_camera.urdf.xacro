@@ -54,7 +54,7 @@
           </image>
           <clip>
             <near>0.01</near>
-            <far>10</far>
+            <far>20</far> <!-- Actual Matrice Range is 10, but used for camera optimzation -->
           </clip>
         </camera>
 

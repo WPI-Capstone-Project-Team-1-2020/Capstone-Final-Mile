@@ -83,8 +83,6 @@ bool GridBuilder::buildGrid()
 
     markOccupiedCells(cloud);
 
-    inflateOccupiedCells();
-
     return true;
 }
 
@@ -112,14 +110,6 @@ void GridBuilder::markOccupiedCells(const pcl::PointCloud<pcl::PointXYZ>::Ptr& c
             grid.data[grid_it] = 100;
             occupied_cells.emplace(grid_it);
         });
-}
-
-void GridBuilder::inflateOccupiedCells()
-{
-    for (const auto& grid_it : m_occopied_cells)
-    {
-        
-    }
 }
 
 } // namespace cm

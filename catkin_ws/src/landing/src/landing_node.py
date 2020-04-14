@@ -109,6 +109,7 @@ class Landing_Node:
         self.odom_quat = np.zeros(4)        # Quaternion from the Localization Node
         self.drone_stable_time = rospy.Duration(2)  # Send 0 commands this long to stabilize (seconds)
         self.goal_veh = [0,0]               # Goal Initialization
+        
         # Camera Variable Initialization
         self.grid_size = 5          # grid_size and grid_center are related
         self.grid_center = 2

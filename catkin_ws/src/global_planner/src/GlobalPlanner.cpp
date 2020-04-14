@@ -130,7 +130,7 @@ void GlobalPlanner::line(float &end_x, float &end_y) //local_reached to local_st
 
       goal_pose.x_m = x;
       goal_pose.y_m = y;
-      goal_pose.speed_mps = 10;
+      goal_pose.speed_mps = 12;
 
       goal_pose_pub_.publish(goal_pose); 
       std::cout << "sent new local goal  " << goal_pose << std::endl;  //local_reached

@@ -88,7 +88,7 @@ class Take_Off:
         self.goal_x = 0                 # Goal in local frame
         self.goal_y = 0                 # Goal in local frame
 
-        PID_alt = [0.4, 1, 3]    # PID Controller Tuning Values (altitude) TODO Tune Controller
+        PID_alt = [0.7, 1, 2]    # PID Controller Tuning Values (altitude) TODO Tune Controller
         PID_x = [0.5, 1, 1]      # PID Controller Tuning Values (latitude) TODO Tune Controller
         PID_y = [0.5, 1, 1]      # PID Controller Tuning Values (longitude) TODO Tune Controller
 

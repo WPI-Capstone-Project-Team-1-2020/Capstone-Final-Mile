@@ -78,19 +78,19 @@ class Take_Off:
 
         # Variable Initialization
         print("Localization Node: Initializing Variables")
-        self.barro_alt = 0                # Altitude in meters from the barrometer
-        self.gps_alt = 0                  # Altitude in meters from GPS
-        self.true_heading = 0             # True heading, degrees
-        self.gps_lat = 0                  # Latitude from GPS
-        self.gps_lon = 0                  # Longitude from GPS
-        self.gps_vel = np.zeros(3)        # GPS Velocity
-        self.quaternion = Quaternion()    # Quaternion
-        self.ang_vel = np.zeros(3)        # IMU Angular Velocity
-        self.alt_time = 0.0               # ROS Time altitude message received
-        self.compass_time = 0.0           # ROS Time compass message received
-        self.gps_time = 0.0               # ROS Time GPS message received
-        self.gps_vel_time = 0.0           # ROS Time GPS Velocity message received
-        self.imu_time = 0.0               # ROS Time IMU message received
+        self.barro_alt = 0                      # Altitude in meters from the barrometer
+        self.gps_alt = 0                        # Altitude in meters from GPS
+        self.true_heading = 0                   # True heading, degrees
+        self.gps_lat = 0                        # Latitude from GPS
+        self.gps_lon = 0                        # Longitude from GPS
+        self.gps_vel = np.zeros(3)              # GPS Velocity
+        self.quaternion = Quaternion()          # Quaternion
+        self.ang_vel = np.zeros(3)              # IMU Angular Velocity
+        self.alt_time = rospy.get_rostime()     # ROS Time altitude message received
+        self.compass_time = rospy.get_rostime() # ROS Time compass message received
+        self.gps_time = rospy.get_rostime()     # ROS Time GPS message received
+        self.gps_vel_time = rospy.get_rostime() # ROS Time GPS Velocity message received
+        self.imu_time = rospy.get_rostime()     # ROS Time IMU message received
 
         # Configuration Parameters
         self.Hertz = 100.0               # frequency of while loop

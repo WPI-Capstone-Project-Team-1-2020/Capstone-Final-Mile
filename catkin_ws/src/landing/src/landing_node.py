@@ -30,7 +30,7 @@ class Landing_Node:
         self.start_time = rospy.Time.now()  # Time Command sent
         if not self.goal_reached:
             print("Landing Node: Commence Landing")
-            print('Landing Node: Stabliizing for {} seconds'.format(self.drone_stable_time))
+            print('Landing Node: Stabliizing for {} seconds'.format(self.drone_stable_time.to_sec()))
             # Inform the Global Planner that the Goal is NOT reached
             self.status_msg.status = self.goal_reached
             self.status_pub.publish(self.status_msg)
@@ -107,7 +107,7 @@ class Landing_Node:
         self.odom_x = 0                     # Vehicle X position 
         self.odom_y = 0                     # Vehicle Y position
         self.odom_quat = np.zeros(4)        # Quaternion from the Localization Node
-        self.drone_stable_time = rospy.Duration(2)  # Send 0 commands this long to stabilize (seconds)
+        self.drone_stable_time = rospy.Duration(1.5)  # Send 0 commands this long to stabilize (seconds)
         self.goal_veh = [0,0]               # Goal Initialization
         
         # Camera Variable Initialization
@@ -144,8 +144,8 @@ class Landing_Node:
         # Camera Configuration Parameters
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)    # Termination Criteria
         self.cal_images_needed = 10                                                 # Number of Calibration images needed
-        PID_x_cam = [0.02, 0.3, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
-        PID_y_cam = [0.02, 0.3, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
+        PID_x_cam = [0.01, 0.3, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
+        PID_y_cam = [0.01, 0.3, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
         self.enable_camera_altitude = 40 # Enable camera processing once below this altitude, based on 20m range with 5m buffer
         self.lost_image_control_decay = 1.01 # Factor to decay commands by until image is regained.
         self.lost_pad_distance = 8       # meter offset from "GPS goal" to switch back to GPS lateral control

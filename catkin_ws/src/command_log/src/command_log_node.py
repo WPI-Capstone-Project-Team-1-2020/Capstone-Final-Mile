@@ -102,8 +102,8 @@ class Command_Log_Node:
             gnd_data_line_lin_vel = str(self.gnd_lin_vel[0]) + ', ' + str(self.gnd_lin_vel[1]) + ', ' + str(self.gnd_lin_vel[2]) + ', '
             gnd_data_line_ang_vel = str(self.gnd_ang_vel[0]) + ', ' + str(self.gnd_ang_vel[1]) + ', ' + str(self.gnd_ang_vel[2]) + ', '
             gnd_data_line_lin_acc = str(self.gnd_lin_acc[0]) + ', ' + str(self.gnd_lin_acc[1]) + ', ' + str(self.gnd_lin_acc[2]) + ', '
-            gnd_data_line_rpy     = str(self.gnd_rpy[0])     + ', ' + str(self.gnd_rpy[1])     + ', ' + str(self.gnd_rpy[2])     + ', '
-            self.gnd_data_file.write(gnd_data_line_lin_vel + gnd_data_line_ang_vel + gnd_data_line_lin_acc + gnd_data_line_rpy)
+            gnd_data_line_rpy     = str(self.gnd_rpy[0])     + ', ' + str(self.gnd_rpy[1])     + ', ' + str(self.gnd_rpy[2])     + '; '
+            self.gnd_data_file.write(data_line_time + gnd_data_line_lin_vel + gnd_data_line_ang_vel + gnd_data_line_lin_acc + gnd_data_line_rpy)
 
             # Determine if Commands are stale
             delta_between_commands = self.current_command_time - self.last_command_time

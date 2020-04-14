@@ -27,8 +27,10 @@ class Landing_Node:
         self.start_time = time.time()
         self.goal_x = msg.x_local
         self.goal_y = msg.y_local
+        self.start_time = rospy.Time.now()  # Time Command sent
         if not self.goal_reached:
             print("Landing Node: Commence Landing")
+            print('Landing Node: Stabliizing for {} seconds'.format(self.drone_stable_time))
             # Inform the Global Planner that the Goal is NOT reached
             self.status_msg.status = self.goal_reached
             self.status_pub.publish(self.status_msg)
@@ -81,11 +83,11 @@ class Landing_Node:
         return goalveh
 
     def draw(self, img, corners, imgpts):
-        corner = tuple(corners[0].ravel())
-        img = cv.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
-        img = cv.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
-        img = cv.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
-        img = cv.circle(img,    tuple(imgpts[3].ravel()), 3, (255,0,0), 5) 
+        # corner = tuple(corners[0].ravel())
+        # img = cv.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
+        # img = cv.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
+        # img = cv.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
+        img = cv.circle(img,    tuple(imgpts[3].ravel()), 4, (255,0,0), 5) 
         return img
 
     # Main Function
@@ -95,17 +97,18 @@ class Landing_Node:
         # Variable Initialization
         print("Landing Node: Initializing Variables")
         # Landing Variable Initialization
-        self.goal_reached = True        # Assume goal reached (no action required) upon startup.
-        self.takeoff_initiated = False  # See if Takeoff has been ordered (opportunity for calibration)
-        self.landing_check = 0          # Track number of sequential returns less than threshold
-        self.start_time = time.time()   # Initialize Start Time
-        self.goal_x = 287.0             # Hospital Goal x in local frame (default value)
-        self.goal_y = -1356.0           # Hospital Goal y in local fram (default value)
-        self.odom_alt = 13              # Default altitude until first callback    
-        self.odom_x = 0                 # Vehicle X position 
-        self.odom_y = 0                 # Vehicle Y position
-        self.odom_quat = np.zeros(4)    # Quaternion from the Localization Node
-
+        self.goal_reached = True            # Assume goal reached (no action required) upon startup.
+        self.takeoff_initiated = False      # See if Takeoff has been ordered (opportunity for calibration)
+        self.landing_check = 0              # Track number of sequential returns less than threshold
+        self.start_time = rospy.Time.now()  # Initialize Start Time
+        self.goal_x = 287.0                 # Hospital Goal x in local frame (default value)
+        self.goal_y = -1356.0               # Hospital Goal y in local fram (default value)
+        self.odom_alt = 13                  # Default altitude until first callback    
+        self.odom_x = 0                     # Vehicle X position 
+        self.odom_y = 0                     # Vehicle Y position
+        self.odom_quat = np.zeros(4)        # Quaternion from the Localization Node
+        self.drone_stable_time = rospy.Duration(2)  # Send 0 commands this long to stabilize (seconds)
+        self.goal_veh = [0,0]               # Goal Initialization
         # Camera Variable Initialization
         self.grid_size = 5          # grid_size and grid_center are related
         self.grid_center = 2
@@ -123,18 +126,19 @@ class Landing_Node:
         self.camera_calibration_status_options = ['complete', 'partially done', 'not done']
         self.camera_calibration_status = self.camera_calibration_status_options[2]
         self.camera_calibration_started = False
+        self.GPS_dist_to_goal = 0.0
 
         # Landing Configuration Parameters
-        PID_alt = [0.18, 0.0, 0.0]          # PID Controller Tuning Values 
-        PID_x =   [1.0, 1.0, 1.0]           # PID Controller Tuning Values (odom) 
-        PID_y =   [1.0, 1.0, 1.0]           # PID Controller Tuning Values (odom) 
+        PID_alt = [0.4, 0.2, 1.0]          # PID Controller Tuning Values 
+        PID_x =   [1.0, 0.5, 1.0]           # PID Controller Tuning Values (odom) 
+        PID_y =   [1.0, 0.5, 1.0]           # PID Controller Tuning Values (odom) 
         self.goal_alt = 8                   # Desired Alititude in Meters (staying hardcoded since building height won't change)
         alt_threshold = 0.25                # meters, based on sonar return
         horizontal_threshold = 2            # meters, summed in x and y axis
         self.Hertz = 20                     # frequency of while loop
         self.altitude_ctrl_shift = 25       # meters at which control shifts to ultrasonic sensor
         self.landing_check_threshold = 10   # Number of sequential returns required to call landing complete
-        self.should_be_done_time = 120      # Seconds it should take to complete a landing
+        self.should_be_done_time = rospy.Duration(120)      # Seconds it should take to complete a landing
         
         # Camera Configuration Parameters
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)    # Termination Criteria
@@ -143,6 +147,8 @@ class Landing_Node:
         PID_y_cam = [0.02, 0.3, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
         self.enable_camera_altitude = 40 # Enable camera processing once below this altitude, based on 20m range with 5m buffer
         self.lost_image_control_decay = 1.01 # Factor to decay commands by until image is regained.
+        self.lost_pad_distance = 8       # meter offset from "GPS goal" to switch back to GPS lateral control
+
         # Subscribers
         print("Landing Node: Defining Subscribers")
         # rospy.Subscriber("/fix", NavSatFix, self.callbackGPS, queue_size=1) # GPS Data
@@ -176,6 +182,7 @@ class Landing_Node:
 
         print("Commencing Landing Node Execution")
         while not rospy.is_shutdown():
+            self.current_time = rospy.Time.now()
             # Perform calibration during takeoff
             if self.takeoff_initiated:
                 if not self.camera_calibration_started:
@@ -217,64 +224,75 @@ class Landing_Node:
 
             # Calculate and issue commands if the node has been called on by the global planner
             if not self.goal_reached:
-                # Vertical control based on altimeter (barometer)
-                alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-5, 5)) # PID Controller
-                if self.odom_alt > self.altitude_ctrl_shift:  # If outside range of the sonic sensor, use the barometer.
-                    vel_msg.linear.z = alt_pid(self.odom_alt) 
-                else:                        # In range of the sonic sensor
-                    vel_msg.linear.z = alt_pid(self.goal_alt + sonic_dist)
-                
-                # Determine to use GPS or camera for lateral control
-                if (self.odom_alt < self.enable_camera_altitude) and (self.number_of_cal_images > 0):
-                    # Camera must been near visual range and at a minimum a partial calibration done
-                    # Lateral control based on the camera
-                    # Process Image
-                    gray_image = cv.cvtColor(self.image, cv.COLOR_BGR2GRAY)
-
-                    # Check for corners in the image
-                    ret, corners = cv.findChessboardCorners(gray_image, (self.grid_size,self.grid_size), None)
-
-                    # If the corners are seen the image can be processed
-                    if ret:
-                        # Identify the inner corners
-                        corners2 = cv.cornerSubPix(gray_image, corners, (11,11), (-1,-1), criteria)
-                        # Determine the rotation and translation vectors
-                        ret, rvecs, tvecs = cv.solvePnP(self.object_points_index, corners2, mtx, dist)
-                        # rvecs and tvecs are 3x1 arrays
-                        # Determine Image Points
-                        image_points, jacobian = cv.projectPoints(self.axis, rvecs, tvecs, mtx, dist)
-                        annotated_image = self.draw(self.image, corners2, image_points) # Comment out for production
-                        # Form the 4x4 Transform Matrix
-                        rotation = cv.Rodrigues(rvecs)  # 3x3 rotation matrix with 9x3 jacobian
-                        tvecs = np.transpose(tvecs)
-                        self.transform[0:3,0:3] = rotation[0]
-                        self.transform[0:3,3] = tvecs
-                        self.transform = np.linalg.pinv(self.transform)
-                        formated_center =  np.transpose(self.axis[3,:])
-                        self.center_in_image[0:3,0] = formated_center
-                        self.center_in_image[3,0] = 1 
-                        # Use the Transform Matrix to convert the center from image frame to camera frame
-                        self.center_from_vehicle = self.transform.dot(self.center_in_image) 
-
-                        # Control if the Image could be processed
-                        x_pid = PID(PID_x_cam[0], PID_x_cam[1], PID_x_cam[2], setpoint = -self.center_from_vehicle[0], sample_time = 1/self.Hertz, output_limits = (-2, 2))
-                        y_pid = PID(PID_y_cam[0], PID_y_cam[1], PID_y_cam[2], setpoint = self.center_from_vehicle[1], sample_time = 1/self.Hertz, output_limits = (-2, 2))
-                        vel_msg.linear.x = x_pid(self.grid_center)
-                        vel_msg.linear.y = y_pid(self.grid_center)
-
-                    else:
-                        # Control if the Image could not be processed (go straight down)
-                        vel_msg.linear.x = vel_msg.linear.x/self.lost_image_control_decay
-                        vel_msg.linear.y = vel_msg.linear.y/self.lost_image_control_decay
+                if self.current_time < (self.start_time + self.drone_stable_time):
+                    vel_msg.linear.x = 0
+                    vel_msg.linear.y = 0
+                    vel_msg.linear.z = 0
                 else:
-                    # Lateral control based on localization
-                    odom_rotation = Rot.from_quat(self.odom_quat, normalized=True)
-                    odom_rotation = odom_rotation.as_euler('xyz', degrees=True)
-                    goal_veh = self.local_to_vehicle_frame(self.odom_x, self.odom_y, self.goal_x, self.goal_y, odom_rotation[2])
-                    x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
-                    vel_msg.linear.x = x_pid(0)
-                    vel_msg.linear.y = y_pid(0)
+                    # Vertical control based on altimeter (barometer)
+                    alt_pid = PID(PID_alt[0], PID_alt[1], PID_alt[2], setpoint = self.goal_alt, sample_time= 1/self.Hertz, output_limits=(-2, 2)) # PID Controller
+                    if self.odom_alt > self.altitude_ctrl_shift:  # If outside range of the sonic sensor, use the barometer.
+                        vel_msg.linear.z = alt_pid(self.odom_alt) 
+                    else:                        # In range of the sonic sensor
+                        vel_msg.linear.z = alt_pid(self.goal_alt + sonic_dist)
+                    
+                    # Determine to use GPS or camera for lateral control
+                    self.GPS_dist_to_goal = math.sqrt(math.pow(self.goal_x - self.odom_x, 2) + math.pow(self.goal_y - self.odom_y, 2))
+
+                    if (self.odom_alt < self.enable_camera_altitude) and (self.number_of_cal_images > 0): # and (self.GPS_dist_to_goal < self.lost_pad_distance):
+                        # Camera must been near visual range and at a minimum a partial calibration done
+                        # Lateral control based on the camera
+                        # Process Image
+                        gray_image = cv.cvtColor(self.image, cv.COLOR_BGR2GRAY)
+
+                        # Check for corners in the image
+                        ret, corners = cv.findChessboardCorners(gray_image, (self.grid_size,self.grid_size), None)
+
+                        # If the corners are seen the image can be processed
+                        if ret:
+                            # Identify the inner corners
+                            corners2 = cv.cornerSubPix(gray_image, corners, (11,11), (-1,-1), criteria)
+                            # Determine the rotation and translation vectors
+                            ret, rvecs, tvecs = cv.solvePnP(self.object_points_index, corners2, mtx, dist)
+                            # rvecs and tvecs are 3x1 arrays
+                            # Determine Image Points
+                            image_points, jacobian = cv.projectPoints(self.axis, rvecs, tvecs, mtx, dist)
+                            annotated_image = self.draw(self.image, corners2, image_points) # Comment out for production
+                            # Form the 4x4 Transform Matrix
+                            rotation = cv.Rodrigues(rvecs)  # 3x3 rotation matrix with 9x3 jacobian
+                            tvecs = np.transpose(tvecs)
+                            self.transform[0:3,0:3] = rotation[0]
+                            self.transform[0:3,3] = tvecs
+                            self.transform = np.linalg.pinv(self.transform)
+                            formated_center =  np.transpose(self.axis[3,:])
+                            self.center_in_image[0:3,0] = formated_center
+                            self.center_in_image[3,0] = 1 
+                            # Use the Transform Matrix to convert the center from image frame to camera frame
+                            self.center_from_vehicle = self.transform.dot(self.center_in_image) 
+
+                            # Control if the Image could be processed
+                            x_pid = PID(PID_x_cam[0], PID_x_cam[1], PID_x_cam[2], setpoint = -self.center_from_vehicle[0], sample_time = 1/self.Hertz, output_limits = (-1, 1))
+                            y_pid = PID(PID_y_cam[0], PID_y_cam[1], PID_y_cam[2], setpoint = self.center_from_vehicle[1], sample_time = 1/self.Hertz, output_limits = (-1, 1))
+                            vel_msg.linear.x = x_pid(self.grid_center)
+                            vel_msg.linear.y = y_pid(self.grid_center)
+
+                        elif sonic_dist == sonic_max:
+                            # Control if the Image could not be processed (go straight down)
+                            vel_msg.linear.x = vel_msg.linear.x/self.lost_image_control_decay
+                            vel_msg.linear.y = vel_msg.linear.y/self.lost_image_control_decay
+
+                        else:
+                            vel_msg.linear.x = 0
+                            vel_msg.linear.y = 0
+                    else:
+                        # Lateral control based on localization
+                        odom_rotation = Rot.from_quat(self.odom_quat, normalized=True)
+                        odom_rotation = odom_rotation.as_euler('xyz', degrees=True)
+                        self.goal_veh = self.local_to_vehicle_frame(self.odom_x, self.odom_y, self.goal_x, self.goal_y, odom_rotation[2])
+                        x_pid = PID(PID_x[0], PID_x[1], PID_x[2], setpoint = self.goal_veh[0], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                        y_pid = PID(PID_y[0], PID_y[1], PID_y[2], setpoint = self.goal_veh[1], sample_time = 1/self.Hertz, output_limits = (-10, 10))
+                        vel_msg.linear.x = x_pid(0)
+                        vel_msg.linear.y = y_pid(0)
 
                 vel_pub.publish(vel_msg)
 
@@ -282,7 +300,7 @@ class Landing_Node:
                 cv.imshow("Processed Image", self.image)
                 cv.waitKey(3)
                 # Determine when the goal is met and tell the global planner
-                horizontal_error = abs(goal_veh[0]) + abs(goal_veh[1])
+                horizontal_error = abs(self.goal_veh[0]) + abs(self.goal_veh[1])
                 if sonic_dist < alt_threshold:
                     self.landing_check = self.landing_check + 1
                 else:
@@ -295,7 +313,6 @@ class Landing_Node:
                     self.status_pub.publish(self.status_msg)
             
             # Publish Diagnostic Info
-            self.current_time = time.time()
             self.elapsed_time = self.current_time - self.start_time
             
             if self.goal_reached:

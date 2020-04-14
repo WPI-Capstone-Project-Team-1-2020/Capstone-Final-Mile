@@ -1,5 +1,5 @@
 # I/O Topics
-costmap_topic:        "/costmap_node/costmap/costmap"         # Costmap Topic
+costmap_topic:        "/local_costmap"                        # Costmap Topic
 goal_topic:           "/local_planner/local_goal"             # Local Goal Pose Topic
 goal_reached_topic:   "/local_planner/goal_reached"           # Goal reached topic
 local_pose_topic:     "/local_odom"                           # Local Pose Topic

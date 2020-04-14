@@ -3,6 +3,7 @@
 
 // Ros
 #include <geometry_msgs/Quaternion.h>
+#include <tf/tf.h>
 
 // Libraries
 #include <boost/cstdfloat.hpp>
@@ -21,8 +22,9 @@ class CloudTransformer
 public:
     /// @brief Transforms pointcloud from base link to stabilized base link
     /// @param cloud OUTPUT - the cloud to transform
+    /// @param tf The transform from cloud frame to base_link
     /// @param q Quaternion of the cloud
-    static void transformCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const geometry_msgs::Quaternion& q);
+    static void transformCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const tf::StampedTransform& tf, const geometry_msgs::Quaternion& q);
 
     /// @brief Trims a cloud to a banded FOV in z-axis
     /// @param cloud OUTPUT - the cloud to band

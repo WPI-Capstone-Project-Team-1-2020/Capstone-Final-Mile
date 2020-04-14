@@ -6,6 +6,8 @@
 
 // Ros
 #include <nav_msgs/OccupancyGrid.h>
+#include <ros/ros.h>
+#include <tf/tf.h>
 
 // Libraries
 #include <pcl/point_cloud.h>
@@ -69,6 +71,7 @@ private:
     CostmapData                             m_data;           ///< Costmap data
     nav_msgs::OccupancyGrid                 m_grid;           ///< Occupancy grid to build
     std::unordered_set<std::size_t>         m_occopied_cells; ///< Cells that are occupied
+    tf::StampedTransform                    m_tf;             ///< Transform from whatever frame cloud is in to base_link
 };    
 
 } // namespace cm

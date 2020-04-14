@@ -28,10 +28,15 @@ public:
     /// @return pcl PC
     static pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud2toPCL(const sensor_msgs::PointCloud2::ConstPtr& pc2);
 
-    /// @brief Extracts a rotation matrix from quaternion, ignores yaw
+    /// @brief Extracts a rotation matrix from quaternion
     /// @param q Quaternion message to extract yaw from
     /// @return Rotation Matrix
     static Eigen::Matrix3d quaternionMsgToRotationMatrix(const geometry_msgs::Quaternion& q);
+
+    /// @brief Extracts a rotation matrix from quaternion, ignores yaw
+    /// @param q Quaternion message to extract yaw from
+    /// @return Rotation Matrix
+    static Eigen::Matrix3d quaternionMsgToRotationMatrixIgnoreYaw(const geometry_msgs::Quaternion& q);
 };    
 
 } // namespace cm

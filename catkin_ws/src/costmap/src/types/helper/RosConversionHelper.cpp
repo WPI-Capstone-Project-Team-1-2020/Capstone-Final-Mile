@@ -32,6 +32,18 @@ Eigen::Matrix3d RosConversionHelper::quaternionMsgToRotationMatrix(const geometr
     tf::quaternionMsgToTF(q, new_q);
     tf::Matrix3x3 tf_mat(new_q);
 
+    Eigen::Matrix3d mat;
+    tf::matrixTFToEigen(tf_mat, mat);
+
+    return mat;
+}
+
+Eigen::Matrix3d RosConversionHelper::quaternionMsgToRotationMatrixIgnoreYaw(const geometry_msgs::Quaternion& q)
+{
+    tf::Quaternion new_q;
+    tf::quaternionMsgToTF(q, new_q);
+    tf::Matrix3x3 tf_mat(new_q);
+
     float64_t roll_r;
     float64_t pitch_r;
     float64_t yaw_r;

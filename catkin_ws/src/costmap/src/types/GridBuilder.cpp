@@ -7,6 +7,7 @@
 
 // Ros
 #include <geometry_msgs/Pose.h>
+#include <tf/transform_listener.h>
 
 namespace cm
 {
@@ -29,15 +30,31 @@ bool GridBuilder::update()
 void GridBuilder::initializeBuilder()
 {    
     m_grid.header.frame_id = "base_link";
-    m_grid.info.height     = m_cfg->getCostmapHeightM();
-    m_grid.info.width      = m_cfg->getCostmapWidthM();
+    m_grid.info.height     = m_cfg->getCostmapHeightM()/m_cfg->getCostmapResolutionM();
+    m_grid.info.width      = m_cfg->getCostmapWidthM()/m_cfg->getCostmapResolutionM();
     m_grid.info.resolution = m_cfg->getCostmapResolutionM();
 
     geometry_msgs::Pose origin;
-    origin.position.x = m_grid.info.width/2.0;
-    origin.position.y = m_grid.info.height/2.0;    
+    origin.position.x = -0.5*m_grid.info.width*m_cfg->getCostmapResolutionM();
+    origin.position.y = -0.5*m_grid.info.height*m_cfg->getCostmapResolutionM();    
     
     m_grid.info.origin = std::move(origin);
+
+    tf::TransformListener list;
+
+    while (list.canTransform("camera_depth_optical_frame", "base_link", ros::Time(0)) == false)
+    {
+        continue;
+    }
+
+    try
+    {
+        list.lookupTransform("camera_depth_optical_frame", "base_link", ros::Time(0), m_tf);
+    }
+    catch (const tf::TransformException& ex)
+    {
+        ROS_ERROR_STREAM(ex.what());
+    }
 }
 
 void GridBuilder::resetBuilder()
@@ -47,8 +64,8 @@ void GridBuilder::resetBuilder()
     m_grid.header.stamp = ros::Time::now();
     m_grid.data.clear();
 
-    const std::size_t num_x_vals = static_cast<std::size_t>(m_grid.info.width/m_grid.info.resolution);
-    const std::size_t num_y_vals = static_cast<std::size_t>(m_grid.info.height/m_grid.info.resolution);
+    const std::size_t num_x_vals = static_cast<std::size_t>(m_grid.info.width);
+    const std::size_t num_y_vals = static_cast<std::size_t>(m_grid.info.height);
     const std::size_t num_vals   = num_x_vals*num_y_vals;
     m_grid.data.reserve(num_vals);
 
@@ -61,7 +78,7 @@ void GridBuilder::resetBuilder()
 bool GridBuilder::buildGrid()
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = RosConversionHelper::pointCloud2toPCL(m_data.getPointCloud());
-    CloudTransformer::transformCloud(cloud, m_data.getLocalPose()->pose.pose.orientation);
+    CloudTransformer::transformCloud(cloud, m_tf, m_data.getLocalPose()->pose.pose.orientation);
     CloudTransformer::trimCloud(cloud, m_cfg->getZBandpassM());
 
     markOccupiedCells(cloud);
@@ -86,6 +103,12 @@ void GridBuilder::markOccupiedCells(const pcl::PointCloud<pcl::PointXYZ>::Ptr& c
         [&grid = this->m_grid, &occupied_cells = this->m_occopied_cells, &get_grid_it](const pcl::PointXYZ& pt) -> void
         {
             const std::size_t grid_it = get_grid_it(pt, grid);
+
+            if (grid_it >= grid.data.size())
+            {
+                return;
+            }
+
             grid.data[grid_it] = 100;
             occupied_cells.emplace(grid_it);
         });

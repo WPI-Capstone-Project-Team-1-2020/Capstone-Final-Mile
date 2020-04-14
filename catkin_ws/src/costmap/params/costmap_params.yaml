@@ -1,0 +1,13 @@
+# I/O Topics
+pointcloud_topic:  "/camera/depth/points" # Pointcloud topic
+costmap_topic:     "/local_costmap"       # Costmap topic 
+local_pose_topic:  "/local_odom"          # Local pose topic
+diagnostics_topic: "/diagnostics"         # Diagnostics
+
+# Configs
+update_rate_hz:    50.0                   # Update rate in hz
+height_m:          60.0                   # Height of the costmap, in meters
+width_m:           60.0                   # Width of the costmap, in meters
+resolution_m:      0.1                    # Resolution of the costmap, in meters
+inflation_m:       10.0                   # Inflation radius of objects, in meters
+z_bandpass_m:      1.0                    # Band, in meters, to look for points (half above, half below)

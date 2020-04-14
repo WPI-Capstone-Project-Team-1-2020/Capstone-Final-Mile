@@ -12,9 +12,13 @@
 namespace cm
 {
 
-void CloudTransformer::transformCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const geometry_msgs::Quaternion& q)
+void CloudTransformer::transformCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, const tf::StampedTransform& tf, const geometry_msgs::Quaternion& q)
 {
-    Eigen::Matrix3d rot_mat = RosConversionHelper::quaternionMsgToRotationMatrix(q).inverse();
+    geometry_msgs::Quaternion q_;
+    tf::quaternionTFToMsg(tf.getRotation(), q_);
+    const Eigen::Matrix3d pc_rot_mat = RosConversionHelper::quaternionMsgToRotationMatrix(q_);
+
+    const Eigen::Matrix3d rot_mat = RosConversionHelper::quaternionMsgToRotationMatrixIgnoreYaw(q).inverse()*pc_rot_mat.inverse();
     Eigen::Matrix4d hom_tf;
     hom_tf << rot_mat (0, 0), rot_mat(0, 1), rot_mat(0, 2), 0.0,
               rot_mat (1, 0), rot_mat(1, 1), rot_mat(1, 2), 0.0,

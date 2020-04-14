@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <node name="costmap_node" pkg="costmap" type="costmap_node" output="screen">
+        <rosparam command="load" file="$(find costmap)/params/costmap_params.yaml"/>
+    </node>
+</launch>

@@ -17,6 +17,7 @@
 #include <std_msgs/Bool.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_updater/DiagnosticStatusWrapper.h>
 #include <autonomy_msgs/HospitalGoal.h>
 
 using namespace ros;
@@ -27,11 +28,14 @@ class GlobalPlanner
   GlobalPlanner(); 
   ~GlobalPlanner(); 
   bool init();
-  void controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, ros::Time& begin); //bool
+  void controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, bool &count2, ros::Time& begin); //bool
   //void controlLoop(bool takeoff_status, bool land_status, bool local_reached); //bool
   void updateTakeoff(double altitude, bool reached);  //send takeoff 
   void hopsitalCase(float &end_x, float &end_y, float x_hos_1, float y_hos_1, float x_hos_2, float y_hos_2, float x_hos_test_1, float y_hos_test_1, float x_hos_test_2, float y_hos_test_2); //choose hospital to fly to
   //was float
+
+  //battery monitor
+  void updateDiagnosticsBattery(const bool health, float max_flight); //updates battery monitor
 
  private:
   // ROS NodeHandle
@@ -67,6 +71,7 @@ class GlobalPlanner
   int n;
   bool health; //diagnostics
   int hospital_number; 
+  float max_flight;
 
   //bool count;
 
@@ -93,6 +98,7 @@ class GlobalPlanner
   // Diagnostics
   void updateDiagnostics(const bool health); //new for diagnostics
   void publishDiagnostics(const diagnostic_msgs::DiagnosticArray::ConstPtr& statuses); //new for diagnostics
+  void updateDiagnosticsDuration(const bool health, float flight_time_sec); //ros::Duration& flight_time); //this is new**
 
   // Update nodes
   void line(float &end_x, float &end_y); //linear trajectory //local_reached instead of local_status // double odom_x, double odom_y, bool local_status //double, double

@@ -199,6 +199,7 @@ class Landing_Node:
         self.cam_y_m = 0
         self.cam_GPS_diff = [0, 0]
         self.error_recalc = 6
+
         # Landing Configuration Parameters
         PID_alt = [0.4, 0.2, 1.0]          # PID Controller Tuning Values 
         PID_x =   [0.3, 0.3, 3.0]           # PID Controller Tuning Values (odom) 
@@ -214,8 +215,8 @@ class Landing_Node:
         # Camera Configuration Parameters
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)    # Termination Criteria
         self.cal_images_needed = 10                                                 # Number of Calibration images needed
-        PID_x_cam = [0.03, 0.0, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
-        PID_y_cam = [0.03, 0.0, 5.0]     # PID Controller Tuning Values (camera) TODO Tune Controller
+        # PID_x_cam = [0.03, 0.0, 5.0]     # PID Controller Tuning Values (camera) 
+        # PID_y_cam = [0.03, 0.0, 5.0]     # PID Controller Tuning Values (camera) 
         self.enable_camera_altitude = 40 # Enable camera processing once below this altitude, based on 20m range with 5m buffer
         self.lost_image_control_decay = 1.03 # Factor to decay commands by until image is regained.
         self.lost_pad_distance = 8       # meter offset from "GPS goal" to switch back to GPS lateral control
@@ -343,25 +344,9 @@ class Landing_Node:
                             self.cam_x_m = self.center_from_vehicle[0] * m_pix_ratio * 0.05
                             self.cam_y_m = self.center_from_vehicle[1] * m_pix_ratio * 0.05
                             self.cam_GPS_diff = [self.goal_veh[0] - self.cam_x_m, self.goal_veh[1] - self.cam_y_m]
-                            print(self.cam_GPS_diff[0], self.cam_GPS_diff[1])
 
-                            # Control if the Image could be processed
-                            # x_pid = PID(PID_x_cam[0], PID_x_cam[1], PID_x_cam[2], setpoint = self.center_from_vehicle[0], sample_time = 1/self.Hertz, output_limits = (-1, 1))
-                            # y_pid = PID(PID_y_cam[0], PID_y_cam[1], PID_y_cam[2], setpoint = self.center_from_vehicle[1], sample_time = 1/self.Hertz, output_limits = (-1, 1))
-                            # vel_msg.linear.x = x_pid(0)
-                            # vel_msg.linear.y = y_pid(0)
                             self.last_cam_command_time = rospy.get_time()
 
-                        # elif sonic_dist > (sonic_max - 0.3):
-                            # Control if the Image could not be processed (go straight down)
-                        #     vel_msg.linear.x = vel_msg.linear.x / self.lost_image_control_decay
-                        #     vel_msg.linear.y = vel_msg.linear.y / self.lost_image_control_decay
-
-                        # else:
-                        #     vel_msg.linear.x = 0
-                        #     vel_msg.linear.y = 0
-                    # else:
-                        # Lateral control based on localization
                     self.goal_veh = self.local_to_vehicle_frame(self.odom_x, self.odom_y, self.goal_x, self.goal_y, odom_rotation)
                     self.goal_veh[0] = self.goal_veh[0] - self.cam_GPS_diff[0]
                     self.goal_veh[1] = self.goal_veh[1] - self.cam_GPS_diff[1]

@@ -45,7 +45,7 @@ class Command_Log_Node:
         self.past_msg_time = rospy.get_rostime()   # Message Time to calculate acceleration
         self.cur_msg_time = rospy.get_rostime()    # Message Times to calculate acceleration
         self.delta_velocity = np.zeros(3)   # Velocity Difference
-        self.delta_time = 0.0               # Time Difference
+        self.delta_time = 0.1               # Time Difference
 
         # Configuration Parameters
         self.Hertz = 5.0                                   # frequency of while loop

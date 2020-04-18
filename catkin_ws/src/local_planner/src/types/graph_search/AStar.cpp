@@ -120,7 +120,7 @@ bool AStar::planTrajectory()
         }
         else
         {
-            ROS_ERROR_STREAM("Frontier empty, all possible nodes explored");
+            ROS_WARN_THROTTLE(1.0, "Obstacle Detected, No Path Planned");
 
             return false;
         }

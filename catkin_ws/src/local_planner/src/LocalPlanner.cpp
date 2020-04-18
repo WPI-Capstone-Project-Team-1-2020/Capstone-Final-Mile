@@ -73,7 +73,7 @@ void LocalPlanner::update(const ros::TimerEvent& event)
             m_topic_pub->publishTrajectory(boost::make_shared<autonomy_msgs::Trajectory>(std::move(traj)));
             m_topic_pub->publishPath(boost::make_shared<nav_msgs::Path>(std::move(ros_path)));
 
-            ROS_ERROR_THROTTLE(1.0, "Unable to plan trajectory, stopping");
+            ROS_WARN_THROTTLE(1.0, "Unable to plan trajectory, stopping");
 
             updateDiagnostics(true);
         }  

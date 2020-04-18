@@ -67,7 +67,7 @@ void GlobalPlanner::hospitalMsgCallBack(const autonomy_msgs::HospitalGoal::Const
 
 }
 
-void GlobalPlanner::updateDiagnostics(const bool health) //this is new**
+void GlobalPlanner::updateDiagnostics(const bool health) 
 {
     diagnostic_msgs::DiagnosticArray array;
     array.header.stamp = ros::Time::now();
@@ -75,10 +75,75 @@ void GlobalPlanner::updateDiagnostics(const bool health) //this is new**
     diagnostic_msgs::DiagnosticStatus status;
     status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
     status.name  = "Global Planner Node";
+    status.message = "OK"; //default status
 
     array.status.push_back(status);
 
     diagnostics_pub_.publish(array); 
+}
+
+//Update duration of flight in diagnostics window
+void GlobalPlanner::updateDiagnosticsDuration(const bool health, float flight_time_sec) //ros::Duration& flight_time) //this is new**
+{
+    diagnostic_msgs::DiagnosticArray array;
+    array.header.stamp = ros::Time::now();
+
+    std::string flight_string = std::to_string(flight_time_sec);
+
+    diagnostic_msgs::DiagnosticStatus status;
+    status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
+    status.name  = "Duration of Flight";
+    status.message = flight_string; //default status
+
+
+    array.status.push_back(status); 
+
+    diagnostics_pub_.publish(array); 
+}
+
+// Update battery monitoring in diagnostic window
+void GlobalPlanner::updateDiagnosticsBattery(const bool health, float max_flight) //this is new**
+{
+    float sim_time = ros::Time::now().toSec(); //ros::Time
+
+    float battery_monitor = 1-(sim_time/max_flight);
+    battery_monitor = roundf(battery_monitor*100)/100;
+    std::string battery_string = std::to_string(battery_monitor);
+
+    diagnostic_msgs::DiagnosticArray array;
+    array.header.stamp = ros::Time::now();
+
+    diagnostic_msgs::DiagnosticStatus status;
+    //status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
+    status.name  = "Battery Life";
+    if(battery_monitor >= .30)
+    {
+      //Battery life is greater than 30% is ok - 4min left
+      status.level = diagnostic_msgs::DiagnosticStatus::OK;
+      status.message = battery_string; //status OK
+    }
+    else if(battery_monitor < .30 && battery_monitor >= .15)
+    {
+      //Battery life is between 15%-29% - warning - 2min-4min left
+      status.level = diagnostic_msgs::DiagnosticStatus::WARN; // : diagnostic_msgs::DiagnosticStatus::ERROR;
+      status.message = battery_string; //status WARNING
+    }
+    else if(battery_monitor < .15)
+    {
+      //Battery life is less thaan 15% - error - less than 2min left
+      status.level = diagnostic_msgs::DiagnosticStatus::ERROR; // : diagnostic_msgs::DiagnosticStatus::ERROR;
+      status.message = battery_string; //"BATTERY DYING - LESS THAN 2 MIN OF FLIGHT TIME"; 
+    }
+    
+
+    array.status.push_back(status);
+    diagnostics_pub_.publish(array); 
+
+    //diagnostic_updater::DiagnosticStatusWrapper wrap;
+    //wrap.add("Battery Life is %f percent", battery_monitor); //default status
+
+    //array.status.push_back(wrap); //was status
+    //diagnostics_pub_.publish(array); 
 }
 
 
@@ -130,7 +195,7 @@ void GlobalPlanner::line(float &end_x, float &end_y) //local_reached to local_st
 
       goal_pose.x_m = x;
       goal_pose.y_m = y;
-      goal_pose.speed_mps = 12;
+      goal_pose.speed_mps = 10;
 
       goal_pose_pub_.publish(goal_pose); 
       std::cout << "sent new local goal  " << goal_pose << std::endl;  //local_reached
@@ -265,7 +330,7 @@ void GlobalPlanner::hopsitalCase(float &end_x, float &end_y, float x_hos_1, floa
 * Control Loop function
 *******************************************************************************/
 //void GlobalPlanner::controlLoop(bool takeoff_status, bool land_status, bool local_reached)  //bool
-void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, ros::Time& begin)  //bool
+void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, bool &count, bool &count2, ros::Time& begin)  //bool
 {
 
   //end_x = 287; //1292.0;
@@ -311,12 +376,26 @@ void GlobalPlanner::controlLoop(float &end_x, float &end_y, bool land_reached, b
         }
         else if (land_status == 1) //true = 1
         {
-          std::cout << "landing goal reached" << std::endl;
-          ros::Time end = ros::Time::now(); //this might need to change
-          std::cout << "end time is " << end << std::endl;
+          //added if/else statement with count and only count this once (working code otherwise)
+          if(count2 != 0)
+          {
+            count2 = false;
+            std::cout << "landing goal reached" << std::endl;
+            ros::Time end = ros::Time::now(); //this might need to change
+            std::cout << "end time is " << end << std::endl;
 
-          ros::Duration flight_time = end - begin;
-          std::cout << "duration of flight is " << flight_time << std::endl;
+            ros::Duration flight_time = end - begin;
+            std::cout << "duration of flight is " << flight_time << std::endl;
+            float flight_time_sec = flight_time.toSec();
+
+            GlobalPlanner::updateDiagnosticsDuration(health, flight_time_sec); //this is new**
+          }
+          else if(count2 == 0)
+          {
+            //
+            std::cout << "landing goal reached, waiting new destination" << std::endl;
+          }
+          
         }
       }     
     }
@@ -339,7 +418,9 @@ int main(int argc, char* argv[])
   bool takeoff_reached = false; //false is 0
   bool land_reached = false; //false is 0
   bool local_reached = false; //false is 0
-  bool count = true;
+  bool count = true; //for initiating land
+  bool count2 = true; // for timestamp
+  float max_flight = 780; //max min of flight time - 13 min, 780 sec
   float end_x;
   float end_y;
 
@@ -388,7 +469,9 @@ int main(int argc, char* argv[])
       // Get hospital goal
       GlobalPlanner.hopsitalCase(end_x, end_y, x_hos_1, y_hos_1, x_hos_2, y_hos_2, x_hos_test_1, y_hos_test_1, x_hos_test_2, y_hos_test_2);
 
-      GlobalPlanner.controlLoop(end_x, end_y, land_reached, count, begin);  
+      GlobalPlanner.updateDiagnosticsBattery(true, max_flight);
+
+      GlobalPlanner.controlLoop(end_x, end_y, land_reached, count, count2, begin);  
       ros::spinOnce();
       loop_rate.sleep();
   }

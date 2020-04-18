@@ -92,7 +92,7 @@ void GlobalPlanner::updateDiagnosticsDuration(const bool health, float flight_ti
 
     diagnostic_msgs::DiagnosticStatus status;
     status.level = health ? diagnostic_msgs::DiagnosticStatus::OK : diagnostic_msgs::DiagnosticStatus::ERROR;
-    status.name  = "Global Planner Node";
+    status.name  = "Duration of Flight";
     status.message = flight_string; //default status
 
 

@@ -8,6 +8,9 @@
 #include "TopicSubscriber.hpp"
 #include "TrajectorySolver.hpp"
 
+// Libraries
+#include <boost/shared_ptr.hpp>
+
 // Ros
 #include <autonomy_msgs/Trajectory.h>
 
@@ -63,14 +66,22 @@ void LocalPlanner::update(const ros::TimerEvent& event)
         }
         else
         {
-            ROS_ERROR_STREAM("Unable to plan trajectory");
-            updateDiagnostics(false);
+            autonomy_msgs::Trajectory traj;
+            nav_msgs::Path ros_path;
+
+            m_topic_pub->publishGoalReached(false);                    
+            m_topic_pub->publishTrajectory(boost::make_shared<autonomy_msgs::Trajectory>(std::move(traj)));
+            m_topic_pub->publishPath(boost::make_shared<nav_msgs::Path>(std::move(ros_path)));
+
+            ROS_ERROR_THROTTLE(1.0, "Unable to plan trajectory, stopping");
+
+            updateDiagnostics(true);
         }  
     }  
     else
     {
-        if ((m_topic_sub->getLocalPlannerData().getCostmap()       == nullptr) ||
-            (m_topic_sub->getLocalPlannerData().getLocalPose()     == nullptr))
+        if ((m_topic_sub->getLocalPlannerData().getCostmap()   == nullptr) ||
+            (m_topic_sub->getLocalPlannerData().getLocalPose() == nullptr))
         {   
             updateDiagnostics(false);    
         }   

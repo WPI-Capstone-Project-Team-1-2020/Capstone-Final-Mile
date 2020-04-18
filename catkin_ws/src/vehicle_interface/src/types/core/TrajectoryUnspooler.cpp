@@ -17,9 +17,14 @@ void TrajectoryUnspooler::update(const ros::Time& now_s)
 void TrajectoryUnspooler::calculateCommandFromTrajectory(const ros::Time& now_s)
 {
     if (m_data.getTrajectory()->execution_times.empty() == true)
-    {
-        ROS_ERROR_STREAM("Empty trajectory, falling out of the sky, you deserve this");
-
+    {            
+        m_cmd.linear.x  = 0.0;
+        m_cmd.linear.y  = 0.0;
+        m_cmd.linear.z  = 0.0;
+        m_cmd.angular.x = 0.0;
+        m_cmd.angular.y = 0.0;
+        m_cmd.angular.z = 0.0;
+        
         return;
     }
 

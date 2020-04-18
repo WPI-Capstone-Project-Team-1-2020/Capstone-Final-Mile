@@ -15,10 +15,14 @@
 
 // Standard
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace cm
 {
+
+using InflationCluster = std::vector<std::pair<std::size_t, std::int8_t>>;  ///< Alias for a set of points and corresponding probabilities
+using InflationTable   = std::unordered_map<std::size_t, InflationCluster>; ///< Alias for this gross type I'm not defining again
 
 // Forward declares
 class CostmapConfig;    
@@ -53,6 +57,9 @@ private:
     /// @brief Initializes the builder
     void initializeBuilder();
 
+    /// @brief Builds the lookup table to be used for inflation
+    void generateInflationLookupTable();
+
     /// @brief Resets the builder
     void resetBuilder();
 
@@ -64,14 +71,15 @@ private:
     /// @param cloud The pointcloud to use to mark the cells occupied
     void markOccupiedCells(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
 
-    /// @brief Inflates the occupied cells
+    /// @brief Inflates occupied cells
     void inflateOccupiedCells();
 
-    std::shared_ptr<CostmapConfig>          m_cfg;            ///< Config of the costmap
-    CostmapData                             m_data;           ///< Costmap data
-    nav_msgs::OccupancyGrid                 m_grid;           ///< Occupancy grid to build
-    std::unordered_set<std::size_t>         m_occopied_cells; ///< Cells that are occupied
-    tf::StampedTransform                    m_tf;             ///< Transform from whatever frame cloud is in to base_link
+    std::shared_ptr<CostmapConfig>          m_cfg;             ///< Config of the costmap
+    CostmapData                             m_data;            ///< Costmap data
+    nav_msgs::OccupancyGrid                 m_grid;            ///< Occupancy grid to build
+    tf::StampedTransform                    m_tf;              ///< Transform from whatever frame cloud is in to base_link
+    std::unordered_set<std::size_t>         m_occopied_cells;  ///< Cells that are occupied
+    InflationTable                          m_inflation_table; ///< Lookup table for inflated cell probabilities
 };    
 
 } // namespace cm

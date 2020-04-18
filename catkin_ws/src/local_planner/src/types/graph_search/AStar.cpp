@@ -142,14 +142,13 @@ void AStar::expandFrontier(const GraphNode& current_node)
                 return;
             }
             
-            node.setCost(node.getCost() + prob_coll*m_cfg->getNonLethalCostMult());
-            m_nodes.emplace(node.getID(), node);
+            node.setCost(node.getCost() + prob_coll*m_cfg->getNonLethalCostMult());            
 
             std::unordered_set<GraphNode>::const_iterator open_it = m_open_nodes.find(node);
 
             if (open_it != m_open_nodes.cend())
             {
-                if(node.getCost() >= open_it->getCost())
+                if(node.getG() >= open_it->getG())
                 {
                     return;
                 }
@@ -157,6 +156,7 @@ void AStar::expandFrontier(const GraphNode& current_node)
             else
             {
                 m_frontier.emplace(node);
+                m_nodes.emplace(node.getID(), node);
                 m_open_nodes.emplace(std::move(node));
             }
         });

@@ -1,5 +1,5 @@
 <launch>
-  <arg name="ground_truth/state" default ="/ground_truth/state"/>  <!-- "/nav_msgs/Odometry" - was "odom" -->
+  <arg name="local_odom" default ="/local_odom"/>  <!-- "/nav_msgs/Odometry" - was "ground_truth/state" and "/ground_truth/state" -->
   <arg name="takeoff" default ="/takeoff"/>  <!-- "/autonomy_msgs/Takeoff" -->
   <arg name="landing" default ="/landing"/>  <!-- "/autonomy_msgs/Landing" -->
   <arg name="takeoff_status" default ="/takeoff_status"/>  <!-- "/autonomy_msgs/Status" -->
@@ -11,7 +11,7 @@
 
   <arg name="name" default="global_planner"/> 
 
-  <param name="odom_topic_name" value="$(arg ground_truth/state)"/>  <!-- was odom-->
+  <param name="odom_topic_name" value="$(arg local_odom)"/>  <!-- was ground_truth/state-->
   <param name="takeoff_topic_name" value="$(arg takeoff)"/>  
   <param name="landing_topic_name" value="$(arg landing)"/>  
   <param name="takeoff_status_topic_name" value="$(arg takeoff_status)" />

@@ -49,7 +49,7 @@ bool GlobalPlanner::init()
   diagnostics_pub_ = nh_.advertise<diagnostic_msgs::DiagnosticArray>(diagnostics_topic_name, 10); //diagnostics_topic_name //was DiagnosticStatus
 
   // initialize subscribers
-  odom_sub_ = nh_.subscribe("ground_truth/state", 10, &GlobalPlanner::odomMsgCallBack, this); //"odom"
+  odom_sub_ = nh_.subscribe("local_odom", 10, &GlobalPlanner::odomMsgCallBack, this); //changed from "ground_truth/state" to "local_odom"
   takeoff_status_sub_ = nh_.subscribe("takeoff_status", 10, &GlobalPlanner::takeoffMsgCallBack, this); //"takeoff_status"
   landing_status_sub_ = nh_.subscribe("landing_status", 10, &GlobalPlanner::landingMsgCallBack, this); //"landing_status"
   local_sub_ = nh_.subscribe("local_planner/goal_reached", 10, &GlobalPlanner::localMsgCallBack, this);  //"local_status", then "goal_reached"

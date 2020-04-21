@@ -198,7 +198,8 @@ class Landing_Node:
         self.cam_y_m                           = 0                                                                                             # Distance from vehicle to goal in meters in camera frame
         self.cam_GPS_diff                      = [0, 0]                                                                                        # X, Y offset between the goal as defined by the camera and GPS
         self.fov_r                             = 50 * math.pi / 180                                                                            # FOV taken from quadrotor_dji_m200.urdf.xacro, based on DJI specs webpage for the Matrice 200
-        
+        self.fourcc                            = cv.VideoWriter_fourcc(*'XVID')                                                                # Used for saving the images for the report
+        self.video_file                        = cv.VideoWriter('cal_and_landing.avi', self.fourcc, 20.0, (640, 480))                          # Used for saving the images for the report
 
         # Landing Configuration Parameters
         PID_alt                      = [0.4, 0.2, 1.0]     # PID Gains for Alititude Control 
@@ -280,7 +281,9 @@ class Landing_Node:
                         
                         # Draw Calibration Image
                         cv.drawChessboardCorners(self.image, (self.grid_size,self.grid_size), corners2, ret)    # Comment out for production
-                        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(self.object_points, self.image_points, gray_image.shape[::-1], None, None)                  
+                        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(self.object_points, self.image_points, gray_image.shape[::-1], None, None) 
+
+                    self.video_file.write(self.image)                 
 
             # Determine Calibration Status
             if self.camera_calibration_status != self.camera_calibration_status_options[0]: # If the calibration is not done, update the status
@@ -332,10 +335,11 @@ class Landing_Node:
                             self.center_from_vehicle = self.image_to_camera_frame(640, 480, image_points[3]) # not compensated for tilt
                             
                             # Define the Offset from GPS
-                            self.cam_x_m = 0.5 * self.odom_alt * 2 * self.center_from_vehicle[0] * math.tan(self.fov_r/ (640 / 480) / 2) / 480    # Vertical FOV = horzontal FOV / aspect ratio
+                            self.cam_x_m = 0.6 * self.odom_alt * 2 * self.center_from_vehicle[0] * math.tan(self.fov_r/ (640 / 480) / 2) / 480    # Vertical FOV = horzontal FOV / aspect ratio
                             self.cam_y_m = 0.5 * self.odom_alt * 2 * self.center_from_vehicle[1] * math.tan(self.fov_r / 2) / 640                 # Horizontal FOV from camera specs
                             self.cam_GPS_diff = [self.goal_veh[0] - self.cam_x_m, self.goal_veh[1] - self.cam_y_m]
                             self.last_cam_command_time = rospy.get_time()
+
 
                     # Calculate the Rotation of the drone, used for heading
                     odom_rotation = Rot.from_quat(self.odom_quat, normalized=True)
@@ -356,6 +360,9 @@ class Landing_Node:
 
                 # Publish the velocity commands
                 vel_pub.publish(vel_msg)
+
+                # Save the image for project
+                self.video_file.write(self.image)
 
                 # Display the image for development (comment out when not developing)
                 cv.imshow("Processed Image", self.image)

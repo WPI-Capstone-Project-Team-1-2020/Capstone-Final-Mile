@@ -118,7 +118,7 @@ class Take_Off:
         vel_msg = Twist()
         vel_msg.angular.x = 0
         vel_msg.angular.y = 0
-        vel_msg.angular.z = 0
+        vel_msg.angular.z = 0.1 # Nonzero to aid in calibration of camera
 
         self.diag_msg = DiagnosticArray()
         self.diag_status = DiagnosticStatus(name = 'Takeoff Node:', level = 0, message = 'OK')  # Default Status
